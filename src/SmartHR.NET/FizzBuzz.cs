@@ -1,4 +1,4 @@
-namespace Sample.Core
+namespace SmartHR.NET
 {
     public static class FizzBuzz
     {
