@@ -1,7 +1,7 @@
 using Xunit;
-using static Sample.Core.FizzBuzz;
+using static SmartHR.NET.FizzBuzz;
 
-namespace Sample.Test
+namespace SmartHR.NET.Tests
 {
     public class FizzBuzzTest
     {
