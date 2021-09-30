@@ -8,7 +8,7 @@ public static class JsonConfig
     internal static readonly JsonSerializerOptions Default;
     static JsonConfig()
     => Default = new(JsonSerializerDefaults.Web)
-        {
-            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-        };
+    {
+        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+    };
 }

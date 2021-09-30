@@ -19,11 +19,11 @@ internal class JsonStringEnumConverterEx<TEnum> : JsonConverter<TEnum> where TEn
     public JsonStringEnumConverterEx()
     {
         var type = typeof(TEnum);
-        #if NET5_0_OR_GREATER
+#if NET5_0_OR_GREATER
         foreach (var value in Enum.GetValues<TEnum>())
-        #else
+#else
         foreach (TEnum value in Enum.GetValues(type))
-        #endif
+#endif
         {
             var enumMember = type.GetMember(value.ToString())[0];
             var attr = enumMember.GetCustomAttributes(typeof(EnumMemberAttribute), false)
