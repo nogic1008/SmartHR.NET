@@ -9,4 +9,8 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
 
+  <ItemGroup Condition="'$(TargetFramework)'=='netstandard2.0'">
+    <PackageReference Include="System.Text.Json" Version="6.0.0-rc.1.21451.13" />
+  </ItemGroup>
+
 </Project>
