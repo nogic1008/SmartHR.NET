@@ -13,12 +13,36 @@ namespace SmartHR.NET.Services;
 /// </summary>
 public class SmartHRService : ISmartHRService
 {
-    /// <summary>HttpClient (DI)</summary>
+    /// <summary>HttpClient(DI)</summary>
     private readonly HttpClient _httpClient;
 
+    /// <summary>
+    /// SmartHRServiceの新しいインスタンスを生成します。
+    /// </summary>
+    /// <param name="httpClient">HttpClient(DI)</param>
+    /// <param name="endpoint">
+    /// エンドポイントURI
+    /// <para>未指定時には、<see cref="HttpClient.BaseAddress"/>がそのまま利用されます。</para>
+    /// </param>
+    /// <param name="accessToken">
+    /// アクセストークン
+    /// <para>未指定時には、<see cref="HttpClient.DefaultRequestHeaders"/>がそのまま利用されます。</para>
+    /// </param>
     public SmartHRService(HttpClient httpClient, string? endpoint = null, string? accessToken = null)
         : this(httpClient, endpoint is null ? null : new Uri(endpoint), accessToken) { }
 
+    /// <summary>
+    /// SmartHRServiceの新しいインスタンスを生成します。
+    /// </summary>
+    /// <param name="httpClient">HttpClient(DI)</param>
+    /// <param name="endpoint">
+    /// エンドポイントURI
+    /// <para>未指定時には、<see cref="HttpClient.BaseAddress"/>がそのまま利用されます。</para>
+    /// </param>
+    /// <param name="accessToken">
+    /// アクセストークン
+    /// <para>未指定時には、<see cref="HttpClient.DefaultRequestHeaders"/>がそのまま利用されます。</para>
+    /// </param>
     public SmartHRService(HttpClient httpClient, Uri? endpoint, string? accessToken = null)
     {
         _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
