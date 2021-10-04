@@ -13,10 +13,10 @@ namespace SmartHR.NET;
 /// <typeparam name="TEnum">シリアライズ対象となる列挙型</typeparam>
 internal class JsonStringEnumConverterEx<TEnum> : JsonConverter<TEnum> where TEnum : struct, Enum
 {
-    private readonly Dictionary<TEnum, string> _enumToString = new();
-    private readonly Dictionary<string, TEnum> _stringToEnum = new();
+    internal static readonly Dictionary<TEnum, string> EnumToString = new();
+    internal static readonly Dictionary<string, TEnum> StringToEnum = new();
 
-    public JsonStringEnumConverterEx()
+    static JsonStringEnumConverterEx()
     {
         var type = typeof(TEnum);
 #if NET5_0_OR_GREATER
@@ -30,24 +30,24 @@ internal class JsonStringEnumConverterEx<TEnum> : JsonConverter<TEnum> where TEn
                 .Cast<EnumMemberAttribute>()
                 .FirstOrDefault();
 
-            _stringToEnum.Add(value.ToString(), value);
+            StringToEnum.Add(value.ToString(), value);
 
             if (attr?.Value is not null)
             {
-                _enumToString.Add(value, attr.Value);
-                _stringToEnum.Add(attr.Value, value);
+                EnumToString.Add(value, attr.Value);
+                StringToEnum.Add(attr.Value, value);
             }
             else
             {
-                _enumToString.Add(value, value.ToString());
+                EnumToString.Add(value, value.ToString());
             }
         }
     }
 
     public override TEnum Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
-        => reader.GetString() is string value && _stringToEnum.TryGetValue(value, out var enumValue)
+        => reader.GetString() is string value && StringToEnum.TryGetValue(value, out var enumValue)
             ? enumValue : default;
 
     public override void Write(Utf8JsonWriter writer, TEnum value, JsonSerializerOptions options)
-        => writer.WriteStringValue(_enumToString[value]);
+        => writer.WriteStringValue(EnumToString[value]);
 }

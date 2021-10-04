@@ -1,7 +1,7 @@
 using System;
+using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Json;
-using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using SmartHR.NET.Entities;
@@ -51,4 +51,155 @@ public class SmartHRService : ISmartHRService
         if (!string.IsNullOrEmpty(accessToken))
             _httpClient.DefaultRequestHeaders.Authorization = new("Bearer", accessToken);
     }
+
+    #region PayRolls
+    /// <inheritdoc/>
+    public async ValueTask DeletePayRollAsync(string id, CancellationToken cancellationToken = default)
+    {
+        var response = await _httpClient.DeleteAsync($"/v1/payrolls/{id}", cancellationToken).ConfigureAwait(false);
+        response.EnsureSuccessStatusCode();
+    }
+
+    /// <inheritdoc/>
+    public async ValueTask<PayRoll> FetchPayRollAsync(string id, CancellationToken cancellationToken = default)
+        => (await _httpClient.GetFromJsonAsync<PayRoll>($"/v1/payrolls/{id}", cancellationToken: cancellationToken).ConfigureAwait(false))!;
+
+    /// <inheritdoc/>
+    public async ValueTask<PayRoll> UpdatePayRollAsync(string id, string nameForAdmin, string nameForCrew, CancellationToken cancellationToken = default)
+    {
+        var parameters = new Dictionary<string, string>()
+        {
+            { "name_for_admin", nameForAdmin },
+            { "name_for_crew", nameForCrew }
+        };
+        var content = new FormUrlEncodedContent(parameters);
+
+        var response = await _httpClient.SendAsync(new(new("PATCH"), $"/v1/payrolls/{id}") { Content = content }, cancellationToken).ConfigureAwait(false);
+        return (await response.Content.ReadFromJsonAsync<PayRoll>(cancellationToken: cancellationToken).ConfigureAwait(false))!;
+    }
+
+    /// <inheritdoc/>
+    public async ValueTask<PayRoll> PublishPayRollAsync(string id, DateTime? publishedAt = default, bool? notifyWithPublish = default, CancellationToken cancellationToken = default)
+    {
+        var parameters = new Dictionary<string, string>();
+        if (publishedAt is not null)
+            parameters.Add("published_at", publishedAt.GetValueOrDefault().ToString("o"));
+        if (notifyWithPublish is not null)
+            parameters.Add("notify_with_publish", notifyWithPublish.ToString()!.ToLowerInvariant());
+        var content = new FormUrlEncodedContent(parameters);
+
+        var response = await _httpClient.SendAsync(new(new("PATCH"), $"/v1/payrolls/{id}/publish") { Content = content }, cancellationToken).ConfigureAwait(false);
+        return (await response.Content.ReadFromJsonAsync<PayRoll>(cancellationToken: cancellationToken).ConfigureAwait(false))!;
+    }
+
+    /// <inheritdoc/>
+    public async ValueTask<PayRoll> UnconfirmPayRollAsync(
+        string id,
+        PaymentType paymentType,
+        DateTime paidAt,
+        DateTime periodStartAt,
+        DateTime periodEndAt,
+        PaymentStatus status,
+        NumeralSystemType numeralSystemHandleType,
+        string nameForAdmin,
+        string nameForCrew,
+        DateTime? publishedAt = default,
+        bool? notifyWithPublish = default,
+        CancellationToken cancellationToken = default)
+    {
+        var parameters = new Dictionary<string, string>()
+        {
+            { "payment_type", JsonStringEnumConverterEx<PaymentType>.EnumToString[paymentType] },
+            { "paid_at", paidAt.ToString("yyyy-MM-dd", null) },
+            { "period_start_at", periodStartAt.ToString("yyyy-MM-dd", null) },
+            { "period_end_at", periodEndAt.ToString("yyyy-MM-dd", null) },
+            { "status", JsonStringEnumConverterEx<PaymentStatus>.EnumToString[status] },
+            { "numeral_system_handle_type", JsonStringEnumConverterEx<NumeralSystemType>.EnumToString[numeralSystemHandleType] },
+            { "name_for_admin", nameForAdmin },
+            { "name_for_crew", nameForCrew },
+        };
+        if (publishedAt is not null)
+            parameters.Add("published_at", publishedAt.GetValueOrDefault().ToString("o"));
+        if (notifyWithPublish is not null)
+            parameters.Add("notify_with_publish", notifyWithPublish.ToString()!.ToLowerInvariant());
+        var content = new FormUrlEncodedContent(parameters);
+
+        var response = await _httpClient.SendAsync(new(new("PATCH"), $"/v1/payrolls/{id}/unfix") { Content = content }, cancellationToken).ConfigureAwait(false);
+        return (await response.Content.ReadFromJsonAsync<PayRoll>(cancellationToken: cancellationToken).ConfigureAwait(false))!;
+    }
+
+    /// <inheritdoc/>
+    public async ValueTask<PayRoll> ConfirmPayRollAsync(
+        string id,
+        PaymentType paymentType,
+        DateTime paidAt,
+        DateTime periodStartAt,
+        DateTime periodEndAt,
+        PaymentStatus status,
+        NumeralSystemType numeralSystemHandleType,
+        string nameForAdmin,
+        string nameForCrew,
+        DateTime? publishedAt = default,
+        bool? notifyWithPublish = default,
+        CancellationToken cancellationToken = default)
+    {
+        var parameters = new Dictionary<string, string>()
+        {
+            { "payment_type", JsonStringEnumConverterEx<PaymentType>.EnumToString[paymentType] },
+            { "paid_at", paidAt.ToString("yyyy-MM-dd", null) },
+            { "period_start_at", periodStartAt.ToString("yyyy-MM-dd", null) },
+            { "period_end_at", periodEndAt.ToString("yyyy-MM-dd", null) },
+            { "status", JsonStringEnumConverterEx<PaymentStatus>.EnumToString[status] },
+            { "numeral_system_handle_type", JsonStringEnumConverterEx<NumeralSystemType>.EnumToString[numeralSystemHandleType] },
+            { "name_for_admin", nameForAdmin },
+            { "name_for_crew", nameForCrew },
+        };
+        if (publishedAt is not null)
+            parameters.Add("published_at", publishedAt.GetValueOrDefault().ToString("o"));
+        if (notifyWithPublish is not null)
+            parameters.Add("notify_with_publish", notifyWithPublish.ToString()!.ToLowerInvariant());
+        var content = new FormUrlEncodedContent(parameters);
+
+        var response = await _httpClient.SendAsync(new(new("PATCH"), $"/v1/payrolls/{id}/fix") { Content = content }, cancellationToken).ConfigureAwait(false);
+        return (await response.Content.ReadFromJsonAsync<PayRoll>(cancellationToken: cancellationToken).ConfigureAwait(false))!;
+    }
+
+    /// <inheritdoc/>
+    public async ValueTask<IReadOnlyList<PayRoll>> FetchPayRollListAsync(int page, int perPage = 10, CancellationToken cancellationToken = default)
+    {
+        if (page <= 0)
+            throw new ArgumentOutOfRangeException(nameof(page));
+        if (perPage is <= 0 or > 100)
+            throw new ArgumentOutOfRangeException(nameof(perPage));
+
+        return (await _httpClient.GetFromJsonAsync<IReadOnlyList<PayRoll>>($"/v1/payrolls?page={page}&per_page={perPage}").ConfigureAwait(false))!;
+    }
+
+    /// <inheritdoc/>
+    public async ValueTask<PayRoll> AddPayRollAsync(
+        PaymentType paymentType,
+        DateTime paidAt,
+        DateTime periodStartAt,
+        DateTime periodEndAt,
+        NumeralSystemType numeralSystemHandleType,
+        string nameForAdmin,
+        string nameForCrew,
+        CancellationToken cancellationToken = default)
+    {
+        var parameters = new Dictionary<string, string>()
+        {
+            { "payment_type", JsonStringEnumConverterEx<PaymentType>.EnumToString[paymentType] },
+            { "paid_at", paidAt.ToString("yyyy-MM-dd", null) },
+            { "period_start_at", periodStartAt.ToString("yyyy-MM-dd", null) },
+            { "period_end_at", periodEndAt.ToString("yyyy-MM-dd", null) },
+            { "numeral_system_handle_type", JsonStringEnumConverterEx<NumeralSystemType>.EnumToString[numeralSystemHandleType] },
+            { "name_for_admin", nameForAdmin },
+            { "name_for_crew", nameForCrew },
+        };
+        var content = new FormUrlEncodedContent(parameters);
+
+        var response = await _httpClient.PostAsync("/v1/payrolls", content, cancellationToken).ConfigureAwait(false);
+        return (await response.Content.ReadFromJsonAsync<PayRoll>(cancellationToken: cancellationToken).ConfigureAwait(false))!;
+    }
+    #endregion
 }
