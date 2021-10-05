@@ -4,14 +4,14 @@ using SmartHR.NET.Entities;
 namespace SmartHR.NET.Tests.Entities;
 
 /// <summary>
-/// <see cref="PayRoll"/>の単体テスト
+/// <see cref="Payroll"/>の単体テスト
 /// </summary>
-public class PayRollTest
+public class PayrollTest
 {
     /// <summary>
     /// JSONからデシリアライズできる。
     /// </summary>
-    [Fact(DisplayName = $"{nameof(PayRoll)} > JSONからデシリアライズできる。")]
+    [Fact(DisplayName = $"{nameof(Payroll)} > JSONからデシリアライズできる。")]
     public void CanDeserializeJSON()
     {
         // Arrange
@@ -31,10 +31,10 @@ public class PayRollTest
         + "}";
 
         // Act
-        var entity = JsonSerializer.Deserialize<PayRoll>(jsonString, JsonConfig.Default);
+        var entity = JsonSerializer.Deserialize<Payroll>(jsonString, JsonConfig.Default);
 
         // Assert
-        entity.Should().Be(new PayRoll(
+        entity.Should().Be(new Payroll(
             "string",
             PaymentType.Salary,
             new(2021, 9, 26),

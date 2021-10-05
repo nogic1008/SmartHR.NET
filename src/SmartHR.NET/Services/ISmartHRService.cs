@@ -11,7 +11,7 @@ namespace SmartHR.NET.Services;
 /// </summary>
 public interface ISmartHRService
 {
-    #region PayRolls
+    #region Payrolls
     /// <summary>
     /// <paramref name="id"/>と一致する給与情報を削除します。
     /// </summary>
@@ -20,7 +20,7 @@ public interface ISmartHRService
     /// </remarks>
     /// <param name="id">給与ID</param>
     /// <param name="cancellationToken">キャンセル通知を受け取るために他のオブジェクトまたはスレッドで使用できるキャンセル トークン。</param>
-    public ValueTask DeletePayRollAsync(string id, CancellationToken cancellationToken = default);
+    public ValueTask DeletePayrollAsync(string id, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// <paramref name="id"/>と一致する給与情報を取得します。
@@ -30,7 +30,7 @@ public interface ISmartHRService
     /// </remarks>
     /// <param name="id">給与ID</param>
     /// <param name="cancellationToken">キャンセル通知を受け取るために他のオブジェクトまたはスレッドで使用できるキャンセル トークン。</param>
-    public ValueTask<PayRoll> FetchPayRollAsync(string id, CancellationToken cancellationToken = default);
+    public ValueTask<Payroll> FetchPayrollAsync(string id, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// <paramref name="id"/>と一致する給与情報を部分更新します。
@@ -39,8 +39,8 @@ public interface ISmartHRService
     /// <param name="nameForAdmin">給与明細の名前 (管理者向け)</param>
     /// <param name="nameForCrew">給与明細の名前 (従業員向け)</param>
     /// <param name="cancellationToken">キャンセル通知を受け取るために他のオブジェクトまたはスレッドで使用できるキャンセル トークン。</param>
-    /// <returns>更新処理後の<see cref="PayRoll"/>オブジェクト。</returns>
-    public ValueTask<PayRoll> UpdatePayRollAsync(string id, string nameForAdmin, string nameForCrew, CancellationToken cancellationToken = default);
+    /// <returns>更新処理後の<see cref="Payroll"/>オブジェクト。</returns>
+    public ValueTask<Payroll> UpdatePayrollAsync(string id, string nameForAdmin, string nameForCrew, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// <paramref name="id"/>と一致する給与情報を公開処理します。
@@ -60,8 +60,8 @@ public interface ISmartHRService
     /// </param>
     /// <param name="notifyWithPublish">公開と同時に通知を行う</param>
     /// <param name="cancellationToken">キャンセル通知を受け取るために他のオブジェクトまたはスレッドで使用できるキャンセル トークン。</param>
-    /// <returns>公開処理後の<see cref="PayRoll"/>オブジェクト。</returns>
-    public ValueTask<PayRoll> PublishPayRollAsync(string id, DateTimeOffset? publishedAt = default, bool? notifyWithPublish = default, CancellationToken cancellationToken = default);
+    /// <returns>公開処理後の<see cref="Payroll"/>オブジェクト。</returns>
+    public ValueTask<Payroll> PublishPayrollAsync(string id, DateTimeOffset? publishedAt = default, bool? notifyWithPublish = default, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// <paramref name="id"/>と一致する給与情報を未確定処理します。
@@ -70,20 +70,20 @@ public interface ISmartHRService
     /// <remarks>
     /// <seealso href="https://developer.smarthr.jp/api/index.html#!/%E7%B5%A6%E4%B8%8E/patchV1PayrollsIdUnfix"/>
     /// </remarks>
-    /// <param name="id"><see cref="PayRoll.Id"/></param>
-    /// <param name="paymentType"><see cref="PayRoll.PaymentType"/></param>
-    /// <param name="paidAt"><see cref="PayRoll.PaidAt"/></param>
-    /// <param name="periodStartAt"><see cref="PayRoll.PeriodStartAt"/></param>
-    /// <param name="periodEndAt"><see cref="PayRoll.PeriodEndAt"/></param>
-    /// <param name="status"><see cref="PayRoll.Status"/></param>
-    /// <param name="numeralSystemHandleType"><see cref="PayRoll.NumeralSystemHandleType"/></param>
-    /// <param name="nameForAdmin"><see cref="PayRoll.NameForAdmin"/></param>
-    /// <param name="nameForCrew"><see cref="PayRoll.NameForCrew"/></param>
-    /// <param name="publishedAt"><see cref="PayRoll.PublishedAt"/></param>
-    /// <param name="notifyWithPublish"><see cref="PayRoll.NotifyWithPublish"/></param>
+    /// <param name="id"><see cref="Payroll.Id"/></param>
+    /// <param name="paymentType"><see cref="Payroll.PaymentType"/></param>
+    /// <param name="paidAt"><see cref="Payroll.PaidAt"/></param>
+    /// <param name="periodStartAt"><see cref="Payroll.PeriodStartAt"/></param>
+    /// <param name="periodEndAt"><see cref="Payroll.PeriodEndAt"/></param>
+    /// <param name="status"><see cref="Payroll.Status"/></param>
+    /// <param name="numeralSystemHandleType"><see cref="Payroll.NumeralSystemHandleType"/></param>
+    /// <param name="nameForAdmin"><see cref="Payroll.NameForAdmin"/></param>
+    /// <param name="nameForCrew"><see cref="Payroll.NameForCrew"/></param>
+    /// <param name="publishedAt"><see cref="Payroll.PublishedAt"/></param>
+    /// <param name="notifyWithPublish"><see cref="Payroll.NotifyWithPublish"/></param>
     /// <param name="cancellationToken"></param>
-    /// <returns>未確定処理後の<see cref="PayRoll"/>オブジェクト。</returns>
-    public ValueTask<PayRoll> UnconfirmPayRollAsync(
+    /// <returns>未確定処理後の<see cref="Payroll"/>オブジェクト。</returns>
+    public ValueTask<Payroll> UnconfirmPayrollAsync(
         string id,
         PaymentType paymentType,
         DateTime paidAt,
@@ -103,20 +103,20 @@ public interface ISmartHRService
     /// <remarks>
     /// <seealso href="https://developer.smarthr.jp/api/index.html#!/%E7%B5%A6%E4%B8%8E/patchV1PayrollsIdFix"/>
     /// </remarks>
-    /// <param name="id"><see cref="PayRoll.Id"/></param>
-    /// <param name="paymentType"><see cref="PayRoll.PaymentType"/></param>
-    /// <param name="paidAt"><see cref="PayRoll.PaidAt"/></param>
-    /// <param name="periodStartAt"><see cref="PayRoll.PeriodStartAt"/></param>
-    /// <param name="periodEndAt"><see cref="PayRoll.PeriodEndAt"/></param>
-    /// <param name="status"><see cref="PayRoll.Status"/></param>
-    /// <param name="numeralSystemHandleType"><see cref="PayRoll.NumeralSystemHandleType"/></param>
-    /// <param name="nameForAdmin"><see cref="PayRoll.NameForAdmin"/></param>
-    /// <param name="nameForCrew"><see cref="PayRoll.NameForCrew"/></param>
-    /// <param name="publishedAt"><see cref="PayRoll.PublishedAt"/></param>
-    /// <param name="notifyWithPublish"><see cref="PayRoll.NotifyWithPublish"/></param>
+    /// <param name="id"><see cref="Payroll.Id"/></param>
+    /// <param name="paymentType"><see cref="Payroll.PaymentType"/></param>
+    /// <param name="paidAt"><see cref="Payroll.PaidAt"/></param>
+    /// <param name="periodStartAt"><see cref="Payroll.PeriodStartAt"/></param>
+    /// <param name="periodEndAt"><see cref="Payroll.PeriodEndAt"/></param>
+    /// <param name="status"><see cref="Payroll.Status"/></param>
+    /// <param name="numeralSystemHandleType"><see cref="Payroll.NumeralSystemHandleType"/></param>
+    /// <param name="nameForAdmin"><see cref="Payroll.NameForAdmin"/></param>
+    /// <param name="nameForCrew"><see cref="Payroll.NameForCrew"/></param>
+    /// <param name="publishedAt"><see cref="Payroll.PublishedAt"/></param>
+    /// <param name="notifyWithPublish"><see cref="Payroll.NotifyWithPublish"/></param>
     /// <param name="cancellationToken"></param>
-    /// <returns>確定処理後の<see cref="PayRoll"/>オブジェクト。</returns>
-    public ValueTask<PayRoll> ConfirmPayRollAsync(
+    /// <returns>確定処理後の<see cref="Payroll"/>オブジェクト。</returns>
+    public ValueTask<Payroll> ConfirmPayrollAsync(
         string id,
         PaymentType paymentType,
         DateTime paidAt,
@@ -140,7 +140,7 @@ public interface ISmartHRService
     /// <param name="perPage">Number of results to return per page.</param>
     /// <param name="cancellationToken">キャンセル通知を受け取るために他のオブジェクトまたはスレッドで使用できるキャンセル トークン。</param>
     /// <returns>給与情報の一覧</returns>
-    public ValueTask<IReadOnlyList<PayRoll>> FetchPayRollListAsync(int page, int perPage, CancellationToken cancellationToken = default);
+    public ValueTask<IReadOnlyList<Payroll>> FetchPayrollListAsync(int page, int perPage, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// 給与情報を新規登録します。
@@ -148,15 +148,15 @@ public interface ISmartHRService
     /// <remarks>
     /// <seealso href="https://developer.smarthr.jp/api/index.html#!/%E7%B5%A6%E4%B8%8E/postV1Payrolls"/>
     /// </remarks>
-    /// <param name="paymentType"><see cref="PayRoll.PaymentType"/></param>
-    /// <param name="paidAt"><see cref="PayRoll.PaidAt"/></param>
-    /// <param name="periodStartAt"><see cref="PayRoll.PeriodStartAt"/></param>
-    /// <param name="periodEndAt"><see cref="PayRoll.PeriodEndAt"/></param>
-    /// <param name="numeralSystemHandleType"><see cref="PayRoll.NumeralSystemHandleType"/></param>
-    /// <param name="nameForAdmin"><see cref="PayRoll.NameForAdmin"/></param>
-    /// <param name="nameForCrew"><see cref="PayRoll.NameForCrew"/></param>
-    /// <returns>登録処理後の<see cref="PayRoll"/>オブジェクト。</returns>
-    public ValueTask<PayRoll> AddPayRollAsync(
+    /// <param name="paymentType"><see cref="Payroll.PaymentType"/></param>
+    /// <param name="paidAt"><see cref="Payroll.PaidAt"/></param>
+    /// <param name="periodStartAt"><see cref="Payroll.PeriodStartAt"/></param>
+    /// <param name="periodEndAt"><see cref="Payroll.PeriodEndAt"/></param>
+    /// <param name="numeralSystemHandleType"><see cref="Payroll.NumeralSystemHandleType"/></param>
+    /// <param name="nameForAdmin"><see cref="Payroll.NameForAdmin"/></param>
+    /// <param name="nameForCrew"><see cref="Payroll.NameForCrew"/></param>
+    /// <returns>登録処理後の<see cref="Payroll"/>オブジェクト。</returns>
+    public ValueTask<Payroll> AddPayrollAsync(
         PaymentType paymentType,
         DateTime paidAt,
         DateTime periodStartAt,

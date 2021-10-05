@@ -5,10 +5,10 @@ using System.Text.Json.Serialization;
 namespace SmartHR.NET.Entities;
 
 /// <summary>給与情報</summary>
-public record PayRoll
+public record Payroll
 {
     /// <summary>
-    /// PayRollの新しいインスタンスを生成します。
+    /// Payrollの新しいインスタンスを生成します。
     /// </summary>
     /// <param name="id"><see cref="Id"/></param>
     /// <param name="paymentType"><see cref="PaymentType"/></param>
@@ -22,7 +22,7 @@ public record PayRoll
     /// <param name="numeralSystemHandleType"><see cref="NumeralSystemHandleType"/></param>
     /// <param name="nameForAdmin"><see cref="NameForAdmin"/></param>
     /// <param name="nameForCrew"><see cref="NameForCrew"/></param>
-    public PayRoll(string id, PaymentType paymentType, DateTime paidAt, DateTime periodStartAt, DateTime periodEndAt, string sourceType, PaymentStatus status, DateTimeOffset? publishedAt, bool notifyWithPublish, NumeralSystemType numeralSystemHandleType, string nameForAdmin, string nameForCrew)
+    public Payroll(string id, PaymentType paymentType, DateTime paidAt, DateTime periodStartAt, DateTime periodEndAt, string sourceType, PaymentStatus status, DateTimeOffset? publishedAt, bool notifyWithPublish, NumeralSystemType numeralSystemHandleType, string nameForAdmin, string nameForCrew)
         => (Id, PaymentType, PaidAt, PeriodStartAt, PeriodEndAt, SourceType, Status, PublishedAt, NotifyWithPublish, NumeralSystemHandleType, NameForAdmin, NameForCrew)
         = (id, paymentType, paidAt, periodStartAt, periodEndAt, sourceType, status, publishedAt, notifyWithPublish, numeralSystemHandleType, nameForAdmin, nameForCrew);
 

@@ -56,10 +56,10 @@ public class SmartHRService : ISmartHRService
             _httpClient.DefaultRequestHeaders.Authorization = new("Bearer", accessToken);
     }
 
-    #region PayRolls
+    #region Payrolls
     /// <inheritdoc/>
     /// <exception cref="ApiFailedException">APIがエラーレスポンスを返した場合にスローされます。</exception>
-    public async ValueTask DeletePayRollAsync(string id, CancellationToken cancellationToken = default)
+    public async ValueTask DeletePayrollAsync(string id, CancellationToken cancellationToken = default)
     {
         var response = await _httpClient.DeleteAsync($"/v1/payrolls/{id}", cancellationToken).ConfigureAwait(false);
         await ValidateResponseAsync(response, cancellationToken).ConfigureAwait(false);
@@ -67,13 +67,13 @@ public class SmartHRService : ISmartHRService
 
     /// <inheritdoc/>
     /// <exception cref="ApiFailedException">APIがエラーレスポンスを返した場合にスローされます。</exception>
-    public ValueTask<PayRoll> FetchPayRollAsync(string id, CancellationToken cancellationToken = default)
-        => CallApiAsync<PayRoll>(new(HttpMethod.Get, $"/v1/payrolls/{id}"), cancellationToken);
+    public ValueTask<Payroll> FetchPayrollAsync(string id, CancellationToken cancellationToken = default)
+        => CallApiAsync<Payroll>(new(HttpMethod.Get, $"/v1/payrolls/{id}"), cancellationToken);
 
     /// <inheritdoc/>
     /// <exception cref="ApiFailedException">APIがエラーレスポンスを返した場合にスローされます。</exception>
-    public ValueTask<PayRoll> UpdatePayRollAsync(string id, string nameForAdmin, string nameForCrew, CancellationToken cancellationToken = default)
-        => CallApiAsync<PayRoll>(
+    public ValueTask<Payroll> UpdatePayrollAsync(string id, string nameForAdmin, string nameForCrew, CancellationToken cancellationToken = default)
+        => CallApiAsync<Payroll>(
             new(new("PATCH"), $"/v1/payrolls/{id}")
             {
                 Content = new FormUrlEncodedContent(new Dictionary<string, string>()
@@ -85,7 +85,7 @@ public class SmartHRService : ISmartHRService
 
     /// <inheritdoc/>
     /// <exception cref="ApiFailedException">APIがエラーレスポンスを返した場合にスローされます。</exception>
-    public ValueTask<PayRoll> PublishPayRollAsync(string id, DateTimeOffset? publishedAt = default, bool? notifyWithPublish = default, CancellationToken cancellationToken = default)
+    public ValueTask<Payroll> PublishPayrollAsync(string id, DateTimeOffset? publishedAt = default, bool? notifyWithPublish = default, CancellationToken cancellationToken = default)
     {
         var parameters = new Dictionary<string, string>();
         if (publishedAt is not null)
@@ -97,12 +97,12 @@ public class SmartHRService : ISmartHRService
         {
             Content = new FormUrlEncodedContent(parameters)
         };
-        return CallApiAsync<PayRoll>(request, cancellationToken);
+        return CallApiAsync<Payroll>(request, cancellationToken);
     }
 
     /// <inheritdoc/>
     /// <exception cref="ApiFailedException">APIがエラーレスポンスを返した場合にスローされます。</exception>
-    public ValueTask<PayRoll> UnconfirmPayRollAsync(
+    public ValueTask<Payroll> UnconfirmPayrollAsync(
         string id,
         PaymentType paymentType,
         DateTime paidAt,
@@ -136,12 +136,12 @@ public class SmartHRService : ISmartHRService
         {
             Content = new FormUrlEncodedContent(parameters)
         };
-        return CallApiAsync<PayRoll>(request, cancellationToken);
+        return CallApiAsync<Payroll>(request, cancellationToken);
     }
 
     /// <inheritdoc/>
     /// <exception cref="ApiFailedException">APIがエラーレスポンスを返した場合にスローされます。</exception>
-    public async ValueTask<PayRoll> ConfirmPayRollAsync(
+    public async ValueTask<Payroll> ConfirmPayrollAsync(
         string id,
         PaymentType paymentType,
         DateTime paidAt,
@@ -175,7 +175,7 @@ public class SmartHRService : ISmartHRService
         {
             Content = new FormUrlEncodedContent(parameters)
         };
-        return await CallApiAsync<PayRoll>(request, cancellationToken).ConfigureAwait(false);
+        return await CallApiAsync<Payroll>(request, cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
@@ -184,7 +184,7 @@ public class SmartHRService : ISmartHRService
     /// もしくは<paramref name="perPage"/>が100を超えています。
     /// </exception>
     /// <exception cref="ApiFailedException">APIがエラーレスポンスを返した場合にスローされます。</exception>
-    public ValueTask<IReadOnlyList<PayRoll>> FetchPayRollListAsync(int page, int perPage = 10, CancellationToken cancellationToken = default)
+    public ValueTask<IReadOnlyList<Payroll>> FetchPayrollListAsync(int page, int perPage = 10, CancellationToken cancellationToken = default)
     {
         if (page <= 0)
             throw new ArgumentOutOfRangeException(nameof(page));
@@ -192,12 +192,12 @@ public class SmartHRService : ISmartHRService
             throw new ArgumentOutOfRangeException(nameof(perPage));
 
         var request = new HttpRequestMessage(HttpMethod.Get, $"/v1/payrolls?page={page}&per_page={perPage}");
-        return CallApiAsync<IReadOnlyList<PayRoll>>(request, cancellationToken);
+        return CallApiAsync<IReadOnlyList<Payroll>>(request, cancellationToken);
     }
 
     /// <inheritdoc/>
     /// <exception cref="ApiFailedException">APIがエラーレスポンスを返した場合にスローされます。</exception>
-    public ValueTask<PayRoll> AddPayRollAsync(
+    public ValueTask<Payroll> AddPayrollAsync(
         PaymentType paymentType,
         DateTime paidAt,
         DateTime periodStartAt,
@@ -206,7 +206,7 @@ public class SmartHRService : ISmartHRService
         string nameForAdmin,
         string nameForCrew,
         CancellationToken cancellationToken = default)
-            => CallApiAsync<PayRoll>(new(HttpMethod.Post, "/v1/payrolls")
+            => CallApiAsync<Payroll>(new(HttpMethod.Post, "/v1/payrolls")
             {
                 Content = new FormUrlEncodedContent(new Dictionary<string, string>
                 {
