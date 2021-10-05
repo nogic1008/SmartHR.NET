@@ -22,7 +22,7 @@ public record PayRoll
     /// <param name="numeralSystemHandleType"><see cref="NumeralSystemHandleType"/></param>
     /// <param name="nameForAdmin"><see cref="NameForAdmin"/></param>
     /// <param name="nameForCrew"><see cref="NameForCrew"/></param>
-    public PayRoll(string id, PaymentType paymentType, DateTime paidAt, DateTime periodStartAt, DateTime periodEndAt, string sourceType, PaymentStatus status, DateTime? publishedAt, bool notifyWithPublish, NumeralSystemType numeralSystemHandleType, string nameForAdmin, string nameForCrew)
+    public PayRoll(string id, PaymentType paymentType, DateTime paidAt, DateTime periodStartAt, DateTime periodEndAt, string sourceType, PaymentStatus status, DateTimeOffset? publishedAt, bool notifyWithPublish, NumeralSystemType numeralSystemHandleType, string nameForAdmin, string nameForCrew)
         => (Id, PaymentType, PaidAt, PeriodStartAt, PeriodEndAt, SourceType, Status, PublishedAt, NotifyWithPublish, NumeralSystemHandleType, NameForAdmin, NameForCrew)
         = (id, paymentType, paidAt, periodStartAt, periodEndAt, sourceType, status, publishedAt, notifyWithPublish, numeralSystemHandleType, nameForAdmin, nameForCrew);
 
@@ -55,9 +55,8 @@ public record PayRoll
     public PaymentStatus Status { get; init; }
 
     /// <summary>公開時刻</summary>
-    [JsonConverter(typeof(NullableDateTimeConverter))]
     [JsonPropertyName("published_at")]
-    public DateTime? PublishedAt { get; init; }
+    public DateTimeOffset? PublishedAt { get; init; }
 
     /// <summary>公開と同時に通知を行う</summary>
     [JsonPropertyName("notify_with_publish")]

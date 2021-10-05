@@ -61,7 +61,7 @@ public interface ISmartHRService
     /// <param name="notifyWithPublish">公開と同時に通知を行う</param>
     /// <param name="cancellationToken">キャンセル通知を受け取るために他のオブジェクトまたはスレッドで使用できるキャンセル トークン。</param>
     /// <returns>公開処理後の<see cref="PayRoll"/>オブジェクト。</returns>
-    public ValueTask<PayRoll> PublishPayRollAsync(string id, DateTime? publishedAt = default, bool? notifyWithPublish = default, CancellationToken cancellationToken = default);
+    public ValueTask<PayRoll> PublishPayRollAsync(string id, DateTimeOffset? publishedAt = default, bool? notifyWithPublish = default, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// <paramref name="id"/>と一致する給与情報を未確定処理します。
@@ -93,7 +93,7 @@ public interface ISmartHRService
         NumeralSystemType numeralSystemHandleType,
         string nameForAdmin,
         string nameForCrew,
-        DateTime? publishedAt = default,
+        DateTimeOffset? publishedAt = default,
         bool? notifyWithPublish = default,
         CancellationToken cancellationToken = default);
 
@@ -126,7 +126,7 @@ public interface ISmartHRService
         NumeralSystemType numeralSystemHandleType,
         string nameForAdmin,
         string nameForCrew,
-        DateTime? publishedAt = default,
+        DateTimeOffset? publishedAt = default,
         bool? notifyWithPublish = default,
         CancellationToken cancellationToken = default);
 

@@ -1,3 +1,4 @@
+using System.Globalization;
 using SmartHR.NET.Entities;
 using SmartHR.NET.Services;
 
@@ -100,7 +101,7 @@ public class SmartHRServiceTest
         + "\"period_end_at\": \"2021-09-30\","
         + "\"source_type\": \"api\","
         + "\"status\": \"wip\","
-        + "\"published_at\": \"string\","
+        + "\"published_at\": null,"
         + "\"notify_with_publish\": true,"
         + "\"numeral_system_handle_type\": \"as_is\","
         + "\"name_for_admin\": \"string\","
@@ -231,7 +232,7 @@ public class SmartHRServiceTest
     /// <param name="expected">サーバー側が受け取るパラメータ</param>
     [InlineData(null, null, "")]
     [InlineData(null, false, "notify_with_publish=false")]
-    [InlineData("2021-09-30T00:00:00Z", true, "published_at=2021-09-30T09%3A00%3A00.0000000%2B09%3A00&notify_with_publish=true")]
+    [InlineData("2021-09-30T00:00:00Z", true, "published_at=2021-09-30T00%3A00%3A00.0000000%2B00%3A00&notify_with_publish=true")]
     [Theory(DisplayName = $"{nameof(SmartHRService)} > {nameof(SmartHRService.PublishPayRollAsync)} > PATCH /v1/payrolls/:id/publish をコールする。")]
     public async Task PublishPayRollAsync_Calls_PatchApi(string publishedAt, bool? notifyWithPublish, string expected)
     {
@@ -247,7 +248,7 @@ public class SmartHRServiceTest
         var sut = CreateSut(handler, accessToken);
         var payRoll = await sut.PublishPayRollAsync(
             id,
-            publishedAt is not null ? DateTime.Parse(publishedAt) : null,
+            publishedAt is not null ? DateTimeOffset.Parse(publishedAt, CultureInfo.InvariantCulture) : null,
             notifyWithPublish
         ).ConfigureAwait(false);
 
@@ -277,7 +278,7 @@ public class SmartHRServiceTest
     /// <param name="expected">サーバー側が受け取るパラメータ</param>
     [InlineData(null, null, "")]
     [InlineData(null, false, "&notify_with_publish=false")]
-    [InlineData("2021-09-30T00:00:00Z", true, "&published_at=2021-09-30T09%3A00%3A00.0000000%2B09%3A00&notify_with_publish=true")]
+    [InlineData("2021-09-30T00:00:00Z", true, "&published_at=2021-09-30T00%3A00%3A00.0000000%2B00%3A00&notify_with_publish=true")]
     [Theory(DisplayName = $"{nameof(SmartHRService)} > {nameof(SmartHRService.UnconfirmPayRollAsync)} > PATCH /v1/payrolls/:id/unfix をコールする。")]
     public async Task UnconfirmPayRollAsync_Calls_PatchApi(string publishedAt, bool? notifyWithPublish, string expected)
     {
@@ -303,7 +304,7 @@ public class SmartHRServiceTest
             NumeralSystemType.AsIs,
             nameForAdmin,
             nameForCrew,
-            publishedAt is not null ? DateTime.Parse(publishedAt) : null,
+            publishedAt is not null ? DateTimeOffset.Parse(publishedAt, CultureInfo.InvariantCulture) : null,
             notifyWithPublish
         ).ConfigureAwait(false);
 
@@ -342,7 +343,7 @@ public class SmartHRServiceTest
     /// <param name="expected">サーバー側が受け取るパラメータ</param>
     [InlineData(null, null, "")]
     [InlineData(null, false, "&notify_with_publish=false")]
-    [InlineData("2021-09-30T00:00:00Z", true, "&published_at=2021-09-30T09%3A00%3A00.0000000%2B09%3A00&notify_with_publish=true")]
+    [InlineData("2021-09-30T00:00:00Z", true, "&published_at=2021-09-30T00%3A00%3A00.0000000%2B00%3A00&notify_with_publish=true")]
     [Theory(DisplayName = $"{nameof(SmartHRService)} > {nameof(SmartHRService.ConfirmPayRollAsync)} > PATCH /v1/payrolls/:id/fix をコールする。")]
     public async Task ConfirmPayRollAsync_Calls_PatchApi(string publishedAt, bool? notifyWithPublish, string expected)
     {
@@ -368,7 +369,7 @@ public class SmartHRServiceTest
             NumeralSystemType.AsIs,
             nameForAdmin,
             nameForCrew,
-            publishedAt is not null ? DateTime.Parse(publishedAt) : null,
+            publishedAt is not null ? DateTimeOffset.Parse(publishedAt, CultureInfo.InvariantCulture) : null,
             notifyWithPublish
         ).ConfigureAwait(false);
 

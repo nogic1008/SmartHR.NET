@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading;
@@ -79,11 +80,11 @@ public class SmartHRService : ISmartHRService
     }
 
     /// <inheritdoc/>
-    public async ValueTask<PayRoll> PublishPayRollAsync(string id, DateTime? publishedAt = default, bool? notifyWithPublish = default, CancellationToken cancellationToken = default)
+    public async ValueTask<PayRoll> PublishPayRollAsync(string id, DateTimeOffset? publishedAt = default, bool? notifyWithPublish = default, CancellationToken cancellationToken = default)
     {
         var parameters = new Dictionary<string, string>();
         if (publishedAt is not null)
-            parameters.Add("published_at", publishedAt.GetValueOrDefault().ToString("o"));
+            parameters.Add("published_at", publishedAt.GetValueOrDefault().ToString("o", CultureInfo.InvariantCulture));
         if (notifyWithPublish is not null)
             parameters.Add("notify_with_publish", notifyWithPublish.ToString()!.ToLowerInvariant());
         var content = new FormUrlEncodedContent(parameters);
@@ -103,7 +104,7 @@ public class SmartHRService : ISmartHRService
         NumeralSystemType numeralSystemHandleType,
         string nameForAdmin,
         string nameForCrew,
-        DateTime? publishedAt = default,
+        DateTimeOffset? publishedAt = default,
         bool? notifyWithPublish = default,
         CancellationToken cancellationToken = default)
     {
@@ -119,7 +120,7 @@ public class SmartHRService : ISmartHRService
             { "name_for_crew", nameForCrew },
         };
         if (publishedAt is not null)
-            parameters.Add("published_at", publishedAt.GetValueOrDefault().ToString("o"));
+            parameters.Add("published_at", publishedAt.GetValueOrDefault().ToString("o", CultureInfo.InvariantCulture));
         if (notifyWithPublish is not null)
             parameters.Add("notify_with_publish", notifyWithPublish.ToString()!.ToLowerInvariant());
         var content = new FormUrlEncodedContent(parameters);
@@ -139,23 +140,23 @@ public class SmartHRService : ISmartHRService
         NumeralSystemType numeralSystemHandleType,
         string nameForAdmin,
         string nameForCrew,
-        DateTime? publishedAt = default,
+        DateTimeOffset? publishedAt = default,
         bool? notifyWithPublish = default,
         CancellationToken cancellationToken = default)
     {
         var parameters = new Dictionary<string, string>()
         {
             { "payment_type", JsonStringEnumConverterEx<PaymentType>.EnumToString[paymentType] },
-            { "paid_at", paidAt.ToString("yyyy-MM-dd", null) },
-            { "period_start_at", periodStartAt.ToString("yyyy-MM-dd", null) },
-            { "period_end_at", periodEndAt.ToString("yyyy-MM-dd", null) },
+            { "paid_at", paidAt.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) },
+            { "period_start_at", periodStartAt.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) },
+            { "period_end_at", periodEndAt.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) },
             { "status", JsonStringEnumConverterEx<PaymentStatus>.EnumToString[status] },
             { "numeral_system_handle_type", JsonStringEnumConverterEx<NumeralSystemType>.EnumToString[numeralSystemHandleType] },
             { "name_for_admin", nameForAdmin },
             { "name_for_crew", nameForCrew },
         };
         if (publishedAt is not null)
-            parameters.Add("published_at", publishedAt.GetValueOrDefault().ToString("o"));
+            parameters.Add("published_at", publishedAt.GetValueOrDefault().ToString("o", CultureInfo.InvariantCulture));
         if (notifyWithPublish is not null)
             parameters.Add("notify_with_publish", notifyWithPublish.ToString()!.ToLowerInvariant());
         var content = new FormUrlEncodedContent(parameters);
@@ -189,9 +190,9 @@ public class SmartHRService : ISmartHRService
         var parameters = new Dictionary<string, string>()
         {
             { "payment_type", JsonStringEnumConverterEx<PaymentType>.EnumToString[paymentType] },
-            { "paid_at", paidAt.ToString("yyyy-MM-dd", null) },
-            { "period_start_at", periodStartAt.ToString("yyyy-MM-dd", null) },
-            { "period_end_at", periodEndAt.ToString("yyyy-MM-dd", null) },
+            { "paid_at", paidAt.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) },
+            { "period_start_at", periodStartAt.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) },
+            { "period_end_at", periodEndAt.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) },
             { "numeral_system_handle_type", JsonStringEnumConverterEx<NumeralSystemType>.EnumToString[numeralSystemHandleType] },
             { "name_for_admin", nameForAdmin },
             { "name_for_crew", nameForCrew },
