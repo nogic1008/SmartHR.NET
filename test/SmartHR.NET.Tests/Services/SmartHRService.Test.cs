@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Globalization;
 using SmartHR.NET.Entities;
 using SmartHR.NET.Services;
@@ -578,6 +579,301 @@ public class SmartHRServiceTest
                 + $"&name_for_admin={nameForAdmin}"
                 + $"&name_for_crew={nameForCrew}"
             );
+            return true;
+        }, Times.Once());
+    }
+    #endregion
+
+    #region Payslips
+    private const string PayslipResponseJson = "{"
+        + "  \"id\": \"id\","
+        + "  \"crew_id\": \"crew_id\","
+        + "  \"payroll_id\": \"payroll_id\","
+        + "  \"memo\": \"memo\","
+        + "  \"mismatch\": true,"
+        + "  \"last_notified_at\": \"2021-10-01T00:00:00Z\","
+        + "  \"allowances\": ["
+        + "    {"
+        + "      \"name\": \"allowances\","
+        + "      \"amount\": 200000"
+        + "    }"
+        + "  ],"
+        + "  \"deductions\": ["
+        + "    {"
+        + "      \"name\": \"deductions\","
+        + "      \"amount\": 50000"
+        + "    }"
+        + "  ],"
+        + "  \"attendances\": ["
+        + "    {"
+        + "      \"name\": \"attendances\","
+        + "      \"amount\": 160,"
+        + "      \"unit_type\": \"hours\","
+        + "      \"numeral_system_type\": \"decimal\","
+        + "      \"delimiter_type\": \"period\""
+        + "    }"
+        + "  ],"
+        + "  \"payroll_aggregates\": ["
+        + "    {"
+        + "      \"name\": \"payroll_aggregates\","
+        + "      \"aggregate_type\": \"net_payment\","
+        + "      \"amount\": 100,"
+        + "      \"value\": \"string\""
+        + "    }"
+        + "  ]"
+        + "}";
+
+    /// <summary>
+    /// <see cref="SmartHRService.DeletePayslipAsync"/>は、"/v1/payrolls/{payrollId}/payslip/{id}"にDELETEリクエストを行う。
+    /// </summary>
+    [Fact(DisplayName = $"{nameof(SmartHRService)} > {nameof(SmartHRService.DeletePayslipAsync)} > DELETE /v1/payrolls/:payrollId/payslips/:id をコールする。")]
+    public async Task DeletePayslipAsync_Calls_DeleteApi()
+    {
+        // Arrange
+        string payrollId = GenerateRandomString();
+        string id = GenerateRandomString();
+        string accessToken = GenerateRandomString();
+
+        var handler = new Mock<HttpMessageHandler>();
+        handler.SetupRequest(req => req.RequestUri?.GetLeftPart(UriPartial.Authority) == BaseUri)
+            .ReturnsResponse(HttpStatusCode.NoContent);
+
+        // Act
+        var sut = CreateSut(handler, accessToken);
+        await sut.DeletePayslipAsync(payrollId, id).ConfigureAwait(false);
+
+        // Assert
+        handler.VerifyRequest(req =>
+        {
+            req.RequestUri.Should().NotBeNull();
+            req.RequestUri!.GetLeftPart(UriPartial.Authority).Should().Be(BaseUri);
+            req.RequestUri!.AbsolutePath.Should().Be($"/v1/payrolls/{payrollId}/payslips/{id}");
+            req.Method.Should().Be(HttpMethod.Delete);
+            req.Headers.Authorization.Should().NotBeNull();
+            req.Headers.Authorization!.Scheme.Should().Be("Bearer");
+            req.Headers.Authorization!.Parameter.Should().Be(accessToken);
+            return true;
+        }, Times.Once());
+    }
+
+    /// <summary>
+    /// <see cref="SmartHRService.FetchPayslipAsync"/>は、"/v1/payrolls/{payrollId}/payslips/{id}"にGETリクエストを行う。
+    /// </summary>
+    [Fact(DisplayName = $"{nameof(SmartHRService)} > {nameof(SmartHRService.FetchPayslipAsync)} > GET /v1/payrolls/:payrollId/payslips/:id をコールする。")]
+    public async Task FetchPayslipAsync_Calls_GetApi()
+    {
+        // Arrange
+        string payrollId = GenerateRandomString();
+        string id = GenerateRandomString();
+        string accessToken = GenerateRandomString();
+
+        var handler = new Mock<HttpMessageHandler>();
+        handler.SetupRequest(req => req.RequestUri?.GetLeftPart(UriPartial.Authority) == BaseUri)
+            .ReturnsResponse(PayslipResponseJson, "application/json");
+
+        // Act
+        var sut = CreateSut(handler, accessToken);
+        var payslip = await sut.FetchPayslipAsync(payrollId, id).ConfigureAwait(false);
+
+        // Assert
+        payslip.Should().NotBeNull();
+        handler.VerifyRequest(req =>
+        {
+            req.RequestUri.Should().NotBeNull();
+            req.RequestUri!.GetLeftPart(UriPartial.Authority).Should().Be(BaseUri);
+            req.RequestUri!.AbsolutePath.Should().Be($"/v1/payrolls/{payrollId}/payslips/{id}");
+            req.Method.Should().Be(HttpMethod.Get);
+            req.Headers.Authorization.Should().NotBeNull();
+            req.Headers.Authorization!.Scheme.Should().Be("Bearer");
+            req.Headers.Authorization!.Parameter.Should().Be(accessToken);
+            return true;
+        }, Times.Once());
+    }
+
+    /// <summary>
+    /// <see cref="SmartHRService.FetchPayslipListAsync"/>は、"/v1/payrolls/{payrollId}/payslips"にGETリクエストを行う。
+    /// </summary>
+    [Fact(DisplayName = $"{nameof(SmartHRService)} > {nameof(SmartHRService.FetchPayslipListAsync)} > GET /v1/payrolls/:payrollId/payslips をコールする。")]
+    public async Task FetchPayslipListAsync_Calls_GetApi()
+    {
+        // Arrange
+        string accessToken = GenerateRandomString();
+        string payrollId = GenerateRandomString();
+
+        var handler = new Mock<HttpMessageHandler>();
+        handler.SetupRequest(req => req.RequestUri?.GetLeftPart(UriPartial.Authority) == BaseUri)
+            .ReturnsResponse($"[{PayslipResponseJson}]", "application/json");
+
+        // Act
+        var sut = CreateSut(handler, accessToken);
+        var payslips = await sut.FetchPayslipListAsync(payrollId).ConfigureAwait(false);
+
+        // Assert
+        payslips.Should().NotBeNullOrEmpty();
+        handler.VerifyRequest((req) =>
+        {
+            req.RequestUri.Should().NotBeNull();
+            req.RequestUri!.GetLeftPart(UriPartial.Authority).Should().Be(BaseUri);
+            req.RequestUri!.AbsolutePath.Should().Be($"/v1/payrolls/{payrollId}/payslips");
+            req.Method.Should().Be(HttpMethod.Get);
+            req.Headers.Authorization.Should().NotBeNull();
+            req.Headers.Authorization!.Scheme.Should().Be("Bearer");
+            req.Headers.Authorization!.Parameter.Should().Be(accessToken);
+            return true;
+        }, Times.Once());
+    }
+
+    /// <summary>
+    /// <see cref="SmartHRService.AddPayslipListAsync"/>は、"/v1/payrolls/{payrollId}/payslips/bulk"にPOSTリクエストを行う。
+    /// </summary>
+    [Fact(DisplayName = $"{nameof(SmartHRService)} > {nameof(SmartHRService.FetchPayslipListAsync)} > POST /v1/payrolls/:payrollId/payslips/bulk をコールする。")]
+    public async Task AddPayslipListAsync_Calls_PostApi()
+    {
+        // Arrange
+        string accessToken = GenerateRandomString();
+        string payrollId = GenerateRandomString();
+        var request = new PayslipRequest("従業員ID", new Dictionary<string, string>()
+        {
+            { "支給項目1", "10000" },
+            { "支給項目2", "100000" },
+            { "支給項目3", "200000" },
+            { "控除項目1", "3000" },
+            { "控除項目2", "30000" },
+            { "控除項目3", "4000" },
+            { "勤怠項目1", "160" },
+            { "勤怠項目2", "20" },
+            { "勤怠項目3", "10" },
+            { "合計項目1", "9000000" },
+            { "合計項目2", "5000000" },
+            { "合計項目3", "4000000" }
+        }.ToArray(), "string");
+
+        var handler = new Mock<HttpMessageHandler>();
+        handler.SetupRequest(req => req.RequestUri?.GetLeftPart(UriPartial.Authority) == BaseUri)
+            .ReturnsResponse(PayslipResponseJson, "application/json");
+
+        // Act
+        var sut = CreateSut(handler, accessToken);
+        var payslip = await sut.AddPayslipListAsync(payrollId, new[] { request }).ConfigureAwait(false);
+
+        // Assert
+        payslip.Should().NotBeNull();
+        handler.VerifyRequest(async (req) =>
+        {
+            req.RequestUri.Should().NotBeNull();
+            req.RequestUri!.GetLeftPart(UriPartial.Authority).Should().Be(BaseUri);
+            req.RequestUri!.AbsolutePath.Should().Be($"/v1/payrolls/{payrollId}/payslips/bulk");
+            req.Method.Should().Be(HttpMethod.Post);
+            req.Headers.Authorization.Should().NotBeNull();
+            req.Headers.Authorization!.Scheme.Should().Be("Bearer");
+            req.Headers.Authorization!.Parameter.Should().Be(accessToken);
+            string jsonString = await req.Content!.ReadAsStringAsync().ConfigureAwait(false);
+            jsonString.Should().Be("[{"
+            + "\"crew_id\":\"従業員ID\","
+            + "\"values\":["
+            + "{\"key\":\"支給項目1\",\"value\":\"10000\"},"
+            + "{\"key\":\"支給項目2\",\"value\":\"100000\"},"
+            + "{\"key\":\"支給項目3\",\"value\":\"200000\"},"
+            + "{\"key\":\"控除項目1\",\"value\":\"3000\"},"
+            + "{\"key\":\"控除項目2\",\"value\":\"30000\"},"
+            + "{\"key\":\"控除項目3\",\"value\":\"4000\"},"
+            + "{\"key\":\"勤怠項目1\",\"value\":\"160\"},"
+            + "{\"key\":\"勤怠項目2\",\"value\":\"20\"},"
+            + "{\"key\":\"勤怠項目3\",\"value\":\"10\"},"
+            + "{\"key\":\"合計項目1\",\"value\":\"9000000\"},"
+            + "{\"key\":\"合計項目2\",\"value\":\"5000000\"},"
+            + "{\"key\":\"合計項目3\",\"value\":\"4000000\"}],"
+            + "\"memo\":\"string\"}]");
+            return true;
+        }, Times.Once());
+    }
+
+    /// <summary>
+    /// ページ数が不正なとき、<see cref="SmartHRService.FetchPayslipListAsync"/>は、ArgumentOutOfRangeExceptionをスローする。
+    /// </summary>
+    [InlineData(0, 10)]
+    [InlineData(1, 0)]
+    [InlineData(1, 101)]
+    [Theory(DisplayName = $"{nameof(SmartHRService)} > {nameof(SmartHRService.FetchPayslipListAsync)} > ArgumentOutOfRangeException をスローする。")]
+    public async Task FetchPayslipListAsync_Throws_ArgumentOutOfRangeException(int page, int perPage)
+    {
+        // Arrange
+        string payrollId = GenerateRandomString();
+
+        var handler = new Mock<HttpMessageHandler>();
+        handler.SetupRequest((_) => true)
+            .ReturnsResponse($"[{PayslipResponseJson}]", "application/json");
+
+        // Act
+        var sut = CreateSut(handler, "");
+        var action = async () => _ = await sut.FetchPayslipListAsync(payrollId, page, perPage).ConfigureAwait(false);
+
+        // Assert
+        await action.Should().ThrowExactlyAsync<ArgumentOutOfRangeException>().ConfigureAwait(false);
+        handler.VerifyRequest((_) => true, Times.Never());
+    }
+
+    /// <summary>
+    /// <see cref="SmartHRService.AddPayslipAsync"/>は、"/v1/payrolls/{payrollId}/payslips"にPOSTリクエストを行う。
+    /// </summary>
+    [Fact(DisplayName = $"{nameof(SmartHRService)} > {nameof(SmartHRService.FetchPayslipListAsync)} > POST /v1/payrolls/:payrollId/payslips をコールする。")]
+    public async Task AddPayslipAsync_Calls_PostApi()
+    {
+        // Arrange
+        string accessToken = GenerateRandomString();
+        string payrollId = GenerateRandomString();
+        var request = new PayslipRequest("従業員ID", new Dictionary<string, string>()
+        {
+            { "支給項目1", "10000" },
+            { "支給項目2", "100000" },
+            { "支給項目3", "200000" },
+            { "控除項目1", "3000" },
+            { "控除項目2", "30000" },
+            { "控除項目3", "4000" },
+            { "勤怠項目1", "160" },
+            { "勤怠項目2", "20" },
+            { "勤怠項目3", "10" },
+            { "合計項目1", "9000000" },
+            { "合計項目2", "5000000" },
+            { "合計項目3", "4000000" }
+        }.ToArray(), "string");
+
+        var handler = new Mock<HttpMessageHandler>();
+        handler.SetupRequest(req => req.RequestUri?.GetLeftPart(UriPartial.Authority) == BaseUri)
+            .ReturnsResponse(PayslipResponseJson, "application/json");
+
+        // Act
+        var sut = CreateSut(handler, accessToken);
+        var payslip = await sut.AddPayslipAsync(payrollId, request).ConfigureAwait(false);
+
+        // Assert
+        payslip.Should().NotBeNull();
+        handler.VerifyRequest(async (req) =>
+        {
+            req.RequestUri.Should().NotBeNull();
+            req.RequestUri!.GetLeftPart(UriPartial.Authority).Should().Be(BaseUri);
+            req.RequestUri!.AbsolutePath.Should().Be($"/v1/payrolls/{payrollId}/payslips");
+            req.Method.Should().Be(HttpMethod.Post);
+            req.Headers.Authorization.Should().NotBeNull();
+            req.Headers.Authorization!.Scheme.Should().Be("Bearer");
+            req.Headers.Authorization!.Parameter.Should().Be(accessToken);
+            string jsonString = await req.Content!.ReadAsStringAsync().ConfigureAwait(false);
+            jsonString.Should().Be("{"
+            + "\"crew_id\":\"従業員ID\","
+            + "\"values\":["
+            + "{\"key\":\"支給項目1\",\"value\":\"10000\"},"
+            + "{\"key\":\"支給項目2\",\"value\":\"100000\"},"
+            + "{\"key\":\"支給項目3\",\"value\":\"200000\"},"
+            + "{\"key\":\"控除項目1\",\"value\":\"3000\"},"
+            + "{\"key\":\"控除項目2\",\"value\":\"30000\"},"
+            + "{\"key\":\"控除項目3\",\"value\":\"4000\"},"
+            + "{\"key\":\"勤怠項目1\",\"value\":\"160\"},"
+            + "{\"key\":\"勤怠項目2\",\"value\":\"20\"},"
+            + "{\"key\":\"勤怠項目3\",\"value\":\"10\"},"
+            + "{\"key\":\"合計項目1\",\"value\":\"9000000\"},"
+            + "{\"key\":\"合計項目2\",\"value\":\"5000000\"},"
+            + "{\"key\":\"合計項目3\",\"value\":\"4000000\"}],"
+            + "\"memo\":\"string\"}");
             return true;
         }, Times.Once());
     }

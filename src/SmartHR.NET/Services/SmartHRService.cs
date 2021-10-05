@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Net.Http;
 using System.Net.Http.Json;
+using System.Text.Encodings.Web;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using SmartHR.NET.Entities;
@@ -218,7 +221,60 @@ public class SmartHRService : ISmartHRService
             }, cancellationToken);
     #endregion
 
-    #region Common Methods
+    #region Payslips
+    /// <inheritdoc/>
+    /// <exception cref="ApiFailedException">APIがエラーレスポンスを返した場合にスローされます。</exception>
+    public async ValueTask DeletePayslipAsync(string payrollId, string id, CancellationToken cancellationToken = default)
+    {
+        var response = await _httpClient.DeleteAsync($"/v1/payrolls/{payrollId}/payslips/{id}", cancellationToken).ConfigureAwait(false);
+        await ValidateResponseAsync(response, cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <inheritdoc/>
+    /// <exception cref="ApiFailedException">APIがエラーレスポンスを返した場合にスローされます。</exception>
+    public ValueTask<Payslip> FetchPayslipAsync(string payrollId, string id, CancellationToken cancellationToken = default)
+        => CallApiAsync<Payslip>(new(HttpMethod.Get, $"/v1/payrolls/{payrollId}/payslips/{id}"), cancellationToken);
+
+    /// <inheritdoc/>
+    /// <exception cref="ApiFailedException">APIがエラーレスポンスを返した場合にスローされます。</exception>
+    public ValueTask<Payslip> AddPayslipListAsync(string payrollId, IReadOnlyList<PayslipRequest> payload, CancellationToken cancellationToken = default)
+        => CallApiAsync<Payslip>(new(HttpMethod.Post, $"/v1/payrolls/{payrollId}/payslips/bulk")
+        {
+            Content = JsonContent.Create(payload, options: _serializerOptions)
+        }, cancellationToken);
+
+    /// <inheritdoc/>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// <paramref name="page"/>か<paramref name="perPage"/>が0以下です。
+    /// もしくは<paramref name="perPage"/>が100を超えています。
+    /// </exception>
+    /// <exception cref="ApiFailedException">APIがエラーレスポンスを返した場合にスローされます。</exception>
+    public ValueTask<IReadOnlyList<Payslip>> FetchPayslipListAsync(string payrollId, int page = 1, int perPage = 10, CancellationToken cancellationToken = default)
+    {
+        if (page <= 0)
+            throw new ArgumentOutOfRangeException(nameof(page));
+        if (perPage is <= 0 or > 100)
+            throw new ArgumentOutOfRangeException(nameof(perPage));
+
+        var request = new HttpRequestMessage(HttpMethod.Get, $"/v1/payrolls/{payrollId}/payslips?page={page}&per_page={perPage}");
+        return CallApiAsync<IReadOnlyList<Payslip>>(request, cancellationToken);
+    }
+
+    /// <inheritdoc/>
+    /// <exception cref="ApiFailedException">APIがエラーレスポンスを返した場合にスローされます。</exception>
+    public ValueTask<Payslip> AddPayslipAsync(string payrollId, PayslipRequest payload, CancellationToken cancellationToken = default)
+        => CallApiAsync<Payslip>(new(HttpMethod.Post, $"/v1/payrolls/{payrollId}/payslips")
+        {
+            Content = JsonContent.Create(payload, options: _serializerOptions)
+        }, cancellationToken);
+    #endregion
+
+    #region Common
+    private static readonly JsonSerializerOptions _serializerOptions = new(JsonSerializerDefaults.Web)
+    {
+        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+        Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+    };
     /// <summary>
     /// APIを呼び出し、受け取ったJSONを<typeparamref name="T"/>に変換して返します。
     /// </summary>
