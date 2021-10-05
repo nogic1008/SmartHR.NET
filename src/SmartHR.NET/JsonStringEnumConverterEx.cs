@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Text.Json;
@@ -11,6 +12,7 @@ namespace SmartHR.NET;
 /// JSONの値に<see cref="EnumMemberAttribute.Value"/>を用いる<typeparamref name="TEnum"/>のコンバーター。
 /// </summary>
 /// <typeparam name="TEnum">シリアライズ対象となる列挙型</typeparam>
+[ExcludeFromCodeCoverage]
 internal class JsonStringEnumConverterEx<TEnum> : JsonConverter<TEnum> where TEnum : struct, Enum
 {
     internal static readonly Dictionary<TEnum, string> EnumToString = new();
