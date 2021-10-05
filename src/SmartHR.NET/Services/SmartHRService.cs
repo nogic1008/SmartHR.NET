@@ -55,46 +55,51 @@ public class SmartHRService : ISmartHRService
 
     #region PayRolls
     /// <inheritdoc/>
+    /// <exception cref="ApiFailedException">APIがエラーレスポンスを返した場合にスローされます。</exception>
     public async ValueTask DeletePayRollAsync(string id, CancellationToken cancellationToken = default)
     {
         var response = await _httpClient.DeleteAsync($"/v1/payrolls/{id}", cancellationToken).ConfigureAwait(false);
-        response.EnsureSuccessStatusCode();
+        await ValidateResponseAsync(response, cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
-    public async ValueTask<PayRoll> FetchPayRollAsync(string id, CancellationToken cancellationToken = default)
-        => (await _httpClient.GetFromJsonAsync<PayRoll>($"/v1/payrolls/{id}", cancellationToken: cancellationToken).ConfigureAwait(false))!;
+    /// <exception cref="ApiFailedException">APIがエラーレスポンスを返した場合にスローされます。</exception>
+    public ValueTask<PayRoll> FetchPayRollAsync(string id, CancellationToken cancellationToken = default)
+        => CallApiAsync<PayRoll>(new(HttpMethod.Get, $"/v1/payrolls/{id}"), cancellationToken);
 
     /// <inheritdoc/>
-    public async ValueTask<PayRoll> UpdatePayRollAsync(string id, string nameForAdmin, string nameForCrew, CancellationToken cancellationToken = default)
-    {
-        var parameters = new Dictionary<string, string>()
-        {
-            { "name_for_admin", nameForAdmin },
-            { "name_for_crew", nameForCrew }
-        };
-        var content = new FormUrlEncodedContent(parameters);
-
-        var response = await _httpClient.SendAsync(new(new("PATCH"), $"/v1/payrolls/{id}") { Content = content }, cancellationToken).ConfigureAwait(false);
-        return (await response.Content.ReadFromJsonAsync<PayRoll>(cancellationToken: cancellationToken).ConfigureAwait(false))!;
-    }
+    /// <exception cref="ApiFailedException">APIがエラーレスポンスを返した場合にスローされます。</exception>
+    public ValueTask<PayRoll> UpdatePayRollAsync(string id, string nameForAdmin, string nameForCrew, CancellationToken cancellationToken = default)
+        => CallApiAsync<PayRoll>(
+            new(new("PATCH"), $"/v1/payrolls/{id}")
+            {
+                Content = new FormUrlEncodedContent(new Dictionary<string, string>()
+                {
+                    { "name_for_admin", nameForAdmin },
+                    { "name_for_crew", nameForCrew }
+                })
+            }, cancellationToken);
 
     /// <inheritdoc/>
-    public async ValueTask<PayRoll> PublishPayRollAsync(string id, DateTimeOffset? publishedAt = default, bool? notifyWithPublish = default, CancellationToken cancellationToken = default)
+    /// <exception cref="ApiFailedException">APIがエラーレスポンスを返した場合にスローされます。</exception>
+    public ValueTask<PayRoll> PublishPayRollAsync(string id, DateTimeOffset? publishedAt = default, bool? notifyWithPublish = default, CancellationToken cancellationToken = default)
     {
         var parameters = new Dictionary<string, string>();
         if (publishedAt is not null)
             parameters.Add("published_at", publishedAt.GetValueOrDefault().ToString("o", CultureInfo.InvariantCulture));
         if (notifyWithPublish is not null)
             parameters.Add("notify_with_publish", notifyWithPublish.ToString()!.ToLowerInvariant());
-        var content = new FormUrlEncodedContent(parameters);
 
-        var response = await _httpClient.SendAsync(new(new("PATCH"), $"/v1/payrolls/{id}/publish") { Content = content }, cancellationToken).ConfigureAwait(false);
-        return (await response.Content.ReadFromJsonAsync<PayRoll>(cancellationToken: cancellationToken).ConfigureAwait(false))!;
+        var request = new HttpRequestMessage(new("PATCH"), $"/v1/payrolls/{id}/publish")
+        {
+            Content = new FormUrlEncodedContent(parameters)
+        };
+        return CallApiAsync<PayRoll>(request, cancellationToken);
     }
 
     /// <inheritdoc/>
-    public async ValueTask<PayRoll> UnconfirmPayRollAsync(
+    /// <exception cref="ApiFailedException">APIがエラーレスポンスを返した場合にスローされます。</exception>
+    public ValueTask<PayRoll> UnconfirmPayRollAsync(
         string id,
         PaymentType paymentType,
         DateTime paidAt,
@@ -123,13 +128,16 @@ public class SmartHRService : ISmartHRService
             parameters.Add("published_at", publishedAt.GetValueOrDefault().ToString("o", CultureInfo.InvariantCulture));
         if (notifyWithPublish is not null)
             parameters.Add("notify_with_publish", notifyWithPublish.ToString()!.ToLowerInvariant());
-        var content = new FormUrlEncodedContent(parameters);
 
-        var response = await _httpClient.SendAsync(new(new("PATCH"), $"/v1/payrolls/{id}/unfix") { Content = content }, cancellationToken).ConfigureAwait(false);
-        return (await response.Content.ReadFromJsonAsync<PayRoll>(cancellationToken: cancellationToken).ConfigureAwait(false))!;
+        var request = new HttpRequestMessage(new("PATCH"), $"/v1/payrolls/{id}/unfix")
+        {
+            Content = new FormUrlEncodedContent(parameters)
+        };
+        return CallApiAsync<PayRoll>(request, cancellationToken);
     }
 
     /// <inheritdoc/>
+    /// <exception cref="ApiFailedException">APIがエラーレスポンスを返した場合にスローされます。</exception>
     public async ValueTask<PayRoll> ConfirmPayRollAsync(
         string id,
         PaymentType paymentType,
@@ -159,25 +167,34 @@ public class SmartHRService : ISmartHRService
             parameters.Add("published_at", publishedAt.GetValueOrDefault().ToString("o", CultureInfo.InvariantCulture));
         if (notifyWithPublish is not null)
             parameters.Add("notify_with_publish", notifyWithPublish.ToString()!.ToLowerInvariant());
-        var content = new FormUrlEncodedContent(parameters);
 
-        var response = await _httpClient.SendAsync(new(new("PATCH"), $"/v1/payrolls/{id}/fix") { Content = content }, cancellationToken).ConfigureAwait(false);
-        return (await response.Content.ReadFromJsonAsync<PayRoll>(cancellationToken: cancellationToken).ConfigureAwait(false))!;
+        var request = new HttpRequestMessage(new("PATCH"), $"/v1/payrolls/{id}/fix")
+        {
+            Content = new FormUrlEncodedContent(parameters)
+        };
+        return await CallApiAsync<PayRoll>(request, cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
-    public async ValueTask<IReadOnlyList<PayRoll>> FetchPayRollListAsync(int page, int perPage = 10, CancellationToken cancellationToken = default)
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// <paramref name="page"/>か<paramref name="perPage"/>が0以下です。
+    /// もしくは<paramref name="perPage"/>が100を超えています。
+    /// </exception>
+    /// <exception cref="ApiFailedException">APIがエラーレスポンスを返した場合にスローされます。</exception>
+    public ValueTask<IReadOnlyList<PayRoll>> FetchPayRollListAsync(int page, int perPage = 10, CancellationToken cancellationToken = default)
     {
         if (page <= 0)
             throw new ArgumentOutOfRangeException(nameof(page));
         if (perPage is <= 0 or > 100)
             throw new ArgumentOutOfRangeException(nameof(perPage));
 
-        return (await _httpClient.GetFromJsonAsync<IReadOnlyList<PayRoll>>($"/v1/payrolls?page={page}&per_page={perPage}").ConfigureAwait(false))!;
+        var request = new HttpRequestMessage(HttpMethod.Get, $"/v1/payrolls?page={page}&per_page={perPage}");
+        return CallApiAsync<IReadOnlyList<PayRoll>>(request, cancellationToken);
     }
 
     /// <inheritdoc/>
-    public async ValueTask<PayRoll> AddPayRollAsync(
+    /// <exception cref="ApiFailedException">APIがエラーレスポンスを返した場合にスローされます。</exception>
+    public ValueTask<PayRoll> AddPayRollAsync(
         PaymentType paymentType,
         DateTime paidAt,
         DateTime periodStartAt,
@@ -186,21 +203,80 @@ public class SmartHRService : ISmartHRService
         string nameForAdmin,
         string nameForCrew,
         CancellationToken cancellationToken = default)
-    {
-        var parameters = new Dictionary<string, string>()
-        {
-            { "payment_type", JsonStringEnumConverterEx<PaymentType>.EnumToString[paymentType] },
-            { "paid_at", paidAt.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) },
-            { "period_start_at", periodStartAt.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) },
-            { "period_end_at", periodEndAt.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) },
-            { "numeral_system_handle_type", JsonStringEnumConverterEx<NumeralSystemType>.EnumToString[numeralSystemHandleType] },
-            { "name_for_admin", nameForAdmin },
-            { "name_for_crew", nameForCrew },
-        };
-        var content = new FormUrlEncodedContent(parameters);
+            => CallApiAsync<PayRoll>(new(HttpMethod.Post, "/v1/payrolls")
+            {
+                Content = new FormUrlEncodedContent(new Dictionary<string, string>
+                {
+                    { "payment_type", JsonStringEnumConverterEx<PaymentType>.EnumToString[paymentType] },
+                    { "paid_at", paidAt.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) },
+                    { "period_start_at", periodStartAt.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) },
+                    { "period_end_at", periodEndAt.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) },
+                    { "numeral_system_handle_type", JsonStringEnumConverterEx<NumeralSystemType>.EnumToString[numeralSystemHandleType] },
+                    { "name_for_admin", nameForAdmin },
+                    { "name_for_crew", nameForCrew },
+                })
+            }, cancellationToken);
+    #endregion
 
-        var response = await _httpClient.PostAsync("/v1/payrolls", content, cancellationToken).ConfigureAwait(false);
-        return (await response.Content.ReadFromJsonAsync<PayRoll>(cancellationToken: cancellationToken).ConfigureAwait(false))!;
+    #region Common Methods
+    /// <summary>
+    /// APIを呼び出し、受け取ったJSONを<typeparamref name="T"/>に変換して返します。
+    /// </summary>
+    /// <param name="request">APIに対するリクエスト</param>
+    /// <param name="cancellationToken">キャンセル通知を受け取るために他のオブジェクトまたはスレッドで使用できるキャンセル トークン。</param>
+    /// <typeparam name="T">JSONの型</typeparam>
+    /// <exception cref="ApiFailedException">APIがエラーレスポンスを返した場合にスローされます。</exception>
+    private async ValueTask<T> CallApiAsync<T>(HttpRequestMessage request, CancellationToken cancellationToken)
+    {
+        var response = await _httpClient.SendAsync(request).ConfigureAwait(false);
+        await ValidateResponseAsync(response, cancellationToken).ConfigureAwait(false);
+        return (await response.Content.ReadFromJsonAsync<T>(cancellationToken: cancellationToken).ConfigureAwait(false))!;
     }
+
+    /// <summary>
+    /// APIリクエストが正常に実行できたことを検証します。
+    /// </summary>
+    /// <param name="response">APIからのレスポンスオブジェクト</param>
+    /// <param name="cancellationToken">キャンセル通知を受け取るために他のオブジェクトまたはスレッドで使用できるキャンセル トークン。</param>
+    /// <exception cref="ApiFailedException">APIがエラーレスポンスを返した場合にスローされます。</exception>
+    /// <exception cref="HttpRequestException">
+    /// HTTPステータスコードが400以上かつ、APIがエラーレスポンスを返さなかった場合にスローされます。
+    /// </exception>
+    private static async ValueTask ValidateResponseAsync(HttpResponseMessage response, CancellationToken cancellationToken)
+    {
+        try
+        {
+            response.EnsureSuccessStatusCode();
+        }
+        catch (HttpRequestException ex)
+        {
+            Error? error;
+            try
+            {
+                error = await response.Content.ReadFromJsonAsync<Error>(cancellationToken: cancellationToken).ConfigureAwait(false);
+            }
+            catch (Exception)
+            {
+                error = null;
+            }
+
+            if (error is null)
+                throw;
+            throw new ApiFailedException(error.Message, ex, error.Type, error.Errors);
+        }
+    }
+    /// <summary>
+    /// エラーレスポンス
+    /// </summary>
+    /// <param name="Code">エラーの原因毎に一意に振られたコード</param>
+    /// <param name="Type">エラーの型</param>
+    /// <param name="Message">原因の説明</param>
+    /// <param name="Errors">送られたリソースのプロパティにエラーがあった場合の説明</param>
+    private record Error(
+        int Code,
+        ErrorType Type,
+        string Message,
+        IReadOnlyList<ErrorDetail>? Errors = null
+    );
     #endregion
 }

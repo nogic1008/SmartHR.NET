@@ -92,6 +92,73 @@ public class SmartHRServiceTest
         return new(client);
     }
 
+    #region API Error
+    private const string UnauthorizedTokenJson = "{"
+        + "\"code\": 2,"
+        + "\"type\": \"unauthorized_token\","
+        + "\"message\": \"無効なアクセストークンです\","
+        + "\"errors\": null"
+        + "}";
+    private const string BadRequestJson = "{"
+        + "\"code\": 1,"
+        + "\"type\": \"bad_request\","
+        + "\"message\": \"不正なリクエストパラメータです\","
+        + "\"errors\": ["
+        + "  {"
+        + "    \"message\": \"給与が確定されていません\","
+        + "    \"resource\": null,"
+        + "    \"field\": null"
+        + "  }"
+        + "]"
+        + "}";
+
+    /// <summary>
+    /// APIがエラーレスポンスを返したとき、APIを呼び出すメソッドは<see cref="ApiFailedException"/>をスローする。
+    /// </summary>
+    [InlineData(UnauthorizedTokenJson, "無効なアクセストークンです")]
+    [InlineData(BadRequestJson, "不正なリクエストパラメータです")]
+    [Theory(DisplayName = $"{nameof(SmartHRService)} > API Caller > {nameof(ApiFailedException)}をスローする。")]
+    public async Task ApiCaller_Throws_ApiFailedException(string json, string message)
+    {
+        // Arrange
+        var handler = new Mock<HttpMessageHandler>();
+        handler.SetupRequest(req => req.RequestUri?.GetLeftPart(UriPartial.Authority) == BaseUri)
+            .ReturnsResponse(HttpStatusCode.BadRequest, json, "application/json");
+
+        // Act
+        var sut = CreateSut(handler, "");
+        var action = async () => await sut.DeletePayRollAsync("").ConfigureAwait(false);
+
+        // Assert
+        (await action.Should().ThrowExactlyAsync<ApiFailedException>().ConfigureAwait(false))
+            .WithMessage(message)
+            .WithInnerExceptionExactly<HttpRequestException>();
+    }
+
+    /// <summary>
+    /// APIが不明なエラーを返したとき、APIを呼び出すメソッドは<see cref="HttpRequestException"/>をスローする。
+    /// </summary>
+    /// <param name="body">エラーメッセージ</param>
+    [InlineData("")]
+    [InlineData("null")]
+    [InlineData("Not Found")]
+    [Theory(DisplayName = $"{nameof(SmartHRService)} > API Caller > HttpRequestExceptionをスローする。")]
+    public async Task ApiCaller_Throws_HttpRequestException(string body)
+    {
+        // Arrange
+        var handler = new Mock<HttpMessageHandler>();
+        handler.SetupRequest(req => req.RequestUri?.GetLeftPart(UriPartial.Authority) == BaseUri)
+            .ReturnsResponse(HttpStatusCode.BadRequest, body);
+
+        // Act
+        var sut = CreateSut(handler, "");
+        var action = async () => await sut.DeletePayRollAsync("").ConfigureAwait(false);
+
+        // Assert
+        await action.Should().ThrowExactlyAsync<HttpRequestException>().ConfigureAwait(false);
+    }
+    #endregion
+
     #region PayRolls
     private const string PayRollResponseJson = "{"
         + "\"id\": \"string\","
