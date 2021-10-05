@@ -166,4 +166,65 @@ public interface ISmartHRService
         string nameForCrew,
         CancellationToken cancellationToken = default);
     #endregion
+
+    #region Payslips
+    /// <summary>
+    /// <paramref name="id"/>に一致する給与明細情報を削除します。
+    /// </summary>
+    /// <remarks>
+    /// <seealso href="https://developer.smarthr.jp/api/index.html#!/%E7%B5%A6%E4%B8%8E%E6%98%8E%E7%B4%B0/deleteV1PayrollsPayrollIdPayslipsId"/>
+    /// </remarks>
+    /// <param name="payrollId">給与ID</param>
+    /// <param name="id">給与明細ID</param>
+    /// <param name="cancellationToken">キャンセル通知を受け取るために他のオブジェクトまたはスレッドで使用できるキャンセル トークン。</param>
+    public ValueTask DeletePayslipAsync(string payrollId, string id, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// <paramref name="id"/>に一致する給与明細情報を取得します。
+    /// </summary>
+    /// <remarks>
+    /// <seealso href="https://developer.smarthr.jp/api/index.html#!/%E7%B5%A6%E4%B8%8E%E6%98%8E%E7%B4%B0/getV1PayrollsPayrollIdPayslipsId"/>
+    /// </remarks>
+    /// <param name="payrollId">給与ID</param>
+    /// <param name="id">給与明細ID</param>
+    /// <param name="cancellationToken">キャンセル通知を受け取るために他のオブジェクトまたはスレッドで使用できるキャンセル トークン。</param>
+    public ValueTask<Payslip> FetchPayslipAsync(string payrollId, string id, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// 給与明細情報を一括登録します。
+    /// <para>最大100件まで一括登録可能です。</para>
+    /// </summary>
+    /// <remarks>
+    /// <seealso href="https://developer.smarthr.jp/api/index.html#!/%E7%B5%A6%E4%B8%8E%E6%98%8E%E7%B4%B0/postV1PayrollsPayrollIdPayslipsBulk"/>
+    /// </remarks>
+    /// <param name="payrollId">給与ID</param>
+    /// <param name="payload">給与明細情報の一覧</param>
+    /// <param name="cancellationToken">キャンセル通知を受け取るために他のオブジェクトまたはスレッドで使用できるキャンセル トークン。</param>
+    /// <returns>一括登録後の<see cref="Payslip"/>オブジェクト</returns>
+    public ValueTask<Payslip> AddPayslipListAsync(string payrollId, IReadOnlyList<PayslipRequest> payload, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// 給与明細情報をリストで取得します。
+    /// </summary>
+    /// <remarks>
+    /// <seealso href="https://developer.smarthr.jp/api/index.html#!/%E7%B5%A6%E4%B8%8E%E6%98%8E%E7%B4%B0/getV1PayrollsPayrollIdPayslips"/>
+    /// </remarks>
+    /// <param name="payrollId">給与ID</param>
+    /// <param name="page">Page of results to fetch.</param>
+    /// <param name="perPage">Number of results to return per page.</param>
+    /// <param name="cancellationToken">キャンセル通知を受け取るために他のオブジェクトまたはスレッドで使用できるキャンセル トークン。</param>
+    public ValueTask<IReadOnlyList<Payslip>> FetchPayslipListAsync(string payrollId, int page = 1, int perPage = 10, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// 給与明細情報を登録します。
+    /// </summary>
+    /// <remarks>
+    /// <seealso href="https://developer.smarthr.jp/api/index.html#!/%E7%B5%A6%E4%B8%8E%E6%98%8E%E7%B4%B0/postV1PayrollsPayrollIdPayslips"/>
+    /// </remarks>
+    /// <param name="payrollId">給与ID</param>
+    /// <param name="payload">給与明細情報</param>
+    /// <param name="cancellationToken">キャンセル通知を受け取るために他のオブジェクトまたはスレッドで使用できるキャンセル トークン。</param>
+    /// <returns>登録後の<see cref="Payslip"/>オブジェクト</returns>
+    public ValueTask<Payslip> AddPayslipAsync(string payrollId, PayslipRequest payload, CancellationToken cancellationToken = default);
+    #endregion
 }
