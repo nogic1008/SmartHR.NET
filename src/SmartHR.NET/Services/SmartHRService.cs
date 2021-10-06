@@ -118,11 +118,7 @@ public class SmartHRService : ISmartHRService
     /// </exception>
     /// <exception cref="ApiFailedException">APIがエラーレスポンスを返した場合にスローされます。</exception>
     public ValueTask<IReadOnlyList<JobTitle>> FetchJobTitleListAsync(int page = 1, int perPage = 10, CancellationToken cancellationToken = default)
-    {
-        ThrowIfInvalidPage(page, perPage);
-        var request = new HttpRequestMessage(HttpMethod.Get, $"/v1/job_titles?page={page}&per_page={perPage}");
-        return CallApiAsync<IReadOnlyList<JobTitle>>(request, cancellationToken);
-    }
+        => FetchListAsync<JobTitle>("/v1/job_titles", page, perPage, cancellationToken);
 
     /// <inheritdoc/>
     /// <exception cref="ArgumentOutOfRangeException"><paramref name="rank"/>が1未満か、99999を超えています。</exception>
@@ -142,6 +138,17 @@ public class SmartHRService : ISmartHRService
                 Content = new FormUrlEncodedContent(parameters)
             }, cancellationToken);
     }
+    #endregion
+
+    #region BankAccountSettings
+    /// <inheritdoc/>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// <paramref name="page"/>か<paramref name="perPage"/>が0以下です。
+    /// もしくは<paramref name="perPage"/>が100を超えています。
+    /// </exception>
+    /// <exception cref="ApiFailedException">APIがエラーレスポンスを返した場合にスローされます。</exception>
+    public ValueTask<IReadOnlyList<BankAccountSetting>> FetchBankAccountSettingListAsync(int page = 1, int perPage = 10, CancellationToken cancellationToken = default)
+        => FetchListAsync<BankAccountSetting>("/v1/bank_account_settings", page, perPage, cancellationToken);
     #endregion
 
     #region Payrolls
@@ -273,11 +280,7 @@ public class SmartHRService : ISmartHRService
     /// </exception>
     /// <exception cref="ApiFailedException">APIがエラーレスポンスを返した場合にスローされます。</exception>
     public ValueTask<IReadOnlyList<Payroll>> FetchPayrollListAsync(int page = 1, int perPage = 10, CancellationToken cancellationToken = default)
-    {
-        ThrowIfInvalidPage(page, perPage);
-        var request = new HttpRequestMessage(HttpMethod.Get, $"/v1/payrolls?page={page}&per_page={perPage}");
-        return CallApiAsync<IReadOnlyList<Payroll>>(request, cancellationToken);
-    }
+        => FetchListAsync<Payroll>("/v1/payrolls", page, perPage, cancellationToken);
 
     /// <inheritdoc/>
     /// <exception cref="ApiFailedException">APIがエラーレスポンスを返した場合にスローされます。</exception>
@@ -334,11 +337,7 @@ public class SmartHRService : ISmartHRService
     /// </exception>
     /// <exception cref="ApiFailedException">APIがエラーレスポンスを返した場合にスローされます。</exception>
     public ValueTask<IReadOnlyList<Payslip>> FetchPayslipListAsync(string payrollId, int page = 1, int perPage = 10, CancellationToken cancellationToken = default)
-    {
-        ThrowIfInvalidPage(page, perPage);
-        var request = new HttpRequestMessage(HttpMethod.Get, $"/v1/payrolls/{payrollId}/payslips?page={page}&per_page={perPage}");
-        return CallApiAsync<IReadOnlyList<Payslip>>(request, cancellationToken);
-    }
+        => FetchListAsync<Payslip>($"/v1/payrolls/{payrollId}/payslips", page, perPage, cancellationToken);
 
     /// <inheritdoc/>
     /// <exception cref="ApiFailedException">APIがエラーレスポンスを返した場合にスローされます。</exception>
@@ -370,21 +369,25 @@ public class SmartHRService : ISmartHRService
     }
 
     /// <summary>
-    /// リストを返すAPIのページ指定を検証します。
+    /// リストを返すAPIを呼び出し、結果を<typeparamref name="T"/>の配列に変換して返します。
     /// </summary>
+    /// <typeparam name="T">JSONの型</typeparam>
+    /// <param name="endpoint">APIエンドポイント</param>
     /// <param name="page">1から始まるページ番号</param>
     /// <param name="perPage">1ページあたりに含まれる要素数</param>
+    /// <param name="cancellationToken">キャンセル通知を受け取るために他のオブジェクトまたはスレッドで使用できるキャンセル トークン。</param>
     /// <exception cref="ArgumentOutOfRangeException">
     /// <paramref name="page"/>か<paramref name="perPage"/>が0以下です。
     /// もしくは<paramref name="perPage"/>が100を超えています。
     /// </exception>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal static void ThrowIfInvalidPage(int page, int perPage)
+    internal ValueTask<IReadOnlyList<T>> FetchListAsync<T>(string endpoint, int page, int perPage, CancellationToken cancellationToken)
     {
         if (page <= 0)
             throw new ArgumentOutOfRangeException(nameof(page));
         if (perPage is <= 0 or > 100)
             throw new ArgumentOutOfRangeException(nameof(perPage));
+        var request = new HttpRequestMessage(HttpMethod.Get, $"{endpoint}?page={page}&per_page={perPage}");
+        return CallApiAsync<IReadOnlyList<T>>(request, cancellationToken);
     }
 
     /// <summary>

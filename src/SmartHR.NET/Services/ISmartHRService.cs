@@ -83,6 +83,20 @@ public interface ISmartHRService
     public ValueTask<JobTitle> AddJobTitleAsync(string name, int? rank = default, CancellationToken cancellationToken = default);
     #endregion
 
+    #region BankAccountSettings
+    /// <summary>
+    /// 口座情報をリストで取得します。
+    /// </summary>
+    /// <remarks>
+    /// <seealso href="https://developer.smarthr.jp/api/index.html#!/%E5%8F%A3%E5%BA%A7%E6%83%85%E5%A0%B1/getV1BankAccountSettings"/>
+    /// </remarks>
+    /// <param name="page">1から始まるページ番号</param>
+    /// <param name="perPage">1ページあたりに含まれる要素数</param>
+    /// <param name="cancellationToken">キャンセル通知を受け取るために他のオブジェクトまたはスレッドで使用できるキャンセル トークン。</param>
+    /// <returns>口座情報の一覧</returns>
+    public ValueTask<IReadOnlyList<BankAccountSetting>> FetchBankAccountSettingListAsync(int page = 1, int perPage = 10, CancellationToken cancellationToken = default);
+    #endregion
+
     #region Payrolls
     /// <summary>
     /// <paramref name="id"/>と一致する給与情報を削除します。

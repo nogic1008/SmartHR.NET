@@ -172,10 +172,20 @@ public class SmartHRServiceTest
     [InlineData(1, 0)]
     [InlineData(1, 101)]
     [Theory(DisplayName = $"{nameof(SmartHRService)} > List API Caller > ArgumentOutOfRangeExceptionをスローする。")]
-    public void ListApiCaller_Throws_ArgumentOutOfRangeException(int page, int perPage)
+    public async Task ListApiCaller_Throws_ArgumentOutOfRangeException(int page, int perPage)
     {
-        var action = () => SmartHRService.ThrowIfInvalidPage(page, perPage);
-        action.Should().ThrowExactly<ArgumentOutOfRangeException>();
+        // Arrange
+        var handler = new Mock<HttpMessageHandler>();
+        handler.SetupRequest(req => req.RequestUri?.GetLeftPart(UriPartial.Authority) == BaseUri)
+            .ReturnsResponse(HttpStatusCode.NoContent);
+
+        // Act
+        var sut = CreateSut(handler, "");
+        var action = async () => await sut.FetchListAsync<string>("/v1", page, perPage, default).ConfigureAwait(false);
+
+        // Assert
+        await action.Should().ThrowExactlyAsync<ArgumentOutOfRangeException>().ConfigureAwait(false);
+        handler.VerifyAnyRequest(Times.Never());
     }
     #endregion
 
