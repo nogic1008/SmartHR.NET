@@ -56,6 +56,97 @@ public class SmartHRService : ISmartHRService
             _httpClient.DefaultRequestHeaders.Authorization = new("Bearer", accessToken);
     }
 
+    #region JobTitles
+    /// <inheritdoc/>
+    /// <exception cref="ApiFailedException">APIがエラーレスポンスを返した場合にスローされます。</exception>
+    public async ValueTask DeleteJobTitleAsync(string id, CancellationToken cancellationToken = default)
+    {
+        var response = await _httpClient.DeleteAsync($"/v1/job_titles/{id}", cancellationToken).ConfigureAwait(false);
+        await ValidateResponseAsync(response, cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <inheritdoc/>
+    /// <exception cref="ApiFailedException">APIがエラーレスポンスを返した場合にスローされます。</exception>
+    public ValueTask<JobTitle> FetchJobTitleAsync(string id, CancellationToken cancellationToken = default)
+        => CallApiAsync<JobTitle>(new(HttpMethod.Get, $"/v1/job_titles/{id}"), cancellationToken);
+
+    /// <inheritdoc/>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="rank"/>が1未満か、99999を超えています。</exception>
+    /// <exception cref="ApiFailedException">APIがエラーレスポンスを返した場合にスローされます。</exception>
+    public ValueTask<JobTitle> UpdateJobTitleAsync(string id, string? name = null, int? rank = default, CancellationToken cancellationToken = default)
+    {
+        if (rank is < 1 or > 99999)
+            throw new ArgumentOutOfRangeException(nameof(rank));
+
+        var parameters = new Dictionary<string, string>(2);
+        if (name is not null)
+            parameters.Add(nameof(name), name);
+        if (rank is not null)
+            parameters.Add(nameof(rank), rank.ToString());
+
+        return CallApiAsync<JobTitle>(
+            new(new("PATCH"), $"/v1/job_titles/{id}")
+            {
+                Content = new FormUrlEncodedContent(parameters)
+            }, cancellationToken);
+    }
+
+    /// <inheritdoc/>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="rank"/>が1未満か、99999を超えています。</exception>
+    /// <exception cref="ApiFailedException">APIがエラーレスポンスを返した場合にスローされます。</exception>
+    public ValueTask<JobTitle> ReplaceJobTitleAsync(string id, string name, int? rank = default, CancellationToken cancellationToken = default)
+    {
+        if (rank is < 1 or > 99999)
+            throw new ArgumentOutOfRangeException(nameof(rank));
+
+        var parameters = new Dictionary<string, string>(2) { { nameof(name), name } };
+        if (rank is not null)
+            parameters.Add(nameof(rank), rank.ToString());
+
+        return CallApiAsync<JobTitle>(
+            new(HttpMethod.Put, $"/v1/job_titles/{id}")
+            {
+                Content = new FormUrlEncodedContent(parameters)
+            }, cancellationToken);
+    }
+
+    /// <inheritdoc/>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// <paramref name="page"/>か<paramref name="perPage"/>が0以下です。
+    /// もしくは<paramref name="perPage"/>が100を超えています。
+    /// </exception>
+    /// <exception cref="ApiFailedException">APIがエラーレスポンスを返した場合にスローされます。</exception>
+    public ValueTask<IReadOnlyList<JobTitle>> FetchJobTitleListAsync(int page = 1, int perPage = 10, CancellationToken cancellationToken = default)
+    {
+        if (page <= 0)
+            throw new ArgumentOutOfRangeException(nameof(page));
+        if (perPage is <= 0 or > 100)
+            throw new ArgumentOutOfRangeException(nameof(perPage));
+
+        var request = new HttpRequestMessage(HttpMethod.Get, $"/v1/job_titles?page={page}&per_page={perPage}");
+        return CallApiAsync<IReadOnlyList<JobTitle>>(request, cancellationToken);
+    }
+
+    /// <inheritdoc/>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="rank"/>が1未満か、99999を超えています。</exception>
+    /// <exception cref="ApiFailedException">APIがエラーレスポンスを返した場合にスローされます。</exception>
+    public ValueTask<JobTitle> AddJobTitleAsync(string name, int? rank = default, CancellationToken cancellationToken = default)
+    {
+        if (rank is < 1 or > 99999)
+            throw new ArgumentOutOfRangeException(nameof(rank));
+
+        var parameters = new Dictionary<string, string>(2) { { nameof(name), name } };
+        if (rank is not null)
+            parameters.Add(nameof(rank), rank.ToString());
+
+        return CallApiAsync<JobTitle>(
+            new(HttpMethod.Post, "/v1/job_titles")
+            {
+                Content = new FormUrlEncodedContent(parameters)
+            }, cancellationToken);
+    }
+    #endregion
+
     #region Payrolls
     /// <inheritdoc/>
     /// <exception cref="ApiFailedException">APIがエラーレスポンスを返した場合にスローされます。</exception>
