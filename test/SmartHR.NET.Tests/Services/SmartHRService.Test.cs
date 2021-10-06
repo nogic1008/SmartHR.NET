@@ -94,12 +94,14 @@ public class SmartHRServiceTest
     }
 
     #region API Error
+    /// <summary>APIのサンプルエラーレスポンスJSON(アクセストークンが無効)</summary>
     private const string UnauthorizedTokenJson = "{"
         + "\"code\": 2,"
         + "\"type\": \"unauthorized_token\","
         + "\"message\": \"無効なアクセストークンです\","
         + "\"errors\": null"
         + "}";
+    /// <summary>APIのサンプルエラーレスポンスJSON(リクエストパラメータが不正)</summary>
     private const string BadRequestJson = "{"
         + "\"code\": 1,"
         + "\"type\": \"bad_request\","
@@ -161,6 +163,7 @@ public class SmartHRServiceTest
     #endregion
 
     #region Payrolls
+    /// <summary>給与APIのサンプルレスポンスJSON</summary>
     private const string PayrollResponseJson = "{"
         + "\"id\": \"string\","
         + "\"payment_type\": \"salary\","
@@ -478,16 +481,12 @@ public class SmartHRServiceTest
     public async Task FetchPayrollListAsync_Throws_ArgumentOutOfRangeException(int page, int perPage)
     {
         // Arrange
-        string accessToken = GenerateRandomString();
-        string nameForAdmin = GenerateRandomString();
-        string nameForCrew = GenerateRandomString();
-
         var handler = new Mock<HttpMessageHandler>();
         handler.SetupRequest((_) => true)
             .ReturnsResponse($"[{PayrollResponseJson}]", "application/json");
 
         // Act
-        var sut = CreateSut(handler, accessToken);
+        var sut = CreateSut(handler, "");
         var action = async () => _ = await sut.FetchPayrollListAsync(page, perPage).ConfigureAwait(false);
 
         // Assert
@@ -503,8 +502,6 @@ public class SmartHRServiceTest
     {
         // Arrange
         string accessToken = GenerateRandomString();
-        string nameForAdmin = GenerateRandomString();
-        string nameForCrew = GenerateRandomString();
 
         var handler = new Mock<HttpMessageHandler>();
         handler.SetupRequest(req => req.RequestUri?.GetLeftPart(UriPartial.Authority) == BaseUri)
@@ -585,6 +582,7 @@ public class SmartHRServiceTest
     #endregion
 
     #region Payslips
+    /// <summary>給与明細APIのサンプルレスポンスJSON</summary>
     private const string PayslipResponseJson = "{"
         + "  \"id\": \"id\","
         + "  \"crew_id\": \"crew_id\","
@@ -798,15 +796,13 @@ public class SmartHRServiceTest
     public async Task FetchPayslipListAsync_Throws_ArgumentOutOfRangeException(int page, int perPage)
     {
         // Arrange
-        string payrollId = GenerateRandomString();
-
         var handler = new Mock<HttpMessageHandler>();
         handler.SetupRequest((_) => true)
             .ReturnsResponse($"[{PayslipResponseJson}]", "application/json");
 
         // Act
         var sut = CreateSut(handler, "");
-        var action = async () => _ = await sut.FetchPayslipListAsync(payrollId, page, perPage).ConfigureAwait(false);
+        var action = async () => _ = await sut.FetchPayslipListAsync("", page, perPage).ConfigureAwait(false);
 
         // Assert
         await action.Should().ThrowExactlyAsync<ArgumentOutOfRangeException>().ConfigureAwait(false);
