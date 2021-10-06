@@ -229,15 +229,15 @@ public class SmartHRServiceTest
         // Assert
         payRoll.Should().Be(new Payroll(
             "string",
-            PaymentType.Salary,
+            Payroll.Payment.Salary,
             new(2021, 9, 30),
             new(2021, 9, 30),
             new(2021, 9, 30),
             "api",
-            PaymentStatus.Wip,
+            Payroll.SalaryStatus.Wip,
             default,
             true,
-            NumeralSystemType.AsIs,
+            Payroll.NumeralSystem.AsIs,
             "string",
             "string"
         ));
@@ -364,12 +364,12 @@ public class SmartHRServiceTest
         var sut = CreateSut(handler, accessToken);
         var payRoll = await sut.UnconfirmPayrollAsync(
             id,
-            PaymentType.Salary,
+            Payroll.Payment.Salary,
             new(2021, 11, 1),
             new(2021, 10, 1),
             new(2021, 10, 31),
-            PaymentStatus.Wip,
-            NumeralSystemType.AsIs,
+            Payroll.SalaryStatus.Wip,
+            Payroll.NumeralSystem.AsIs,
             nameForAdmin,
             nameForCrew,
             publishedAt is not null ? DateTimeOffset.Parse(publishedAt, CultureInfo.InvariantCulture) : null,
@@ -429,12 +429,12 @@ public class SmartHRServiceTest
         var sut = CreateSut(handler, accessToken);
         var payRoll = await sut.ConfirmPayrollAsync(
             id,
-            PaymentType.Salary,
+            Payroll.Payment.Salary,
             new(2021, 11, 1),
             new(2021, 10, 1),
             new(2021, 10, 31),
-            PaymentStatus.Wip,
-            NumeralSystemType.AsIs,
+            Payroll.SalaryStatus.Wip,
+            Payroll.NumeralSystem.AsIs,
             nameForAdmin,
             nameForCrew,
             publishedAt is not null ? DateTimeOffset.Parse(publishedAt, CultureInfo.InvariantCulture) : null,
@@ -548,11 +548,11 @@ public class SmartHRServiceTest
         // Act
         var sut = CreateSut(handler, accessToken);
         var payRoll = await sut.AddPayrollAsync(
-            PaymentType.Salary,
+            Payroll.Payment.Salary,
             new(2021, 11, 1),
             new(2021, 10, 1),
             new(2021, 10, 31),
-            NumeralSystemType.AsIs,
+            Payroll.NumeralSystem.AsIs,
             nameForAdmin,
             nameForCrew
         ).ConfigureAwait(false);

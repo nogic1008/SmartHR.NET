@@ -104,12 +104,12 @@ public class SmartHRService : ISmartHRService
     /// <exception cref="ApiFailedException">APIがエラーレスポンスを返した場合にスローされます。</exception>
     public ValueTask<Payroll> UnconfirmPayrollAsync(
         string id,
-        PaymentType paymentType,
+        Payroll.Payment paymentType,
         DateTime paidAt,
         DateTime periodStartAt,
         DateTime periodEndAt,
-        PaymentStatus status,
-        NumeralSystemType numeralSystemHandleType,
+        Payroll.SalaryStatus status,
+        Payroll.NumeralSystem numeralSystemHandleType,
         string nameForAdmin,
         string nameForCrew,
         DateTimeOffset? publishedAt = default,
@@ -118,12 +118,12 @@ public class SmartHRService : ISmartHRService
     {
         var parameters = new Dictionary<string, string>()
         {
-            { "payment_type", JsonStringEnumConverterEx<PaymentType>.EnumToString[paymentType] },
+            { "payment_type", JsonStringEnumConverterEx<Payroll.Payment>.EnumToString[paymentType] },
             { "paid_at", paidAt.ToString("yyyy-MM-dd", null) },
             { "period_start_at", periodStartAt.ToString("yyyy-MM-dd", null) },
             { "period_end_at", periodEndAt.ToString("yyyy-MM-dd", null) },
-            { "status", JsonStringEnumConverterEx<PaymentStatus>.EnumToString[status] },
-            { "numeral_system_handle_type", JsonStringEnumConverterEx<NumeralSystemType>.EnumToString[numeralSystemHandleType] },
+            { "status", JsonStringEnumConverterEx<Payroll.SalaryStatus>.EnumToString[status] },
+            { "numeral_system_handle_type", JsonStringEnumConverterEx<Payroll.NumeralSystem>.EnumToString[numeralSystemHandleType] },
             { "name_for_admin", nameForAdmin },
             { "name_for_crew", nameForCrew },
         };
@@ -143,12 +143,12 @@ public class SmartHRService : ISmartHRService
     /// <exception cref="ApiFailedException">APIがエラーレスポンスを返した場合にスローされます。</exception>
     public async ValueTask<Payroll> ConfirmPayrollAsync(
         string id,
-        PaymentType paymentType,
+        Payroll.Payment paymentType,
         DateTime paidAt,
         DateTime periodStartAt,
         DateTime periodEndAt,
-        PaymentStatus status,
-        NumeralSystemType numeralSystemHandleType,
+        Payroll.SalaryStatus status,
+        Payroll.NumeralSystem numeralSystemHandleType,
         string nameForAdmin,
         string nameForCrew,
         DateTimeOffset? publishedAt = default,
@@ -157,12 +157,12 @@ public class SmartHRService : ISmartHRService
     {
         var parameters = new Dictionary<string, string>()
         {
-            { "payment_type", JsonStringEnumConverterEx<PaymentType>.EnumToString[paymentType] },
+            { "payment_type", JsonStringEnumConverterEx<Payroll.Payment>.EnumToString[paymentType] },
             { "paid_at", paidAt.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) },
             { "period_start_at", periodStartAt.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) },
             { "period_end_at", periodEndAt.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) },
-            { "status", JsonStringEnumConverterEx<PaymentStatus>.EnumToString[status] },
-            { "numeral_system_handle_type", JsonStringEnumConverterEx<NumeralSystemType>.EnumToString[numeralSystemHandleType] },
+            { "status", JsonStringEnumConverterEx<Payroll.SalaryStatus>.EnumToString[status] },
+            { "numeral_system_handle_type", JsonStringEnumConverterEx<Payroll.NumeralSystem>.EnumToString[numeralSystemHandleType] },
             { "name_for_admin", nameForAdmin },
             { "name_for_crew", nameForCrew },
         };
@@ -198,11 +198,11 @@ public class SmartHRService : ISmartHRService
     /// <inheritdoc/>
     /// <exception cref="ApiFailedException">APIがエラーレスポンスを返した場合にスローされます。</exception>
     public ValueTask<Payroll> AddPayrollAsync(
-        PaymentType paymentType,
+        Payroll.Payment paymentType,
         DateTime paidAt,
         DateTime periodStartAt,
         DateTime periodEndAt,
-        NumeralSystemType numeralSystemHandleType,
+        Payroll.NumeralSystem numeralSystemHandleType,
         string nameForAdmin,
         string nameForCrew,
         CancellationToken cancellationToken = default)
@@ -210,11 +210,11 @@ public class SmartHRService : ISmartHRService
             {
                 Content = new FormUrlEncodedContent(new Dictionary<string, string>
                 {
-                    { "payment_type", JsonStringEnumConverterEx<PaymentType>.EnumToString[paymentType] },
+                    { "payment_type", JsonStringEnumConverterEx<Payroll.Payment>.EnumToString[paymentType] },
                     { "paid_at", paidAt.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) },
                     { "period_start_at", periodStartAt.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) },
                     { "period_end_at", periodEndAt.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) },
-                    { "numeral_system_handle_type", JsonStringEnumConverterEx<NumeralSystemType>.EnumToString[numeralSystemHandleType] },
+                    { "numeral_system_handle_type", JsonStringEnumConverterEx<Payroll.NumeralSystem>.EnumToString[numeralSystemHandleType] },
                     { "name_for_admin", nameForAdmin },
                     { "name_for_crew", nameForCrew },
                 })

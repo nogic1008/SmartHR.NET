@@ -36,15 +36,15 @@ public class PayrollTest
         // Assert
         entity.Should().Be(new Payroll(
             "string",
-            PaymentType.Salary,
+            Payroll.Payment.Salary,
             new(2021, 9, 26),
             new(2021, 9, 26),
             new(2021, 9, 26),
             "api",
-            PaymentStatus.Wip,
+            Payroll.SalaryStatus.Wip,
             default,
             true,
-            NumeralSystemType.AsIs,
+            Payroll.NumeralSystem.AsIs,
             "string",
             "string"
         ));

@@ -85,12 +85,12 @@ public interface ISmartHRService
     /// <returns>未確定処理後の<see cref="Payroll"/>オブジェクト。</returns>
     public ValueTask<Payroll> UnconfirmPayrollAsync(
         string id,
-        PaymentType paymentType,
+        Payroll.Payment paymentType,
         DateTime paidAt,
         DateTime periodStartAt,
         DateTime periodEndAt,
-        PaymentStatus status,
-        NumeralSystemType numeralSystemHandleType,
+        Payroll.SalaryStatus status,
+        Payroll.NumeralSystem numeralSystemHandleType,
         string nameForAdmin,
         string nameForCrew,
         DateTimeOffset? publishedAt = default,
@@ -118,12 +118,12 @@ public interface ISmartHRService
     /// <returns>確定処理後の<see cref="Payroll"/>オブジェクト。</returns>
     public ValueTask<Payroll> ConfirmPayrollAsync(
         string id,
-        PaymentType paymentType,
+        Payroll.Payment paymentType,
         DateTime paidAt,
         DateTime periodStartAt,
         DateTime periodEndAt,
-        PaymentStatus status,
-        NumeralSystemType numeralSystemHandleType,
+        Payroll.SalaryStatus status,
+        Payroll.NumeralSystem numeralSystemHandleType,
         string nameForAdmin,
         string nameForCrew,
         DateTimeOffset? publishedAt = default,
@@ -157,11 +157,11 @@ public interface ISmartHRService
     /// <param name="nameForCrew"><see cref="Payroll.NameForCrew"/></param>
     /// <returns>登録処理後の<see cref="Payroll"/>オブジェクト。</returns>
     public ValueTask<Payroll> AddPayrollAsync(
-        PaymentType paymentType,
+        Payroll.Payment paymentType,
         DateTime paidAt,
         DateTime periodStartAt,
         DateTime periodEndAt,
-        NumeralSystemType numeralSystemHandleType,
+        Payroll.NumeralSystem numeralSystemHandleType,
         string nameForAdmin,
         string nameForCrew,
         CancellationToken cancellationToken = default);
