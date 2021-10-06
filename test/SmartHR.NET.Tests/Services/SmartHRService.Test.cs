@@ -94,12 +94,14 @@ public class SmartHRServiceTest
     }
 
     #region API Error
+    /// <summary>APIのサンプルエラーレスポンスJSON(アクセストークンが無効)</summary>
     private const string UnauthorizedTokenJson = "{"
         + "\"code\": 2,"
         + "\"type\": \"unauthorized_token\","
         + "\"message\": \"無効なアクセストークンです\","
         + "\"errors\": null"
         + "}";
+    /// <summary>APIのサンプルエラーレスポンスJSON(リクエストパラメータが不正)</summary>
     private const string BadRequestJson = "{"
         + "\"code\": 1,"
         + "\"type\": \"bad_request\","
@@ -128,7 +130,7 @@ public class SmartHRServiceTest
 
         // Act
         var sut = CreateSut(handler, "");
-        var action = async () => await sut.DeletePayRollAsync("").ConfigureAwait(false);
+        var action = async () => await sut.DeletePayrollAsync("").ConfigureAwait(false);
 
         // Assert
         (await action.Should().ThrowExactlyAsync<ApiFailedException>().ConfigureAwait(false))
@@ -153,15 +155,16 @@ public class SmartHRServiceTest
 
         // Act
         var sut = CreateSut(handler, "");
-        var action = async () => await sut.DeletePayRollAsync("").ConfigureAwait(false);
+        var action = async () => await sut.DeletePayrollAsync("").ConfigureAwait(false);
 
         // Assert
         await action.Should().ThrowExactlyAsync<HttpRequestException>().ConfigureAwait(false);
     }
     #endregion
 
-    #region PayRolls
-    private const string PayRollResponseJson = "{"
+    #region Payrolls
+    /// <summary>給与APIのサンプルレスポンスJSON</summary>
+    private const string PayrollResponseJson = "{"
         + "\"id\": \"string\","
         + "\"payment_type\": \"salary\","
         + "\"paid_at\": \"2021-09-30\","
@@ -177,10 +180,10 @@ public class SmartHRServiceTest
         + "}";
 
     /// <summary>
-    /// <see cref="SmartHRService.DeletePayRollAsync"/>は、"/v1/payrolls/{id}"にDELETEリクエストを行う。
+    /// <see cref="SmartHRService.DeletePayrollAsync"/>は、"/v1/payrolls/{id}"にDELETEリクエストを行う。
     /// </summary>
-    [Fact(DisplayName = $"{nameof(SmartHRService)} > {nameof(SmartHRService.DeletePayRollAsync)} > DELETE /v1/payrolls/:id をコールする。")]
-    public async Task DeletePayRollAsync_Calls_DeleteApi()
+    [Fact(DisplayName = $"{nameof(SmartHRService)} > {nameof(SmartHRService.DeletePayrollAsync)} > DELETE /v1/payrolls/:id をコールする。")]
+    public async Task DeletePayrollAsync_Calls_DeleteApi()
     {
         // Arrange
         string id = GenerateRandomString();
@@ -192,7 +195,7 @@ public class SmartHRServiceTest
 
         // Act
         var sut = CreateSut(handler, accessToken);
-        await sut.DeletePayRollAsync(id).ConfigureAwait(false);
+        await sut.DeletePayrollAsync(id).ConfigureAwait(false);
 
         // Assert
         handler.VerifyRequest(req =>
@@ -209,10 +212,10 @@ public class SmartHRServiceTest
     }
 
     /// <summary>
-    /// <see cref="SmartHRService.FetchPayRollAsync"/>は、"/v1/payrolls/{id}"にGETリクエストを行う。
+    /// <see cref="SmartHRService.FetchPayrollAsync"/>は、"/v1/payrolls/{id}"にGETリクエストを行う。
     /// </summary>
-    [Fact(DisplayName = $"{nameof(SmartHRService)} > {nameof(SmartHRService.FetchPayRollAsync)} > GET /v1/payrolls/:id をコールする。")]
-    public async Task FetchPayRollAsync_Calls_GetApi()
+    [Fact(DisplayName = $"{nameof(SmartHRService)} > {nameof(SmartHRService.FetchPayrollAsync)} > GET /v1/payrolls/:id をコールする。")]
+    public async Task FetchPayrollAsync_Calls_GetApi()
     {
         // Arrange
         string id = GenerateRandomString();
@@ -220,24 +223,24 @@ public class SmartHRServiceTest
 
         var handler = new Mock<HttpMessageHandler>();
         handler.SetupRequest(req => req.RequestUri?.GetLeftPart(UriPartial.Authority) == BaseUri)
-            .ReturnsResponse(PayRollResponseJson, "application/json");
+            .ReturnsResponse(PayrollResponseJson, "application/json");
 
         // Act
         var sut = CreateSut(handler, accessToken);
-        var payRoll = await sut.FetchPayRollAsync(id).ConfigureAwait(false);
+        var payRoll = await sut.FetchPayrollAsync(id).ConfigureAwait(false);
 
         // Assert
-        payRoll.Should().Be(new PayRoll(
+        payRoll.Should().Be(new Payroll(
             "string",
-            PaymentType.Salary,
+            Payroll.Payment.Salary,
             new(2021, 9, 30),
             new(2021, 9, 30),
             new(2021, 9, 30),
             "api",
-            PaymentStatus.Wip,
+            Payroll.SalaryStatus.Wip,
             default,
             true,
-            NumeralSystemType.AsIs,
+            Payroll.NumeralSystem.AsIs,
             "string",
             "string"
         ));
@@ -255,10 +258,10 @@ public class SmartHRServiceTest
     }
 
     /// <summary>
-    /// <see cref="SmartHRService.UpdatePayRollAsync"/>は、"/v1/payrolls/{id}"にPATCHリクエストを行う。
+    /// <see cref="SmartHRService.UpdatePayrollAsync"/>は、"/v1/payrolls/{id}"にPATCHリクエストを行う。
     /// </summary>
-    [Fact(DisplayName = $"{nameof(SmartHRService)} > {nameof(SmartHRService.PublishPayRollAsync)} > PATCH /v1/payrolls/:id/publish をコールする。")]
-    public async Task UpdatePayRollAsync_Calls_PatchApi()
+    [Fact(DisplayName = $"{nameof(SmartHRService)} > {nameof(SmartHRService.PublishPayrollAsync)} > PATCH /v1/payrolls/:id/publish をコールする。")]
+    public async Task UpdatePayrollAsync_Calls_PatchApi()
     {
         // Arrange
         string id = GenerateRandomString();
@@ -268,11 +271,11 @@ public class SmartHRServiceTest
 
         var handler = new Mock<HttpMessageHandler>();
         handler.SetupRequest(req => req.RequestUri?.GetLeftPart(UriPartial.Authority) == BaseUri)
-            .ReturnsResponse(PayRollResponseJson, "application/json");
+            .ReturnsResponse(PayrollResponseJson, "application/json");
 
         // Act
         var sut = CreateSut(handler, accessToken);
-        var payRoll = await sut.UpdatePayRollAsync(id, nameForAdmin, nameForCrew).ConfigureAwait(false);
+        var payRoll = await sut.UpdatePayrollAsync(id, nameForAdmin, nameForCrew).ConfigureAwait(false);
 
         // Assert
         payRoll.Should().NotBeNull();
@@ -293,7 +296,7 @@ public class SmartHRServiceTest
     }
 
     /// <summary>
-    /// <see cref="SmartHRService.PublishPayRollAsync"/>は、"/v1/payrolls/{id}/publish"にPATCHリクエストを行う。
+    /// <see cref="SmartHRService.PublishPayrollAsync"/>は、"/v1/payrolls/{id}/publish"にPATCHリクエストを行う。
     /// </summary>
     /// <param name="publishedAt">公開時刻</param>
     /// <param name="notifyWithPublish">公開と同時に通知を行う</param>
@@ -301,8 +304,8 @@ public class SmartHRServiceTest
     [InlineData(null, null, "")]
     [InlineData(null, false, "notify_with_publish=false")]
     [InlineData("2021-09-30T00:00:00Z", true, "published_at=2021-09-30T00%3A00%3A00.0000000%2B00%3A00&notify_with_publish=true")]
-    [Theory(DisplayName = $"{nameof(SmartHRService)} > {nameof(SmartHRService.PublishPayRollAsync)} > PATCH /v1/payrolls/:id/publish をコールする。")]
-    public async Task PublishPayRollAsync_Calls_PatchApi(string publishedAt, bool? notifyWithPublish, string expected)
+    [Theory(DisplayName = $"{nameof(SmartHRService)} > {nameof(SmartHRService.PublishPayrollAsync)} > PATCH /v1/payrolls/:id/publish をコールする。")]
+    public async Task PublishPayrollAsync_Calls_PatchApi(string publishedAt, bool? notifyWithPublish, string expected)
     {
         // Arrange
         string id = GenerateRandomString();
@@ -310,11 +313,11 @@ public class SmartHRServiceTest
 
         var handler = new Mock<HttpMessageHandler>();
         handler.SetupRequest(req => req.RequestUri?.GetLeftPart(UriPartial.Authority) == BaseUri)
-            .ReturnsResponse(PayRollResponseJson, "application/json");
+            .ReturnsResponse(PayrollResponseJson, "application/json");
 
         // Act
         var sut = CreateSut(handler, accessToken);
-        var payRoll = await sut.PublishPayRollAsync(
+        var payRoll = await sut.PublishPayrollAsync(
             id,
             publishedAt is not null ? DateTimeOffset.Parse(publishedAt, CultureInfo.InvariantCulture) : null,
             notifyWithPublish
@@ -339,7 +342,7 @@ public class SmartHRServiceTest
     }
 
     /// <summary>
-    /// <see cref="SmartHRService.UnconfirmPayRollAsync"/>は、"/v1/payrolls/{id}/unfix"にPATCHリクエストを行う。
+    /// <see cref="SmartHRService.UnconfirmPayrollAsync"/>は、"/v1/payrolls/{id}/unfix"にPATCHリクエストを行う。
     /// </summary>
     /// <param name="publishedAt">公開時刻</param>
     /// <param name="notifyWithPublish">公開と同時に通知を行う</param>
@@ -347,8 +350,8 @@ public class SmartHRServiceTest
     [InlineData(null, null, "")]
     [InlineData(null, false, "&notify_with_publish=false")]
     [InlineData("2021-09-30T00:00:00Z", true, "&published_at=2021-09-30T00%3A00%3A00.0000000%2B00%3A00&notify_with_publish=true")]
-    [Theory(DisplayName = $"{nameof(SmartHRService)} > {nameof(SmartHRService.UnconfirmPayRollAsync)} > PATCH /v1/payrolls/:id/unfix をコールする。")]
-    public async Task UnconfirmPayRollAsync_Calls_PatchApi(string publishedAt, bool? notifyWithPublish, string expected)
+    [Theory(DisplayName = $"{nameof(SmartHRService)} > {nameof(SmartHRService.UnconfirmPayrollAsync)} > PATCH /v1/payrolls/:id/unfix をコールする。")]
+    public async Task UnconfirmPayrollAsync_Calls_PatchApi(string publishedAt, bool? notifyWithPublish, string expected)
     {
         // Arrange
         string id = GenerateRandomString();
@@ -358,18 +361,18 @@ public class SmartHRServiceTest
 
         var handler = new Mock<HttpMessageHandler>();
         handler.SetupRequest(req => req.RequestUri?.GetLeftPart(UriPartial.Authority) == BaseUri)
-            .ReturnsResponse(PayRollResponseJson, "application/json");
+            .ReturnsResponse(PayrollResponseJson, "application/json");
 
         // Act
         var sut = CreateSut(handler, accessToken);
-        var payRoll = await sut.UnconfirmPayRollAsync(
+        var payRoll = await sut.UnconfirmPayrollAsync(
             id,
-            PaymentType.Salary,
+            Payroll.Payment.Salary,
             new(2021, 11, 1),
             new(2021, 10, 1),
             new(2021, 10, 31),
-            PaymentStatus.Wip,
-            NumeralSystemType.AsIs,
+            Payroll.SalaryStatus.Wip,
+            Payroll.NumeralSystem.AsIs,
             nameForAdmin,
             nameForCrew,
             publishedAt is not null ? DateTimeOffset.Parse(publishedAt, CultureInfo.InvariantCulture) : null,
@@ -404,7 +407,7 @@ public class SmartHRServiceTest
     }
 
     /// <summary>
-    /// <see cref="SmartHRService.ConfirmPayRollAsync"/>は、"/v1/payrolls/{id}/fix"にPATCHリクエストを行う。
+    /// <see cref="SmartHRService.ConfirmPayrollAsync"/>は、"/v1/payrolls/{id}/fix"にPATCHリクエストを行う。
     /// </summary>
     /// <param name="publishedAt">公開時刻</param>
     /// <param name="notifyWithPublish">公開と同時に通知を行う</param>
@@ -412,8 +415,8 @@ public class SmartHRServiceTest
     [InlineData(null, null, "")]
     [InlineData(null, false, "&notify_with_publish=false")]
     [InlineData("2021-09-30T00:00:00Z", true, "&published_at=2021-09-30T00%3A00%3A00.0000000%2B00%3A00&notify_with_publish=true")]
-    [Theory(DisplayName = $"{nameof(SmartHRService)} > {nameof(SmartHRService.ConfirmPayRollAsync)} > PATCH /v1/payrolls/:id/fix をコールする。")]
-    public async Task ConfirmPayRollAsync_Calls_PatchApi(string publishedAt, bool? notifyWithPublish, string expected)
+    [Theory(DisplayName = $"{nameof(SmartHRService)} > {nameof(SmartHRService.ConfirmPayrollAsync)} > PATCH /v1/payrolls/:id/fix をコールする。")]
+    public async Task ConfirmPayrollAsync_Calls_PatchApi(string publishedAt, bool? notifyWithPublish, string expected)
     {
         // Arrange
         string id = GenerateRandomString();
@@ -423,18 +426,18 @@ public class SmartHRServiceTest
 
         var handler = new Mock<HttpMessageHandler>();
         handler.SetupRequest(req => req.RequestUri?.GetLeftPart(UriPartial.Authority) == BaseUri)
-            .ReturnsResponse(PayRollResponseJson, "application/json");
+            .ReturnsResponse(PayrollResponseJson, "application/json");
 
         // Act
         var sut = CreateSut(handler, accessToken);
-        var payRoll = await sut.ConfirmPayRollAsync(
+        var payRoll = await sut.ConfirmPayrollAsync(
             id,
-            PaymentType.Salary,
+            Payroll.Payment.Salary,
             new(2021, 11, 1),
             new(2021, 10, 1),
             new(2021, 10, 31),
-            PaymentStatus.Wip,
-            NumeralSystemType.AsIs,
+            Payroll.SalaryStatus.Wip,
+            Payroll.NumeralSystem.AsIs,
             nameForAdmin,
             nameForCrew,
             publishedAt is not null ? DateTimeOffset.Parse(publishedAt, CultureInfo.InvariantCulture) : null,
@@ -469,26 +472,22 @@ public class SmartHRServiceTest
     }
 
     /// <summary>
-    /// ページ数が不正なとき、<see cref="SmartHRService.FetchPayRollListAsync"/>は、ArgumentOutOfRangeExceptionをスローする。
+    /// ページ数が不正なとき、<see cref="SmartHRService.FetchPayrollListAsync"/>は、ArgumentOutOfRangeExceptionをスローする。
     /// </summary>
     [InlineData(0, 10)]
     [InlineData(1, 0)]
     [InlineData(1, 101)]
-    [Theory(DisplayName = $"{nameof(SmartHRService)} > {nameof(SmartHRService.FetchPayRollListAsync)} > ArgumentOutOfRangeException をスローする。")]
-    public async Task FetchPayRollListAsync_Throws_ArgumentOutOfRangeException(int page, int perPage)
+    [Theory(DisplayName = $"{nameof(SmartHRService)} > {nameof(SmartHRService.FetchPayrollListAsync)} > ArgumentOutOfRangeException をスローする。")]
+    public async Task FetchPayrollListAsync_Throws_ArgumentOutOfRangeException(int page, int perPage)
     {
         // Arrange
-        string accessToken = GenerateRandomString();
-        string nameForAdmin = GenerateRandomString();
-        string nameForCrew = GenerateRandomString();
-
         var handler = new Mock<HttpMessageHandler>();
         handler.SetupRequest((_) => true)
-            .ReturnsResponse($"[{PayRollResponseJson}]", "application/json");
+            .ReturnsResponse($"[{PayrollResponseJson}]", "application/json");
 
         // Act
-        var sut = CreateSut(handler, accessToken);
-        var action = async () => _ = await sut.FetchPayRollListAsync(page, perPage).ConfigureAwait(false);
+        var sut = CreateSut(handler, "");
+        var action = async () => _ = await sut.FetchPayrollListAsync(page, perPage).ConfigureAwait(false);
 
         // Assert
         await action.Should().ThrowExactlyAsync<ArgumentOutOfRangeException>().ConfigureAwait(false);
@@ -496,23 +495,21 @@ public class SmartHRServiceTest
     }
 
     /// <summary>
-    /// <see cref="SmartHRService.FetchPayRollListAsync"/>は、"/v1/payrolls"にGETリクエストを行う。
+    /// <see cref="SmartHRService.FetchPayrollListAsync"/>は、"/v1/payrolls"にGETリクエストを行う。
     /// </summary>
-    [Fact(DisplayName = $"{nameof(SmartHRService)} > {nameof(SmartHRService.FetchPayRollListAsync)} > GET /v1/payrolls をコールする。")]
-    public async Task FetchPayRollListAsync_Calls_GetApi()
+    [Fact(DisplayName = $"{nameof(SmartHRService)} > {nameof(SmartHRService.FetchPayrollListAsync)} > GET /v1/payrolls をコールする。")]
+    public async Task FetchPayrollListAsync_Calls_GetApi()
     {
         // Arrange
         string accessToken = GenerateRandomString();
-        string nameForAdmin = GenerateRandomString();
-        string nameForCrew = GenerateRandomString();
 
         var handler = new Mock<HttpMessageHandler>();
         handler.SetupRequest(req => req.RequestUri?.GetLeftPart(UriPartial.Authority) == BaseUri)
-            .ReturnsResponse($"[{PayRollResponseJson}]", "application/json");
+            .ReturnsResponse($"[{PayrollResponseJson}]", "application/json");
 
         // Act
         var sut = CreateSut(handler, accessToken);
-        var payRolls = await sut.FetchPayRollListAsync(1, 10).ConfigureAwait(false);
+        var payRolls = await sut.FetchPayrollListAsync(1, 10).ConfigureAwait(false);
 
         // Assert
         payRolls.Should().NotBeNullOrEmpty();
@@ -530,10 +527,10 @@ public class SmartHRServiceTest
     }
 
     /// <summary>
-    /// <see cref="SmartHRService.AddPayRollAsync"/>は、"/v1/payrolls"にPOSTリクエストを行う。
+    /// <see cref="SmartHRService.AddPayrollAsync"/>は、"/v1/payrolls"にPOSTリクエストを行う。
     /// </summary>
-    [Fact(DisplayName = $"{nameof(SmartHRService)} > {nameof(SmartHRService.AddPayRollAsync)} > POST /v1/payrolls をコールする。")]
-    public async Task AddPayRollAsync_Calls_PostApi()
+    [Fact(DisplayName = $"{nameof(SmartHRService)} > {nameof(SmartHRService.AddPayrollAsync)} > POST /v1/payrolls をコールする。")]
+    public async Task AddPayrollAsync_Calls_PostApi()
     {
         // Arrange
         string id = GenerateRandomString();
@@ -543,16 +540,16 @@ public class SmartHRServiceTest
 
         var handler = new Mock<HttpMessageHandler>();
         handler.SetupRequest(req => req.RequestUri?.GetLeftPart(UriPartial.Authority) == BaseUri)
-            .ReturnsResponse(PayRollResponseJson, "application/json");
+            .ReturnsResponse(PayrollResponseJson, "application/json");
 
         // Act
         var sut = CreateSut(handler, accessToken);
-        var payRoll = await sut.AddPayRollAsync(
-            PaymentType.Salary,
+        var payRoll = await sut.AddPayrollAsync(
+            Payroll.Payment.Salary,
             new(2021, 11, 1),
             new(2021, 10, 1),
             new(2021, 10, 31),
-            NumeralSystemType.AsIs,
+            Payroll.NumeralSystem.AsIs,
             nameForAdmin,
             nameForCrew
         ).ConfigureAwait(false);
@@ -585,6 +582,7 @@ public class SmartHRServiceTest
     #endregion
 
     #region Payslips
+    /// <summary>給与明細APIのサンプルレスポンスJSON</summary>
     private const string PayslipResponseJson = "{"
         + "  \"id\": \"id\","
         + "  \"crew_id\": \"crew_id\","
@@ -798,15 +796,13 @@ public class SmartHRServiceTest
     public async Task FetchPayslipListAsync_Throws_ArgumentOutOfRangeException(int page, int perPage)
     {
         // Arrange
-        string payrollId = GenerateRandomString();
-
         var handler = new Mock<HttpMessageHandler>();
         handler.SetupRequest((_) => true)
             .ReturnsResponse($"[{PayslipResponseJson}]", "application/json");
 
         // Act
         var sut = CreateSut(handler, "");
-        var action = async () => _ = await sut.FetchPayslipListAsync(payrollId, page, perPage).ConfigureAwait(false);
+        var action = async () => _ = await sut.FetchPayslipListAsync("", page, perPage).ConfigureAwait(false);
 
         // Assert
         await action.Should().ThrowExactlyAsync<ArgumentOutOfRangeException>().ConfigureAwait(false);

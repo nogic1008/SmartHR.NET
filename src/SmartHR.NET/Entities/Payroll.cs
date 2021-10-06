@@ -5,10 +5,10 @@ using System.Text.Json.Serialization;
 namespace SmartHR.NET.Entities;
 
 /// <summary>給与情報</summary>
-public record PayRoll
+public record Payroll
 {
     /// <summary>
-    /// PayRollの新しいインスタンスを生成します。
+    /// Payrollの新しいインスタンスを生成します。
     /// </summary>
     /// <param name="id"><see cref="Id"/></param>
     /// <param name="paymentType"><see cref="PaymentType"/></param>
@@ -22,7 +22,7 @@ public record PayRoll
     /// <param name="numeralSystemHandleType"><see cref="NumeralSystemHandleType"/></param>
     /// <param name="nameForAdmin"><see cref="NameForAdmin"/></param>
     /// <param name="nameForCrew"><see cref="NameForCrew"/></param>
-    public PayRoll(string id, PaymentType paymentType, DateTime paidAt, DateTime periodStartAt, DateTime periodEndAt, string sourceType, PaymentStatus status, DateTimeOffset? publishedAt, bool notifyWithPublish, NumeralSystemType numeralSystemHandleType, string nameForAdmin, string nameForCrew)
+    public Payroll(string id, Payment paymentType, DateTime paidAt, DateTime periodStartAt, DateTime periodEndAt, string sourceType, SalaryStatus status, DateTimeOffset? publishedAt, bool notifyWithPublish, NumeralSystem numeralSystemHandleType, string nameForAdmin, string nameForCrew)
         => (Id, PaymentType, PaidAt, PeriodStartAt, PeriodEndAt, SourceType, Status, PublishedAt, NotifyWithPublish, NumeralSystemHandleType, NameForAdmin, NameForCrew)
         = (id, paymentType, paidAt, periodStartAt, periodEndAt, sourceType, status, publishedAt, notifyWithPublish, numeralSystemHandleType, nameForAdmin, nameForCrew);
 
@@ -32,7 +32,7 @@ public record PayRoll
 
     /// <summary>支給タイプ</summary>
     [JsonPropertyName("payment_type")]
-    public PaymentType PaymentType { get; init; }
+    public Payment PaymentType { get; init; }
 
     /// <summary>支給日</summary>
     [JsonPropertyName("paid_at")]
@@ -52,7 +52,7 @@ public record PayRoll
 
     /// <summary>ステータス</summary>
     [JsonPropertyName("status")]
-    public PaymentStatus Status { get; init; }
+    public SalaryStatus Status { get; init; }
 
     /// <summary>公開時刻</summary>
     [JsonPropertyName("published_at")]
@@ -64,7 +64,7 @@ public record PayRoll
 
     /// <summary>記数法</summary>
     [JsonPropertyName("numeral_system_handle_type")]
-    public NumeralSystemType NumeralSystemHandleType { get; init; }
+    public NumeralSystem NumeralSystemHandleType { get; init; }
 
     /// <summary>給与明細の名前 (管理者向け)</summary>
     [JsonPropertyName("name_for_admin")]
@@ -73,33 +73,33 @@ public record PayRoll
     /// <summary>給与明細の名前 (従業員向け)</summary>
     [JsonPropertyName("name_for_crew")]
     public string NameForCrew { get; init; }
-}
 
-#region Enum
-/// <summary>支給タイプ</summary>
-[JsonConverter(typeof(JsonStringEnumConverterEx<PaymentType>))]
-public enum PaymentType
-{
-    [EnumMember(Value = "salary")] Salary,
-    [EnumMember(Value = "bonus")] Bonus,
-}
+    #region Enum
+    /// <summary>支給タイプ</summary>
+    [JsonConverter(typeof(JsonStringEnumConverterEx<Payment>))]
+    public enum Payment
+    {
+        [EnumMember(Value = "salary")] Salary,
+        [EnumMember(Value = "bonus")] Bonus,
+    }
 
-/// <summary>給与ステータス</summary>
-[JsonConverter(typeof(JsonStringEnumConverterEx<PaymentStatus>))]
-public enum PaymentStatus
-{
-    [EnumMember(Value = "wip")] Wip,
-    [EnumMember(Value = "fixed")] Fixed,
-    [EnumMember(Value = "failed")] Failed,
-    [EnumMember(Value = "importing")] Importing,
-}
+    /// <summary>給与ステータス</summary>
+    [JsonConverter(typeof(JsonStringEnumConverterEx<SalaryStatus>))]
+    public enum SalaryStatus
+    {
+        [EnumMember(Value = "wip")] Wip,
+        [EnumMember(Value = "fixed")] Fixed,
+        [EnumMember(Value = "failed")] Failed,
+        [EnumMember(Value = "importing")] Importing,
+    }
 
-/// <summary>記数法</summary>
-[JsonConverter(typeof(JsonStringEnumConverterEx<NumeralSystemType>))]
-public enum NumeralSystemType
-{
-    [EnumMember(Value = "as_is")] AsIs,
-    [EnumMember(Value = "force_sexagesimal")] ForceSexagesimal,
-    [EnumMember(Value = "force_decimal")] ForceDecimal,
+    /// <summary>記数法</summary>
+    [JsonConverter(typeof(JsonStringEnumConverterEx<NumeralSystem>))]
+    public enum NumeralSystem
+    {
+        [EnumMember(Value = "as_is")] AsIs,
+        [EnumMember(Value = "force_sexagesimal")] ForceSexagesimal,
+        [EnumMember(Value = "force_decimal")] ForceDecimal,
+    }
+    #endregion
 }
-#endregion
