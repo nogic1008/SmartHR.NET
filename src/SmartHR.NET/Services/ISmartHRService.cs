@@ -64,8 +64,8 @@ public interface ISmartHRService
     /// <remarks>
     /// <seealso href="https://developer.smarthr.jp/api/index.html#!/%E5%BD%B9%E8%81%B7/getV1JobTitles"/>
     /// </remarks>
-    /// <param name="page">Page of results to fetch.</param>
-    /// <param name="perPage">Number of results to return per page.</param>
+    /// <param name="page">1から始まるページ番号</param>
+    /// <param name="perPage">1ページあたりに含まれる要素数</param>
     /// <param name="cancellationToken">キャンセル通知を受け取るために他のオブジェクトまたはスレッドで使用できるキャンセル トークン。</param>
     /// <returns>役職情報の一覧</returns>
     public ValueTask<IReadOnlyList<JobTitle>> FetchJobTitleListAsync(int page = 1, int perPage = 10, CancellationToken cancellationToken = default);
@@ -74,7 +74,7 @@ public interface ISmartHRService
     /// 役職情報を新規登録します。
     /// </summary>
     /// <remarks>
-    /// <seealso href="https://developer.smarthr.jp/api/index.html#!/%E7%B5%A6%E4%B8%8E/postV1Payrolls"/>
+    /// <seealso href="https://developer.smarthr.jp/api/index.html#!/%E5%BD%B9%E8%81%B7/postV1JobTitles"/>
     /// </remarks>
     /// <param name="name">役職の名前</param>
     /// <param name="rank">役職のランク (1 ~ 99999)</param>
@@ -107,6 +107,9 @@ public interface ISmartHRService
     /// <summary>
     /// <paramref name="id"/>と一致する給与情報を部分更新します。
     /// </summary>
+    /// <remarks>
+    /// <seealso href="https://developer.smarthr.jp/api/index.html#!/%E7%B5%A6%E4%B8%8E/patchV1PayrollsId"/>
+    /// </remarks>
     /// <param name="id">給与ID</param>
     /// <param name="nameForAdmin">給与明細の名前 (管理者向け)</param>
     /// <param name="nameForCrew">給与明細の名前 (従業員向け)</param>
@@ -208,8 +211,8 @@ public interface ISmartHRService
     /// <remarks>
     /// <seealso href="https://developer.smarthr.jp/api/index.html#!/%E7%B5%A6%E4%B8%8E/getV1Payrolls"/>
     /// </remarks>
-    /// <param name="page">Page of results to fetch.</param>
-    /// <param name="perPage">Number of results to return per page.</param>
+    /// <param name="page">1から始まるページ番号</param>
+    /// <param name="perPage">1ページあたりに含まれる要素数</param>
     /// <param name="cancellationToken">キャンセル通知を受け取るために他のオブジェクトまたはスレッドで使用できるキャンセル トークン。</param>
     /// <returns>給与情報の一覧</returns>
     public ValueTask<IReadOnlyList<Payroll>> FetchPayrollListAsync(int page = 1, int perPage = 10, CancellationToken cancellationToken = default);
@@ -282,8 +285,8 @@ public interface ISmartHRService
     /// <seealso href="https://developer.smarthr.jp/api/index.html#!/%E7%B5%A6%E4%B8%8E%E6%98%8E%E7%B4%B0/getV1PayrollsPayrollIdPayslips"/>
     /// </remarks>
     /// <param name="payrollId">給与ID</param>
-    /// <param name="page">Page of results to fetch.</param>
-    /// <param name="perPage">Number of results to return per page.</param>
+    /// <param name="page">1から始まるページ番号</param>
+    /// <param name="perPage">1ページあたりに含まれる要素数</param>
     /// <param name="cancellationToken">キャンセル通知を受け取るために他のオブジェクトまたはスレッドで使用できるキャンセル トークン。</param>
     public ValueTask<IReadOnlyList<Payslip>> FetchPayslipListAsync(string payrollId, int page = 1, int perPage = 10, CancellationToken cancellationToken = default);
 

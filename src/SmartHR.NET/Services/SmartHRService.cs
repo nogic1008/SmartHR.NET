@@ -372,7 +372,7 @@ public class SmartHRService : ISmartHRService
     /// <summary>
     /// リストを返すAPIのページ指定を検証します。
     /// </summary>
-    /// <param name="page">ページ番号</param>
+    /// <param name="page">1から始まるページ番号</param>
     /// <param name="perPage">1ページあたりに含まれる要素数</param>
     /// <exception cref="ArgumentOutOfRangeException">
     /// <paramref name="page"/>か<paramref name="perPage"/>が0以下です。
