@@ -82,7 +82,7 @@ public class SmartHRService : ISmartHRService
         if (name is not null)
             parameters.Add(nameof(name), name);
         if (rank is not null)
-            parameters.Add(nameof(rank), rank.ToString());
+            parameters.Add(nameof(rank), rank.ToString()!);
 
         return CallApiAsync<JobTitle>(
             new(new("PATCH"), $"/v1/job_titles/{id}")
@@ -101,7 +101,7 @@ public class SmartHRService : ISmartHRService
 
         var parameters = new Dictionary<string, string>(2) { { nameof(name), name } };
         if (rank is not null)
-            parameters.Add(nameof(rank), rank.ToString());
+            parameters.Add(nameof(rank), rank.ToString()!);
 
         return CallApiAsync<JobTitle>(
             new(HttpMethod.Put, $"/v1/job_titles/{id}")

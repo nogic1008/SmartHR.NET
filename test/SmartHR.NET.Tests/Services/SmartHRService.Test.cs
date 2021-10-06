@@ -162,6 +162,261 @@ public class SmartHRServiceTest
     }
     #endregion
 
+    #region JobTitles
+    /// <summary>役職APIのサンプルレスポンスJSON</summary>
+    private const string JobTitleResponseJson = "{"
+        + "\"id\":\"id\","
+        + "\"name\":\"name\","
+        + "\"rank\":1,"
+        + "\"created_at\":\"2021-10-06T00:24:48.910Z\","
+        + "\"updated_at\":\"2021-10-06T00:24:48.910Z\""
+        + "}";
+
+    /// <summary>
+    /// <see cref="SmartHRService.DeleteJobTitleAsync"/>は、"/v1/job_titles/{id}"にDELETEリクエストを行う。
+    /// </summary>
+    [Fact(DisplayName = $"{nameof(SmartHRService)} > {nameof(SmartHRService.DeleteJobTitleAsync)} > DELETE /v1/job_titles/:id をコールする。")]
+    public async Task DeleteJobTitleAsync_Calls_DeleteApi()
+    {
+        // Arrange
+        string id = GenerateRandomString();
+        string accessToken = GenerateRandomString();
+
+        var handler = new Mock<HttpMessageHandler>();
+        handler.SetupRequest(req => req.RequestUri?.GetLeftPart(UriPartial.Authority) == BaseUri)
+            .ReturnsResponse(HttpStatusCode.NoContent);
+
+        // Act
+        var sut = CreateSut(handler, accessToken);
+        await sut.DeleteJobTitleAsync(id).ConfigureAwait(false);
+
+        // Assert
+        handler.VerifyRequest(req =>
+        {
+            req.RequestUri.Should().NotBeNull();
+            req.RequestUri!.GetLeftPart(UriPartial.Authority).Should().Be(BaseUri);
+            req.RequestUri!.AbsolutePath.Should().Be($"/v1/job_titles/{id}");
+            req.Method.Should().Be(HttpMethod.Delete);
+            req.Headers.Authorization.Should().NotBeNull();
+            req.Headers.Authorization!.Scheme.Should().Be("Bearer");
+            req.Headers.Authorization!.Parameter.Should().Be(accessToken);
+            return true;
+        }, Times.Once());
+    }
+
+    /// <summary>
+    /// <see cref="SmartHRService.FetchJobTitleAsync"/>は、"/v1/job_titles/{id}"にGETリクエストを行う。
+    /// </summary>
+    [Fact(DisplayName = $"{nameof(SmartHRService)} > {nameof(SmartHRService.FetchJobTitleAsync)} > GET /v1/job_titles/:id をコールする。")]
+    public async Task FetchJobTitleAsync_Calls_GetApi()
+    {
+        // Arrange
+        string id = GenerateRandomString();
+        string accessToken = GenerateRandomString();
+
+        var handler = new Mock<HttpMessageHandler>();
+        handler.SetupRequest(req => req.RequestUri?.GetLeftPart(UriPartial.Authority) == BaseUri)
+            .ReturnsResponse(JobTitleResponseJson, "application/json");
+
+        // Act
+        var sut = CreateSut(handler, accessToken);
+        var jobTitle = await sut.FetchJobTitleAsync(id).ConfigureAwait(false);
+
+        // Assert
+        jobTitle.Should().NotBeNull();
+        handler.VerifyRequest(req =>
+        {
+            req.RequestUri.Should().NotBeNull();
+            req.RequestUri!.GetLeftPart(UriPartial.Authority).Should().Be(BaseUri);
+            req.RequestUri!.AbsolutePath.Should().Be($"/v1/job_titles/{id}");
+            req.Method.Should().Be(HttpMethod.Get);
+            req.Headers.Authorization.Should().NotBeNull();
+            req.Headers.Authorization!.Scheme.Should().Be("Bearer");
+            req.Headers.Authorization!.Parameter.Should().Be(accessToken);
+            return true;
+        }, Times.Once());
+    }
+
+    /// <summary>
+    /// <see cref="SmartHRService.UpdateJobTitleAsync"/>は、"/v1/job_titles/{id}"にPATCHリクエストを行う。
+    /// </summary>
+    /// <param name="name">役職名</param>
+    /// <param name="rank">役職のランク</param>
+    /// <param name="expected">サーバー側が受け取るパラメータ</param>
+    [InlineData(null, null, "")]
+    [InlineData("name1", null, "name=name1")]
+    [InlineData(null, 1, "rank=1")]
+    [InlineData("name1", 1, "name=name1&rank=1")]
+    [Theory(DisplayName = $"{nameof(SmartHRService)} > {nameof(SmartHRService.UpdateJobTitleAsync)} > PATCH /v1/job_titles/:id/publish をコールする。")]
+    public async Task UpdateJobTitleAsync_Calls_PatchApi(string? name, int? rank, string expected)
+    {
+        // Arrange
+        string id = GenerateRandomString();
+        string accessToken = GenerateRandomString();
+
+        var handler = new Mock<HttpMessageHandler>();
+        handler.SetupRequest(req => req.RequestUri?.GetLeftPart(UriPartial.Authority) == BaseUri)
+            .ReturnsResponse(JobTitleResponseJson, "application/json");
+
+        // Act
+        var sut = CreateSut(handler, accessToken);
+        var payRoll = await sut.UpdateJobTitleAsync(id, name, rank).ConfigureAwait(false);
+
+        // Assert
+        payRoll.Should().NotBeNull();
+        handler.VerifyRequest(async (req) =>
+        {
+            req.RequestUri.Should().NotBeNull();
+            req.RequestUri!.GetLeftPart(UriPartial.Authority).Should().Be(BaseUri);
+            req.RequestUri!.AbsolutePath.Should().Be($"/v1/job_titles/{id}");
+            req.Method.Should().Be(HttpMethod.Patch);
+            req.Headers.Authorization.Should().NotBeNull();
+            req.Headers.Authorization!.Scheme.Should().Be("Bearer");
+            req.Headers.Authorization!.Parameter.Should().Be(accessToken);
+
+            string receivedParameters = await req.Content!.ReadAsStringAsync().ConfigureAwait(false);
+            receivedParameters.Should().Be(expected);
+            return true;
+        }, Times.Once());
+    }
+
+    /// <summary>
+    /// <see cref="SmartHRService.ReplaceJobTitleAsync"/>は、"/v1/job_titles/{id}"にPUTリクエストを行う。
+    /// </summary>
+    /// <param name="rank">役職のランク</param>
+    /// <param name="expected">サーバー側が受け取るパラメータ</param>
+    [InlineData(null, "")]
+    [InlineData(1, "&rank=1")]
+    [Theory(DisplayName = $"{nameof(SmartHRService)} > {nameof(SmartHRService.ReplaceJobTitleAsync)} > PUT /v1/job_titles/:id をコールする。")]
+    public async Task ReplaceJobTitleAsync_Calls_PutApi(int? rank, string expected)
+    {
+        // Arrange
+        string id = GenerateRandomString();
+        string name = GenerateRandomString();
+        string accessToken = GenerateRandomString();
+
+        var handler = new Mock<HttpMessageHandler>();
+        handler.SetupRequest(req => req.RequestUri?.GetLeftPart(UriPartial.Authority) == BaseUri)
+            .ReturnsResponse(JobTitleResponseJson, "application/json");
+
+        // Act
+        var sut = CreateSut(handler, accessToken);
+        var payRoll = await sut.ReplaceJobTitleAsync(id, name, rank).ConfigureAwait(false);
+
+        // Assert
+        payRoll.Should().NotBeNull();
+        handler.VerifyRequest(async (req) =>
+        {
+            req.RequestUri.Should().NotBeNull();
+            req.RequestUri!.GetLeftPart(UriPartial.Authority).Should().Be(BaseUri);
+            req.RequestUri!.AbsolutePath.Should().Be($"/v1/job_titles/{id}");
+            req.Method.Should().Be(HttpMethod.Put);
+            req.Headers.Authorization.Should().NotBeNull();
+            req.Headers.Authorization!.Scheme.Should().Be("Bearer");
+            req.Headers.Authorization!.Parameter.Should().Be(accessToken);
+
+            string receivedParameters = await req.Content!.ReadAsStringAsync().ConfigureAwait(false);
+            receivedParameters.Should().Be($"name={name}{expected}");
+            return true;
+        }, Times.Once());
+    }
+
+    /// <summary>
+    /// ページ数が不正なとき、<see cref="SmartHRService.FetchJobTitleListAsync"/>は、ArgumentOutOfRangeExceptionをスローする。
+    /// </summary>
+    [InlineData(0, 10)]
+    [InlineData(1, 0)]
+    [InlineData(1, 101)]
+    [Theory(DisplayName = $"{nameof(SmartHRService)} > {nameof(SmartHRService.FetchJobTitleListAsync)} > ArgumentOutOfRangeException をスローする。")]
+    public async Task FetchJobTitleListAsync_Throws_ArgumentOutOfRangeException(int page, int perPage)
+    {
+        // Arrange
+        var handler = new Mock<HttpMessageHandler>();
+        handler.SetupRequest((_) => true)
+            .ReturnsResponse($"[{JobTitleResponseJson}]", "application/json");
+
+        // Act
+        var sut = CreateSut(handler, "");
+        var action = async () => _ = await sut.FetchJobTitleListAsync(page, perPage).ConfigureAwait(false);
+
+        // Assert
+        await action.Should().ThrowExactlyAsync<ArgumentOutOfRangeException>().ConfigureAwait(false);
+        handler.VerifyRequest((_) => true, Times.Never());
+    }
+
+    /// <summary>
+    /// <see cref="SmartHRService.FetchJobTitleListAsync"/>は、"/v1/job_titles"にGETリクエストを行う。
+    /// </summary>
+    [Fact(DisplayName = $"{nameof(SmartHRService)} > {nameof(SmartHRService.FetchJobTitleListAsync)} > GET /v1/job_titles をコールする。")]
+    public async Task FetchJobTitleListAsync_Calls_GetApi()
+    {
+        // Arrange
+        string accessToken = GenerateRandomString();
+
+        var handler = new Mock<HttpMessageHandler>();
+        handler.SetupRequest(req => req.RequestUri?.GetLeftPart(UriPartial.Authority) == BaseUri)
+            .ReturnsResponse($"[{JobTitleResponseJson}]", "application/json");
+
+        // Act
+        var sut = CreateSut(handler, accessToken);
+        var jobTitles = await sut.FetchJobTitleListAsync(1, 10).ConfigureAwait(false);
+
+        // Assert
+        jobTitles.Should().NotBeNullOrEmpty();
+        handler.VerifyRequest((req) =>
+        {
+            req.RequestUri.Should().NotBeNull();
+            req.RequestUri!.GetLeftPart(UriPartial.Authority).Should().Be(BaseUri);
+            req.RequestUri!.AbsolutePath.Should().Be("/v1/job_titles");
+            req.Method.Should().Be(HttpMethod.Get);
+            req.Headers.Authorization.Should().NotBeNull();
+            req.Headers.Authorization!.Scheme.Should().Be("Bearer");
+            req.Headers.Authorization!.Parameter.Should().Be(accessToken);
+            return true;
+        }, Times.Once());
+    }
+
+    /// <summary>
+    /// <see cref="SmartHRService.AddJobTitleAsync"/>は、"/v1/job_titles"にPOSTリクエストを行う。
+    /// </summary>
+    [InlineData(null, "")]
+    [InlineData(1, "&rank=1")]
+    [Theory(DisplayName = $"{nameof(SmartHRService)} > {nameof(SmartHRService.AddJobTitleAsync)} > POST /v1/job_titles をコールする。")]
+    public async Task AddJobTitleAsync_Calls_PostApi(int? rank, string expected)
+    {
+        // Arrange
+        string id = GenerateRandomString();
+        string accessToken = GenerateRandomString();
+        string name = GenerateRandomString();
+        string nameForCrew = GenerateRandomString();
+
+        var handler = new Mock<HttpMessageHandler>();
+        handler.SetupRequest(req => req.RequestUri?.GetLeftPart(UriPartial.Authority) == BaseUri)
+            .ReturnsResponse(JobTitleResponseJson, "application/json");
+
+        // Act
+        var sut = CreateSut(handler, accessToken);
+        var jobTitle = await sut.AddJobTitleAsync(name, rank).ConfigureAwait(false);
+
+        // Assert
+        jobTitle.Should().NotBeNull();
+        handler.VerifyRequest(async (req) =>
+        {
+            req.RequestUri.Should().NotBeNull();
+            req.RequestUri!.GetLeftPart(UriPartial.Authority).Should().Be(BaseUri);
+            req.RequestUri!.AbsolutePath.Should().Be("/v1/job_titles");
+            req.Method.Should().Be(HttpMethod.Post);
+            req.Headers.Authorization.Should().NotBeNull();
+            req.Headers.Authorization!.Scheme.Should().Be("Bearer");
+            req.Headers.Authorization!.Parameter.Should().Be(accessToken);
+
+            string receivedParameters = await req.Content!.ReadAsStringAsync().ConfigureAwait(false);
+            receivedParameters.Should().Be($"name={name}{expected}");
+            return true;
+        }, Times.Once());
+    }
+    #endregion
+
     #region Payrolls
     /// <summary>給与APIのサンプルレスポンスJSON</summary>
     private const string PayrollResponseJson = "{"
