@@ -212,7 +212,7 @@ public interface ISmartHRService
     /// <param name="perPage">Number of results to return per page.</param>
     /// <param name="cancellationToken">キャンセル通知を受け取るために他のオブジェクトまたはスレッドで使用できるキャンセル トークン。</param>
     /// <returns>給与情報の一覧</returns>
-    public ValueTask<IReadOnlyList<Payroll>> FetchPayrollListAsync(int page, int perPage, CancellationToken cancellationToken = default);
+    public ValueTask<IReadOnlyList<Payroll>> FetchPayrollListAsync(int page = 1, int perPage = 10, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// 給与情報を新規登録します。

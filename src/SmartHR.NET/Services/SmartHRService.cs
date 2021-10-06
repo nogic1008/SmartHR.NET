@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Net.Http;
 using System.Net.Http.Json;
+using System.Runtime.CompilerServices;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -118,11 +119,7 @@ public class SmartHRService : ISmartHRService
     /// <exception cref="ApiFailedException">APIがエラーレスポンスを返した場合にスローされます。</exception>
     public ValueTask<IReadOnlyList<JobTitle>> FetchJobTitleListAsync(int page = 1, int perPage = 10, CancellationToken cancellationToken = default)
     {
-        if (page <= 0)
-            throw new ArgumentOutOfRangeException(nameof(page));
-        if (perPage is <= 0 or > 100)
-            throw new ArgumentOutOfRangeException(nameof(perPage));
-
+        ThrowIfInvalidPage(page, perPage);
         var request = new HttpRequestMessage(HttpMethod.Get, $"/v1/job_titles?page={page}&per_page={perPage}");
         return CallApiAsync<IReadOnlyList<JobTitle>>(request, cancellationToken);
     }
@@ -137,7 +134,7 @@ public class SmartHRService : ISmartHRService
 
         var parameters = new Dictionary<string, string>(2) { { nameof(name), name } };
         if (rank is not null)
-            parameters.Add(nameof(rank), rank.ToString());
+            parameters.Add(nameof(rank), rank.ToString()!);
 
         return CallApiAsync<JobTitle>(
             new(HttpMethod.Post, "/v1/job_titles")
@@ -167,7 +164,7 @@ public class SmartHRService : ISmartHRService
         => CallApiAsync<Payroll>(
             new(new("PATCH"), $"/v1/payrolls/{id}")
             {
-                Content = new FormUrlEncodedContent(new Dictionary<string, string>()
+                Content = new FormUrlEncodedContent(new Dictionary<string, string>(2)
                 {
                     { "name_for_admin", nameForAdmin },
                     { "name_for_crew", nameForCrew }
@@ -178,7 +175,7 @@ public class SmartHRService : ISmartHRService
     /// <exception cref="ApiFailedException">APIがエラーレスポンスを返した場合にスローされます。</exception>
     public ValueTask<Payroll> PublishPayrollAsync(string id, DateTimeOffset? publishedAt = default, bool? notifyWithPublish = default, CancellationToken cancellationToken = default)
     {
-        var parameters = new Dictionary<string, string>();
+        var parameters = new Dictionary<string, string>(2);
         if (publishedAt is not null)
             parameters.Add("published_at", publishedAt.GetValueOrDefault().ToString("o", CultureInfo.InvariantCulture));
         if (notifyWithPublish is not null)
@@ -207,7 +204,7 @@ public class SmartHRService : ISmartHRService
         bool? notifyWithPublish = default,
         CancellationToken cancellationToken = default)
     {
-        var parameters = new Dictionary<string, string>()
+        var parameters = new Dictionary<string, string>(10)
         {
             { "payment_type", JsonStringEnumConverterEx<Payroll.Payment>.EnumToString[paymentType] },
             { "paid_at", paidAt.ToString("yyyy-MM-dd", null) },
@@ -246,7 +243,7 @@ public class SmartHRService : ISmartHRService
         bool? notifyWithPublish = default,
         CancellationToken cancellationToken = default)
     {
-        var parameters = new Dictionary<string, string>()
+        var parameters = new Dictionary<string, string>(10)
         {
             { "payment_type", JsonStringEnumConverterEx<Payroll.Payment>.EnumToString[paymentType] },
             { "paid_at", paidAt.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) },
@@ -275,13 +272,9 @@ public class SmartHRService : ISmartHRService
     /// もしくは<paramref name="perPage"/>が100を超えています。
     /// </exception>
     /// <exception cref="ApiFailedException">APIがエラーレスポンスを返した場合にスローされます。</exception>
-    public ValueTask<IReadOnlyList<Payroll>> FetchPayrollListAsync(int page, int perPage = 10, CancellationToken cancellationToken = default)
+    public ValueTask<IReadOnlyList<Payroll>> FetchPayrollListAsync(int page = 1, int perPage = 10, CancellationToken cancellationToken = default)
     {
-        if (page <= 0)
-            throw new ArgumentOutOfRangeException(nameof(page));
-        if (perPage is <= 0 or > 100)
-            throw new ArgumentOutOfRangeException(nameof(perPage));
-
+        ThrowIfInvalidPage(page, perPage);
         var request = new HttpRequestMessage(HttpMethod.Get, $"/v1/payrolls?page={page}&per_page={perPage}");
         return CallApiAsync<IReadOnlyList<Payroll>>(request, cancellationToken);
     }
@@ -299,7 +292,7 @@ public class SmartHRService : ISmartHRService
         CancellationToken cancellationToken = default)
             => CallApiAsync<Payroll>(new(HttpMethod.Post, "/v1/payrolls")
             {
-                Content = new FormUrlEncodedContent(new Dictionary<string, string>
+                Content = new FormUrlEncodedContent(new Dictionary<string, string>(7)
                 {
                     { "payment_type", JsonStringEnumConverterEx<Payroll.Payment>.EnumToString[paymentType] },
                     { "paid_at", paidAt.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) },
@@ -342,11 +335,7 @@ public class SmartHRService : ISmartHRService
     /// <exception cref="ApiFailedException">APIがエラーレスポンスを返した場合にスローされます。</exception>
     public ValueTask<IReadOnlyList<Payslip>> FetchPayslipListAsync(string payrollId, int page = 1, int perPage = 10, CancellationToken cancellationToken = default)
     {
-        if (page <= 0)
-            throw new ArgumentOutOfRangeException(nameof(page));
-        if (perPage is <= 0 or > 100)
-            throw new ArgumentOutOfRangeException(nameof(perPage));
-
+        ThrowIfInvalidPage(page, perPage);
         var request = new HttpRequestMessage(HttpMethod.Get, $"/v1/payrolls/{payrollId}/payslips?page={page}&per_page={perPage}");
         return CallApiAsync<IReadOnlyList<Payslip>>(request, cancellationToken);
     }
@@ -373,11 +362,29 @@ public class SmartHRService : ISmartHRService
     /// <param name="cancellationToken">キャンセル通知を受け取るために他のオブジェクトまたはスレッドで使用できるキャンセル トークン。</param>
     /// <typeparam name="T">JSONの型</typeparam>
     /// <exception cref="ApiFailedException">APIがエラーレスポンスを返した場合にスローされます。</exception>
-    private async ValueTask<T> CallApiAsync<T>(HttpRequestMessage request, CancellationToken cancellationToken)
+    internal async ValueTask<T> CallApiAsync<T>(HttpRequestMessage request, CancellationToken cancellationToken)
     {
         var response = await _httpClient.SendAsync(request).ConfigureAwait(false);
         await ValidateResponseAsync(response, cancellationToken).ConfigureAwait(false);
         return (await response.Content.ReadFromJsonAsync<T>(cancellationToken: cancellationToken).ConfigureAwait(false))!;
+    }
+
+    /// <summary>
+    /// リストを返すAPIのページ指定を検証します。
+    /// </summary>
+    /// <param name="page">ページ番号</param>
+    /// <param name="perPage">1ページあたりに含まれる要素数</param>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// <paramref name="page"/>か<paramref name="perPage"/>が0以下です。
+    /// もしくは<paramref name="perPage"/>が100を超えています。
+    /// </exception>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal static void ThrowIfInvalidPage(int page, int perPage)
+    {
+        if (page <= 0)
+            throw new ArgumentOutOfRangeException(nameof(page));
+        if (perPage is <= 0 or > 100)
+            throw new ArgumentOutOfRangeException(nameof(perPage));
     }
 
     /// <summary>

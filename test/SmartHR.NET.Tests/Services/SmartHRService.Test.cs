@@ -93,7 +93,7 @@ public class SmartHRServiceTest
         return new(client);
     }
 
-    #region API Error
+    #region Common
     /// <summary>APIのサンプルエラーレスポンスJSON(アクセストークンが無効)</summary>
     private const string UnauthorizedTokenJson = "{"
         + "\"code\": 2,"
@@ -127,10 +127,11 @@ public class SmartHRServiceTest
         var handler = new Mock<HttpMessageHandler>();
         handler.SetupRequest(req => req.RequestUri?.GetLeftPart(UriPartial.Authority) == BaseUri)
             .ReturnsResponse(HttpStatusCode.BadRequest, json, "application/json");
+        var request = new HttpRequestMessage(HttpMethod.Get, "/v1");
 
         // Act
         var sut = CreateSut(handler, "");
-        var action = async () => await sut.DeletePayrollAsync("").ConfigureAwait(false);
+        var action = async () => await sut.CallApiAsync<string>(request, default).ConfigureAwait(false);
 
         // Assert
         (await action.Should().ThrowExactlyAsync<ApiFailedException>().ConfigureAwait(false))
@@ -152,13 +153,29 @@ public class SmartHRServiceTest
         var handler = new Mock<HttpMessageHandler>();
         handler.SetupRequest(req => req.RequestUri?.GetLeftPart(UriPartial.Authority) == BaseUri)
             .ReturnsResponse(HttpStatusCode.BadRequest, body);
+        var request = new HttpRequestMessage(HttpMethod.Get, "/v1");
 
         // Act
         var sut = CreateSut(handler, "");
-        var action = async () => await sut.DeletePayrollAsync("").ConfigureAwait(false);
+        var action = async () => await sut.CallApiAsync<string>(request, default).ConfigureAwait(false);
 
         // Assert
         await action.Should().ThrowExactlyAsync<HttpRequestException>().ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// リストを返すAPIで不正なページ数/要素数を指定したとき、ArgumentOutOfRangeExceptionの例外をスローする。
+    /// </summary>
+    /// <param name="page">ページ番号</param>
+    /// <param name="perPage">1ページあたりに含まれる要素数</param>
+    [InlineData(0, 10)]
+    [InlineData(1, 0)]
+    [InlineData(1, 101)]
+    [Theory(DisplayName = $"{nameof(SmartHRService)} > List API Caller > ArgumentOutOfRangeExceptionをスローする。")]
+    public void ListApiCaller_Throws_ArgumentOutOfRangeException(int page, int perPage)
+    {
+        var action = () => SmartHRService.ThrowIfInvalidPage(page, perPage);
+        action.Should().ThrowExactly<ArgumentOutOfRangeException>();
     }
     #endregion
 
@@ -319,29 +336,6 @@ public class SmartHRServiceTest
             receivedParameters.Should().Be($"name={name}{expected}");
             return true;
         }, Times.Once());
-    }
-
-    /// <summary>
-    /// ページ数が不正なとき、<see cref="SmartHRService.FetchJobTitleListAsync"/>は、ArgumentOutOfRangeExceptionをスローする。
-    /// </summary>
-    [InlineData(0, 10)]
-    [InlineData(1, 0)]
-    [InlineData(1, 101)]
-    [Theory(DisplayName = $"{nameof(SmartHRService)} > {nameof(SmartHRService.FetchJobTitleListAsync)} > ArgumentOutOfRangeException をスローする。")]
-    public async Task FetchJobTitleListAsync_Throws_ArgumentOutOfRangeException(int page, int perPage)
-    {
-        // Arrange
-        var handler = new Mock<HttpMessageHandler>();
-        handler.SetupRequest((_) => true)
-            .ReturnsResponse($"[{JobTitleResponseJson}]", "application/json");
-
-        // Act
-        var sut = CreateSut(handler, "");
-        var action = async () => _ = await sut.FetchJobTitleListAsync(page, perPage).ConfigureAwait(false);
-
-        // Assert
-        await action.Should().ThrowExactlyAsync<ArgumentOutOfRangeException>().ConfigureAwait(false);
-        handler.VerifyRequest((_) => true, Times.Never());
     }
 
     /// <summary>
@@ -727,29 +721,6 @@ public class SmartHRServiceTest
     }
 
     /// <summary>
-    /// ページ数が不正なとき、<see cref="SmartHRService.FetchPayrollListAsync"/>は、ArgumentOutOfRangeExceptionをスローする。
-    /// </summary>
-    [InlineData(0, 10)]
-    [InlineData(1, 0)]
-    [InlineData(1, 101)]
-    [Theory(DisplayName = $"{nameof(SmartHRService)} > {nameof(SmartHRService.FetchPayrollListAsync)} > ArgumentOutOfRangeException をスローする。")]
-    public async Task FetchPayrollListAsync_Throws_ArgumentOutOfRangeException(int page, int perPage)
-    {
-        // Arrange
-        var handler = new Mock<HttpMessageHandler>();
-        handler.SetupRequest((_) => true)
-            .ReturnsResponse($"[{PayrollResponseJson}]", "application/json");
-
-        // Act
-        var sut = CreateSut(handler, "");
-        var action = async () => _ = await sut.FetchPayrollListAsync(page, perPage).ConfigureAwait(false);
-
-        // Assert
-        await action.Should().ThrowExactlyAsync<ArgumentOutOfRangeException>().ConfigureAwait(false);
-        handler.VerifyRequest((_) => true, Times.Never());
-    }
-
-    /// <summary>
     /// <see cref="SmartHRService.FetchPayrollListAsync"/>は、"/v1/payrolls"にGETリクエストを行う。
     /// </summary>
     [Fact(DisplayName = $"{nameof(SmartHRService)} > {nameof(SmartHRService.FetchPayrollListAsync)} > GET /v1/payrolls をコールする。")]
@@ -1039,29 +1010,6 @@ public class SmartHRServiceTest
             + "\"memo\":\"string\"}]");
             return true;
         }, Times.Once());
-    }
-
-    /// <summary>
-    /// ページ数が不正なとき、<see cref="SmartHRService.FetchPayslipListAsync"/>は、ArgumentOutOfRangeExceptionをスローする。
-    /// </summary>
-    [InlineData(0, 10)]
-    [InlineData(1, 0)]
-    [InlineData(1, 101)]
-    [Theory(DisplayName = $"{nameof(SmartHRService)} > {nameof(SmartHRService.FetchPayslipListAsync)} > ArgumentOutOfRangeException をスローする。")]
-    public async Task FetchPayslipListAsync_Throws_ArgumentOutOfRangeException(int page, int perPage)
-    {
-        // Arrange
-        var handler = new Mock<HttpMessageHandler>();
-        handler.SetupRequest((_) => true)
-            .ReturnsResponse($"[{PayslipResponseJson}]", "application/json");
-
-        // Act
-        var sut = CreateSut(handler, "");
-        var action = async () => _ = await sut.FetchPayslipListAsync("", page, perPage).ConfigureAwait(false);
-
-        // Assert
-        await action.Should().ThrowExactlyAsync<ArgumentOutOfRangeException>().ConfigureAwait(false);
-        handler.VerifyRequest((_) => true, Times.Never());
     }
 
     /// <summary>
