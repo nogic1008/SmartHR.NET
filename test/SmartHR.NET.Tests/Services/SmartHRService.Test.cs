@@ -497,6 +497,237 @@ public class SmartHRServiceTest
     }
     #endregion
 
+    #region TaxWithholdings
+    /// <summary>源泉徴収APIのサンプルレスポンスJSON</summary>
+    private const string TaxWithholdingResponseJson = "{"
+    + "\"id\":\"id\","
+    + "\"name\":\"name\","
+    + "\"status\":\"wip\","
+    + "\"year\":\"H23\""
+    + "}";
+
+    /// <summary>
+    /// <see cref="SmartHRService.DeleteTaxWithholdingAsync"/>は、"/v1/tax_withholdings/{id}"にDELETEリクエストを行う。
+    /// </summary>
+    [Fact(DisplayName = $"{nameof(SmartHRService)} > {nameof(SmartHRService.DeleteTaxWithholdingAsync)} > DELETE /v1/tax_withholdings/:id をコールする。")]
+    public async Task DeleteTaxWithholdingAsync_Calls_DeleteApi()
+    {
+        // Arrange
+        string id = GenerateRandomString();
+        string accessToken = GenerateRandomString();
+
+        var handler = new Mock<HttpMessageHandler>();
+        handler.SetupRequest(req => req.RequestUri?.GetLeftPart(UriPartial.Authority) == BaseUri)
+            .ReturnsResponse(HttpStatusCode.NoContent);
+
+        // Act
+        var sut = CreateSut(handler, accessToken);
+        await sut.DeleteTaxWithholdingAsync(id).ConfigureAwait(false);
+
+        // Assert
+        handler.VerifyRequest(req =>
+        {
+            req.RequestUri.Should().NotBeNull();
+            req.RequestUri!.GetLeftPart(UriPartial.Authority).Should().Be(BaseUri);
+            req.RequestUri!.AbsolutePath.Should().Be($"/v1/tax_withholdings/{id}");
+            req.Method.Should().Be(HttpMethod.Delete);
+            req.Headers.Authorization.Should().NotBeNull();
+            req.Headers.Authorization!.Scheme.Should().Be("Bearer");
+            req.Headers.Authorization!.Parameter.Should().Be(accessToken);
+            return true;
+        }, Times.Once());
+    }
+
+    /// <summary>
+    /// <see cref="SmartHRService.FetchTaxWithholdingAsync"/>は、"/v1/tax_withholdings/{id}"にGETリクエストを行う。
+    /// </summary>
+    [Fact(DisplayName = $"{nameof(SmartHRService)} > {nameof(SmartHRService.FetchTaxWithholdingAsync)} > GET /v1/tax_withholdings/:id をコールする。")]
+    public async Task FetchTaxWithholdingAsync_Calls_GetApi()
+    {
+        // Arrange
+        string id = GenerateRandomString();
+        string accessToken = GenerateRandomString();
+
+        var handler = new Mock<HttpMessageHandler>();
+        handler.SetupRequest(req => req.RequestUri?.GetLeftPart(UriPartial.Authority) == BaseUri)
+            .ReturnsResponse(TaxWithholdingResponseJson, "application/json");
+
+        // Act
+        var sut = CreateSut(handler, accessToken);
+        var taxWithholding = await sut.FetchTaxWithholdingAsync(id).ConfigureAwait(false);
+
+        // Assert
+        taxWithholding.Should().NotBeNull();
+        handler.VerifyRequest(req =>
+        {
+            req.RequestUri.Should().NotBeNull();
+            req.RequestUri!.GetLeftPart(UriPartial.Authority).Should().Be(BaseUri);
+            req.RequestUri!.AbsolutePath.Should().Be($"/v1/tax_withholdings/{id}");
+            req.Method.Should().Be(HttpMethod.Get);
+            req.Headers.Authorization.Should().NotBeNull();
+            req.Headers.Authorization!.Scheme.Should().Be("Bearer");
+            req.Headers.Authorization!.Parameter.Should().Be(accessToken);
+            return true;
+        }, Times.Once());
+    }
+
+    /// <summary>
+    /// <see cref="SmartHRService.UpdateTaxWithholdingAsync"/>は、"/v1/tax_withholdings/{id}"にPATCHリクエストを行う。
+    /// </summary>
+    /// <param name="name">名前</param>
+    /// <param name="status">ステータス</param>
+    /// <param name="year">源泉徴収票に印字される年</param>
+    /// <param name="expected">サーバー側が受け取るパラメータ</param>
+    [InlineData(null, null, null, "{}")]
+    [InlineData("name", null, null, "{\"name\":\"name\"}")]
+    [InlineData(null, TaxWithholding.FormStatus.Wip, null, "{\"status\":\"wip\"}")]
+    [InlineData(null, null, "R04", "{\"year\":\"R04\"}")]
+    [InlineData("name", TaxWithholding.FormStatus.Fixed, "R04", "{\"name\":\"name\",\"status\":\"fixed\",\"year\":\"R04\"}")]
+    [Theory(DisplayName = $"{nameof(SmartHRService)} > {nameof(SmartHRService.UpdateTaxWithholdingAsync)} > PATCH /v1/tax_withholdings/:id をコールする。")]
+    public async Task UpdateTaxWithholdingAsync_Calls_PatchApi(string? name, TaxWithholding.FormStatus? status, string? year, string expected)
+    {
+        // Arrange
+        string id = GenerateRandomString();
+        string accessToken = GenerateRandomString();
+
+        var handler = new Mock<HttpMessageHandler>();
+        handler.SetupRequest(req => req.RequestUri?.GetLeftPart(UriPartial.Authority) == BaseUri)
+            .ReturnsResponse(TaxWithholdingResponseJson, "application/json");
+
+        // Act
+        var sut = CreateSut(handler, accessToken);
+        var payRoll = await sut.UpdateTaxWithholdingAsync(id, name, status, year).ConfigureAwait(false);
+
+        // Assert
+        payRoll.Should().NotBeNull();
+        handler.VerifyRequest(async (req) =>
+        {
+            req.RequestUri.Should().NotBeNull();
+            req.RequestUri!.GetLeftPart(UriPartial.Authority).Should().Be(BaseUri);
+            req.RequestUri!.AbsolutePath.Should().Be($"/v1/tax_withholdings/{id}");
+            req.Method.Should().Be(HttpMethod.Patch);
+            req.Headers.Authorization.Should().NotBeNull();
+            req.Headers.Authorization!.Scheme.Should().Be("Bearer");
+            req.Headers.Authorization!.Parameter.Should().Be(accessToken);
+
+            string receivedParameters = await req.Content!.ReadAsStringAsync().ConfigureAwait(false);
+            receivedParameters.Should().Be(expected);
+            return true;
+        }, Times.Once());
+    }
+
+    /// <summary>
+    /// <see cref="SmartHRService.ReplaceTaxWithholdingAsync"/>は、"/v1/tax_withholdings/{id}"にPUTリクエストを行う。
+    /// </summary>
+    /// <param name="name">名前</param>
+    /// <param name="status">ステータス</param>
+    /// <param name="year">源泉徴収票に印字される年</param>
+    /// <param name="expected">サーバー側が受け取るパラメータ</param>
+    [InlineData("name", TaxWithholding.FormStatus.Wip, "R04", "{\"name\":\"name\",\"status\":\"wip\",\"year\":\"R04\"}")]
+    [InlineData("name", TaxWithholding.FormStatus.Fixed, "H24", "{\"name\":\"name\",\"status\":\"fixed\",\"year\":\"H24\"}")]
+    [Theory(DisplayName = $"{nameof(SmartHRService)} > {nameof(SmartHRService.ReplaceTaxWithholdingAsync)} > PUT /v1/tax_withholdings/:id をコールする。")]
+    public async Task ReplaceTaxWithholdingAsync_Calls_PutApi(string name, TaxWithholding.FormStatus status, string year, string expected)
+    {
+        // Arrange
+        string id = GenerateRandomString();
+        string accessToken = GenerateRandomString();
+
+        var handler = new Mock<HttpMessageHandler>();
+        handler.SetupRequest(req => req.RequestUri?.GetLeftPart(UriPartial.Authority) == BaseUri)
+            .ReturnsResponse(TaxWithholdingResponseJson, "application/json");
+
+        // Act
+        var sut = CreateSut(handler, accessToken);
+        var payRoll = await sut.ReplaceTaxWithholdingAsync(id, name, status, year).ConfigureAwait(false);
+
+        // Assert
+        payRoll.Should().NotBeNull();
+        handler.VerifyRequest(async (req) =>
+        {
+            req.RequestUri.Should().NotBeNull();
+            req.RequestUri!.GetLeftPart(UriPartial.Authority).Should().Be(BaseUri);
+            req.RequestUri!.AbsolutePath.Should().Be($"/v1/tax_withholdings/{id}");
+            req.Method.Should().Be(HttpMethod.Put);
+            req.Headers.Authorization.Should().NotBeNull();
+            req.Headers.Authorization!.Scheme.Should().Be("Bearer");
+            req.Headers.Authorization!.Parameter.Should().Be(accessToken);
+
+            string receivedParameters = await req.Content!.ReadAsStringAsync().ConfigureAwait(false);
+            receivedParameters.Should().Be(expected);
+            return true;
+        }, Times.Once());
+    }
+
+    /// <summary>
+    /// <see cref="SmartHRService.FetchTaxWithholdingListAsync"/>は、"/v1/tax_withholdings"にGETリクエストを行う。
+    /// </summary>
+    [Fact(DisplayName = $"{nameof(SmartHRService)} > {nameof(SmartHRService.FetchTaxWithholdingListAsync)} > GET /v1/tax_withholdings をコールする。")]
+    public async Task FetchTaxWithholdingListAsync_Calls_GetApi()
+    {
+        // Arrange
+        string accessToken = GenerateRandomString();
+
+        var handler = new Mock<HttpMessageHandler>();
+        handler.SetupRequest(req => req.RequestUri?.GetLeftPart(UriPartial.Authority) == BaseUri)
+            .ReturnsResponse($"[{TaxWithholdingResponseJson}]", "application/json");
+
+        // Act
+        var sut = CreateSut(handler, accessToken);
+        var jobTitles = await sut.FetchTaxWithholdingListAsync(1, 10).ConfigureAwait(false);
+
+        // Assert
+        jobTitles.Should().NotBeNullOrEmpty();
+        handler.VerifyRequest((req) =>
+        {
+            req.RequestUri.Should().NotBeNull();
+            req.RequestUri!.GetLeftPart(UriPartial.Authority).Should().Be(BaseUri);
+            req.RequestUri!.AbsolutePath.Should().Be("/v1/tax_withholdings");
+            req.Method.Should().Be(HttpMethod.Get);
+            req.Headers.Authorization.Should().NotBeNull();
+            req.Headers.Authorization!.Scheme.Should().Be("Bearer");
+            req.Headers.Authorization!.Parameter.Should().Be(accessToken);
+            return true;
+        }, Times.Once());
+    }
+
+    /// <summary>
+    /// <see cref="SmartHRService.AddTaxWithholdingAsync"/>は、"/v1/tax_withholdings"にPOSTリクエストを行う。
+    /// </summary>
+    [Fact(DisplayName = $"{nameof(SmartHRService)} > {nameof(SmartHRService.AddTaxWithholdingAsync)} > POST /v1/tax_withholdings をコールする。")]
+    public async Task AddTaxWithholdingAsync_Calls_PostApi()
+    {
+        // Arrange
+        string id = GenerateRandomString();
+        string accessToken = GenerateRandomString();
+        string name = GenerateRandomString();
+
+        var handler = new Mock<HttpMessageHandler>();
+        handler.SetupRequest(req => req.RequestUri?.GetLeftPart(UriPartial.Authority) == BaseUri)
+            .ReturnsResponse(TaxWithholdingResponseJson, "application/json");
+
+        // Act
+        var sut = CreateSut(handler, accessToken);
+        var jobTitle = await sut.AddTaxWithholdingAsync(name, "R03").ConfigureAwait(false);
+
+        // Assert
+        jobTitle.Should().NotBeNull();
+        handler.VerifyRequest(async (req) =>
+        {
+            req.RequestUri.Should().NotBeNull();
+            req.RequestUri!.GetLeftPart(UriPartial.Authority).Should().Be(BaseUri);
+            req.RequestUri!.AbsolutePath.Should().Be("/v1/tax_withholdings");
+            req.Method.Should().Be(HttpMethod.Post);
+            req.Headers.Authorization.Should().NotBeNull();
+            req.Headers.Authorization!.Scheme.Should().Be("Bearer");
+            req.Headers.Authorization!.Parameter.Should().Be(accessToken);
+
+            string receivedParameters = await req.Content!.ReadAsStringAsync().ConfigureAwait(false);
+            receivedParameters.Should().Be($"{{\"name\":\"{name}\",\"year\":\"R03\"}}");
+            return true;
+        }, Times.Once());
+    }
+    #endregion
+
     #region Payrolls
     /// <summary>給与APIのサンプルレスポンスJSON</summary>
     private const string PayrollResponseJson = "{"
