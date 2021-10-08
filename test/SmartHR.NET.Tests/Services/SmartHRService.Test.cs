@@ -189,6 +189,82 @@ public class SmartHRServiceTest
     }
     #endregion
 
+    #region PaymentPeriods
+    /// <summary>給与支給形態APIのサンプルレスポンスJSON</summary>
+    private const string PaymentPeriodResponseJson = "{"
+    + "\"id\":\"id\","
+    + "\"name\":\"name\","
+    + "\"period_type\":\"monthly\","
+    + "\"updated_at\":\"2021-10-06T00:24:48.897Z\","
+    + "\"created_at\":\"2021-10-06T00:24:48.897Z\""
+    + "}";
+
+    /// <summary>
+    /// <see cref="SmartHRService.FetchPaymentPeriodAsync"/>は、"/v1/payment_periods/{id}"にGETリクエストを行う。
+    /// </summary>
+    [Fact(DisplayName = $"{nameof(SmartHRService)} > {nameof(SmartHRService.FetchPaymentPeriodAsync)} > GET /v1/payment_periods/:id をコールする。")]
+    public async Task FetchPaymentPeriodAsync_Calls_GetApi()
+    {
+        // Arrange
+        string id = GenerateRandomString();
+        string accessToken = GenerateRandomString();
+
+        var handler = new Mock<HttpMessageHandler>();
+        handler.SetupRequest(req => req.RequestUri?.GetLeftPart(UriPartial.Authority) == BaseUri)
+            .ReturnsResponse(PaymentPeriodResponseJson, "application/json");
+
+        // Act
+        var sut = CreateSut(handler, accessToken);
+        var jobTitle = await sut.FetchPaymentPeriodAsync(id).ConfigureAwait(false);
+
+        // Assert
+        jobTitle.Should().NotBeNull();
+        handler.VerifyRequest(req =>
+        {
+            req.RequestUri.Should().NotBeNull();
+            req.RequestUri!.GetLeftPart(UriPartial.Authority).Should().Be(BaseUri);
+            req.RequestUri!.AbsolutePath.Should().Be($"/v1/payment_periods/{id}");
+            req.Method.Should().Be(HttpMethod.Get);
+            req.Headers.Authorization.Should().NotBeNull();
+            req.Headers.Authorization!.Scheme.Should().Be("Bearer");
+            req.Headers.Authorization!.Parameter.Should().Be(accessToken);
+            return true;
+        }, Times.Once());
+    }
+
+    /// <summary>
+    /// <see cref="SmartHRService.FetchPaymentPeriodListAsync"/>は、"/v1/payment_periods"にGETリクエストを行う。
+    /// </summary>
+    [Fact(DisplayName = $"{nameof(SmartHRService)} > {nameof(SmartHRService.FetchPaymentPeriodListAsync)} > GET /v1/payment_periods をコールする。")]
+    public async Task FetchPaymentPeriodListAsync_Calls_GetApi()
+    {
+        // Arrange
+        string accessToken = GenerateRandomString();
+
+        var handler = new Mock<HttpMessageHandler>();
+        handler.SetupRequest(req => req.RequestUri?.GetLeftPart(UriPartial.Authority) == BaseUri)
+            .ReturnsResponse($"[{PaymentPeriodResponseJson}]", "application/json");
+
+        // Act
+        var sut = CreateSut(handler, accessToken);
+        var jobTitles = await sut.FetchPaymentPeriodListAsync(1, 10).ConfigureAwait(false);
+
+        // Assert
+        jobTitles.Should().NotBeNullOrEmpty();
+        handler.VerifyRequest((req) =>
+        {
+            req.RequestUri.Should().NotBeNull();
+            req.RequestUri!.GetLeftPart(UriPartial.Authority).Should().Be(BaseUri);
+            req.RequestUri!.AbsolutePath.Should().Be("/v1/payment_periods");
+            req.Method.Should().Be(HttpMethod.Get);
+            req.Headers.Authorization.Should().NotBeNull();
+            req.Headers.Authorization!.Scheme.Should().Be("Bearer");
+            req.Headers.Authorization!.Parameter.Should().Be(accessToken);
+            return true;
+        }, Times.Once());
+    }
+    #endregion
+
     #region JobTitles
     /// <summary>役職APIのサンプルレスポンスJSON</summary>
     private const string JobTitleResponseJson = "{"
