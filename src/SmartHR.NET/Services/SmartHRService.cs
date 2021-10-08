@@ -167,6 +167,62 @@ public class SmartHRService : ISmartHRService
         => FetchListAsync<BankAccountSetting>("/v1/bank_account_settings", page, perPage, cancellationToken);
     #endregion
 
+    #region TaxWithholdings
+    private record TaxWithholdingPayload(
+        string? Name = null,
+        TaxWithholding.FormStatus? Status = default,
+        string? Year = null);
+
+    /// <inheritdoc/>
+    /// <exception cref="ApiFailedException">APIがエラーレスポンスを返した場合にスローされます。</exception>
+    public async ValueTask DeleteTaxWithholdingAsync(string id, CancellationToken cancellationToken = default)
+    {
+        var response = await _httpClient.DeleteAsync($"/v1/tax_withholdings/{id}", cancellationToken).ConfigureAwait(false);
+        await ValidateResponseAsync(response, cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <inheritdoc/>
+    /// <exception cref="ApiFailedException">APIがエラーレスポンスを返した場合にスローされます。</exception>
+    public ValueTask<TaxWithholding> FetchTaxWithholdingAsync(string id, CancellationToken cancellationToken = default)
+        => CallApiAsync<TaxWithholding>(new(HttpMethod.Get, $"/v1/tax_withholdings/{id}"), cancellationToken);
+
+    /// <inheritdoc/>
+    /// <exception cref="ApiFailedException">APIがエラーレスポンスを返した場合にスローされます。</exception>
+    public ValueTask<TaxWithholding> UpdateTaxWithholdingAsync(string id, string? name = null, TaxWithholding.FormStatus? status = default, string? year = null, CancellationToken cancellationToken = default)
+        => CallApiAsync<TaxWithholding>(
+            new(new("PATCH"), $"/v1/tax_withholdings/{id}")
+            {
+                Content = JsonContent.Create(new TaxWithholdingPayload(name, status, year), options: _serializerOptions)
+            }, cancellationToken);
+
+    /// <inheritdoc/>
+    /// <exception cref="ApiFailedException">APIがエラーレスポンスを返した場合にスローされます。</exception>
+    public ValueTask<TaxWithholding> ReplaceTaxWithholdingAsync(string id, string name, TaxWithholding.FormStatus status, string year, CancellationToken cancellationToken = default)
+        => CallApiAsync<TaxWithholding>(
+            new(HttpMethod.Put, $"/v1/tax_withholdings/{id}")
+            {
+                Content = JsonContent.Create(new TaxWithholdingPayload(name, status, year), options: _serializerOptions)
+            }, cancellationToken);
+
+    /// <inheritdoc/>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// <paramref name="page"/>か<paramref name="perPage"/>が0以下です。
+    /// もしくは<paramref name="perPage"/>が100を超えています。
+    /// </exception>
+    /// <exception cref="ApiFailedException">APIがエラーレスポンスを返した場合にスローされます。</exception>
+    public ValueTask<IReadOnlyList<TaxWithholding>> FetchTaxWithholdingListAsync(int page = 1, int perPage = 10, CancellationToken cancellationToken = default)
+        => FetchListAsync<TaxWithholding>("/v1/tax_withholdings", page, perPage, cancellationToken);
+
+    /// <inheritdoc/>
+    /// <exception cref="ApiFailedException">APIがエラーレスポンスを返した場合にスローされます。</exception>
+    public ValueTask<TaxWithholding> AddTaxWithholdingAsync(string name, string year, CancellationToken cancellationToken = default)
+        => CallApiAsync<TaxWithholding>(
+            new(HttpMethod.Post, "/v1/tax_withholdings")
+            {
+                Content = JsonContent.Create(new TaxWithholdingPayload(name, null, year), options: _serializerOptions)
+            }, cancellationToken);
+    #endregion
+
     #region Payrolls
     /// <inheritdoc/>
     /// <exception cref="ApiFailedException">APIがエラーレスポンスを返した場合にスローされます。</exception>
