@@ -121,6 +121,83 @@ public interface ISmartHRService
     public ValueTask<IReadOnlyList<BankAccountSetting>> FetchBankAccountSettingListAsync(int page = 1, int perPage = 10, CancellationToken cancellationToken = default);
     #endregion
 
+    #region TaxWithholdings
+    /// <summary>
+    /// <paramref name="id"/>と一致する源泉徴収情報を削除します。
+    /// </summary>
+    /// <remarks>
+    /// <seealso href="https://developer.smarthr.jp/api/index.html#!/%E6%BA%90%E6%B3%89%E5%BE%B4%E5%8F%8E/deleteV1TaxWithholdingsId"/>
+    /// </remarks>
+    /// <param name="id">源泉徴収票ID</param>
+    /// <param name="cancellationToken">キャンセル通知を受け取るために他のオブジェクトまたはスレッドで使用できるキャンセル トークン。</param>
+    public ValueTask DeleteTaxWithholdingAsync(string id, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// <paramref name="id"/>と一致する源泉徴収情報を取得します。
+    /// </summary>
+    /// <remarks>
+    /// <seealso href="https://developer.smarthr.jp/api/index.html#!/%E6%BA%90%E6%B3%89%E5%BE%B4%E5%8F%8E/getV1TaxWithholdingsId"/>
+    /// </remarks>
+    /// <param name="id">源泉徴収票ID</param>
+    /// <param name="cancellationToken">キャンセル通知を受け取るために他のオブジェクトまたはスレッドで使用できるキャンセル トークン。</param>
+    public ValueTask<TaxWithholding> FetchTaxWithholdingAsync(string id, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// <paramref name="id"/>と一致する源泉徴収情報を部分更新します。
+    /// なお、確定後の源泉徴収の更新はできません。
+    /// </summary>
+    /// <remarks>
+    /// <seealso href="https://developer.smarthr.jp/api/index.html#!/%E6%BA%90%E6%B3%89%E5%BE%B4%E5%8F%8E/patchV1TaxWithholdingsId"/>
+    /// </remarks>
+    /// <param name="id">源泉徴収票ID</param>
+    /// <param name="name">名前</param>
+    /// <param name="status">ステータス</param>
+    /// <param name="year">源泉徴収票に印字される年</param>
+    /// <param name="cancellationToken">キャンセル通知を受け取るために他のオブジェクトまたはスレッドで使用できるキャンセル トークン。</param>
+    /// <returns>更新処理後の<see cref="TaxWithholding"/>オブジェクト。</returns>
+    public ValueTask<TaxWithholding> UpdateTaxWithholdingAsync(string id, string? name = null, TaxWithholding.FormStatus? status = default, string? year = null, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// <paramref name="id"/>と一致する源泉徴収情報を更新します。
+    /// なお、確定後の源泉徴収の更新はできません。
+    /// </summary>
+    /// <remarks>
+    /// <seealso href="https://developer.smarthr.jp/api/index.html#!/%E6%BA%90%E6%B3%89%E5%BE%B4%E5%8F%8E/putV1TaxWithholdingsId"/>
+    /// </remarks>
+    /// <param name="id">源泉徴収票ID</param>
+    /// <param name="name">名前</param>
+    /// <param name="status">ステータス</param>
+    /// <param name="year">源泉徴収票に印字される年</param>
+    /// <param name="cancellationToken">キャンセル通知を受け取るために他のオブジェクトまたはスレッドで使用できるキャンセル トークン。</param>
+    /// <returns>更新処理後の<see cref="TaxWithholding"/>オブジェクト。</returns>
+    public ValueTask<TaxWithholding> ReplaceTaxWithholdingAsync(string id, string name, TaxWithholding.FormStatus status, string year, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// 源泉徴収情報をリストで取得します。
+    /// </summary>
+    /// <remarks>
+    /// <seealso href="https://developer.smarthr.jp/api/index.html#!/%E6%BA%90%E6%B3%89%E5%BE%B4%E5%8F%8E/getV1TaxWithholdings"/>
+    /// </remarks>
+    /// <param name="page">1から始まるページ番号</param>
+    /// <param name="perPage">1ページあたりに含まれる要素数</param>
+    /// <param name="cancellationToken">キャンセル通知を受け取るために他のオブジェクトまたはスレッドで使用できるキャンセル トークン。</param>
+    /// <returns>源泉徴収情報の一覧</returns>
+    public ValueTask<IReadOnlyList<TaxWithholding>> FetchTaxWithholdingListAsync(int page = 1, int perPage = 10, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// 源泉徴収情報を新規登録します。
+    /// ステータスは未確定で登録されます。
+    /// </summary>
+    /// <remarks>
+    /// <seealso href="https://developer.smarthr.jp/api/index.html#!/%E6%BA%90%E6%B3%89%E5%BE%B4%E5%8F%8E/postV1TaxWithholdings"/>
+    /// </remarks>
+    /// <param name="name">名前</param>
+    /// <param name="year">源泉徴収票に印字される年</param>
+    /// <param name="cancellationToken">キャンセル通知を受け取るために他のオブジェクトまたはスレッドで使用できるキャンセル トークン。</param>
+    /// <returns>登録処理後の<see cref="JobTitle"/>オブジェクト。</returns>
+    public ValueTask<TaxWithholding> AddTaxWithholdingAsync(string name, string year, CancellationToken cancellationToken = default);
+    #endregion
+
     #region Payrolls
     /// <summary>
     /// <paramref name="id"/>と一致する給与情報を削除します。
