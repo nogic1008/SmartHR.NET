@@ -11,6 +11,30 @@ namespace SmartHR.NET.Services;
 /// </summary>
 public interface ISmartHRService
 {
+    #region PaymentPeriods
+    /// <summary>
+    /// <paramref name="id"/>と一致する給与支給形態情報を取得します。
+    /// </summary>
+    /// <remarks>
+    /// <seealso href="https://developer.smarthr.jp/api/index.html#!/%E7%B5%A6%E4%B8%8E%E6%94%AF%E7%B5%A6%E5%BD%A2%E6%85%8B/getV1PaymentPeriodsId"/>
+    /// </remarks>
+    /// <param name="id">給与支給形態のID</param>
+    /// <param name="cancellationToken">キャンセル通知を受け取るために他のオブジェクトまたはスレッドで使用できるキャンセル トークン。</param>
+    public ValueTask<PaymentPeriod> FetchPaymentPeriodAsync(string id, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// 給与支給形態をリストで取得します。
+    /// </summary>
+    /// <remarks>
+    /// <seealso href="https://developer.smarthr.jp/api/index.html#!/%E7%B5%A6%E4%B8%8E%E6%94%AF%E7%B5%A6%E5%BD%A2%E6%85%8B/getV1PaymentPeriods"/>
+    /// </remarks>
+    /// <param name="page">1から始まるページ番号</param>
+    /// <param name="perPage">1ページあたりに含まれる要素数</param>
+    /// <param name="cancellationToken">キャンセル通知を受け取るために他のオブジェクトまたはスレッドで使用できるキャンセル トークン。</param>
+    /// <returns>給与支給形態の一覧</returns>
+    public ValueTask<IReadOnlyList<PaymentPeriod>> FetchPaymentPeriodListAsync(int page = 1, int perPage = 10, CancellationToken cancellationToken = default);
+    #endregion
+
     #region JobTitles
     /// <summary>
     /// <paramref name="id"/>と一致する役職情報を削除します。

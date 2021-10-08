@@ -57,6 +57,22 @@ public class SmartHRService : ISmartHRService
             _httpClient.DefaultRequestHeaders.Authorization = new("Bearer", accessToken);
     }
 
+    #region PaymentPeriods
+    /// <inheritdoc/>
+    /// <exception cref="ApiFailedException">APIがエラーレスポンスを返した場合にスローされます。</exception>
+    public ValueTask<PaymentPeriod> FetchPaymentPeriodAsync(string id, CancellationToken cancellationToken = default)
+        => CallApiAsync<PaymentPeriod>(new(HttpMethod.Get, $"/v1/payment_periods/{id}"), cancellationToken);
+
+    /// <inheritdoc/>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// <paramref name="page"/>か<paramref name="perPage"/>が0以下です。
+    /// もしくは<paramref name="perPage"/>が100を超えています。
+    /// </exception>
+    /// <exception cref="ApiFailedException">APIがエラーレスポンスを返した場合にスローされます。</exception>
+    public ValueTask<IReadOnlyList<PaymentPeriod>> FetchPaymentPeriodListAsync(int page = 1, int perPage = 10, CancellationToken cancellationToken = default)
+        => FetchListAsync<PaymentPeriod>("/v1/payment_periods", page, perPage, cancellationToken);
+    #endregion
+
     #region JobTitles
     /// <inheritdoc/>
     /// <exception cref="ApiFailedException">APIがエラーレスポンスを返した場合にスローされます。</exception>
