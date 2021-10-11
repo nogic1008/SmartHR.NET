@@ -497,6 +497,35 @@ public class SmartHRServiceTest
     }
     #endregion
 
+    #region BankAccountSettings
+    /// <summary>
+    /// <see cref="SmartHRService.FetchBankAccountSettingListAsync"/>は、"/v1/bank_account_settings"にGETリクエストを行う。
+    /// </summary>
+    [Fact(DisplayName = $"{nameof(SmartHRService)} > {nameof(SmartHRService.FetchBankAccountSettingListAsync)} > GET /v1/bank_account_settings をコールする。")]
+    public async Task FetchBankAccountSettingListAsync_Calls_GetApi()
+    {
+        // Arrange
+        var handler = new Mock<HttpMessageHandler>();
+        handler.SetupRequest(req => req.RequestUri?.GetLeftPart(UriPartial.Authority) == BaseUri)
+            .ReturnsResponse($"[{BankAccountSettingTest.Json}]", "application/json");
+
+        // Act
+        var sut = CreateSut(handler);
+        var entities = await sut.FetchBankAccountSettingListAsync(1, 10).ConfigureAwait(false);
+
+        // Assert
+        entities.Should().NotBeNullOrEmpty();
+        handler.VerifyRequest((req) =>
+        {
+            req.RequestUri.Should().NotBeNull();
+            req.RequestUri!.GetLeftPart(UriPartial.Authority).Should().Be(BaseUri);
+            req.RequestUri!.PathAndQuery.Should().Be("/v1/bank_account_settings?page=1&per_page=10");
+            req.Method.Should().Be(HttpMethod.Get);
+            return true;
+        }, Times.Once());
+    }
+    #endregion
+
     #region TaxWithholdings
     /// <summary>
     /// <see cref="SmartHRService.DeleteTaxWithholdingAsync"/>は、"/v1/tax_withholdings/{id}"にDELETEリクエストを行う。
