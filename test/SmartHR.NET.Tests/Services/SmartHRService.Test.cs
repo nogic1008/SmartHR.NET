@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using SmartHR.NET.Entities;
 using SmartHR.NET.Services;
+using SmartHR.NET.Tests.Entities;
 
 namespace SmartHR.NET.Tests.Services;
 
@@ -211,16 +212,6 @@ public class SmartHRServiceTest
     #endregion
 
     #region DependentRelations
-    private const string DependentRelationResponseJson = "{"
-    + "\"id\":\"9ba6128d-9a8a-4b6a-9464-03907dc37e71\","
-    + "\"name\":\"妻\","
-    + "\"preset_type\":\"wife\","
-    + "\"is_child\":false,"
-    + "\"position\":1,"
-    + "\"created_at\":\"2021-09-24T17:22:12.426Z\","
-    + "\"updated_at\":\"2021-09-24T17:22:12.426Z\""
-    + "}";
-
     /// <summary>
     /// <see cref="SmartHRService.FetchDependentRelationListAsync"/>は、"/v1/dependent_relations"にGETリクエストを行う。
     /// </summary>
@@ -232,7 +223,7 @@ public class SmartHRServiceTest
         // Arrange
         var handler = new Mock<HttpMessageHandler>();
         handler.SetupRequest(req => req.RequestUri?.GetLeftPart(UriPartial.Authority) == BaseUri)
-            .ReturnsResponse($"[{DependentRelationResponseJson}]", "application/json");
+            .ReturnsResponse($"[{DependentRelationTest.Json}]", "application/json");
 
         // Act
         var sut = CreateSut(handler);
@@ -252,15 +243,6 @@ public class SmartHRServiceTest
     #endregion
 
     #region PaymentPeriods
-    /// <summary>給与支給形態APIのサンプルレスポンスJSON</summary>
-    private const string PaymentPeriodResponseJson = "{"
-    + "\"id\":\"id\","
-    + "\"name\":\"name\","
-    + "\"period_type\":\"monthly\","
-    + "\"updated_at\":\"2021-10-06T00:24:48.897Z\","
-    + "\"created_at\":\"2021-10-06T00:24:48.897Z\""
-    + "}";
-
     /// <summary>
     /// <see cref="SmartHRService.FetchPaymentPeriodAsync"/>は、"/v1/payment_periods/{id}"にGETリクエストを行う。
     /// </summary>
@@ -272,7 +254,7 @@ public class SmartHRServiceTest
 
         var handler = new Mock<HttpMessageHandler>();
         handler.SetupRequest(req => req.RequestUri?.GetLeftPart(UriPartial.Authority) == BaseUri)
-            .ReturnsResponse(PaymentPeriodResponseJson, "application/json");
+            .ReturnsResponse(PaymentPeriodTest.Json, "application/json");
 
         // Act
         var sut = CreateSut(handler);
@@ -299,7 +281,7 @@ public class SmartHRServiceTest
         // Arrange
         var handler = new Mock<HttpMessageHandler>();
         handler.SetupRequest(req => req.RequestUri?.GetLeftPart(UriPartial.Authority) == BaseUri)
-            .ReturnsResponse($"[{PaymentPeriodResponseJson}]", "application/json");
+            .ReturnsResponse($"[{PaymentPeriodTest.Json}]", "application/json");
 
         // Act
         var sut = CreateSut(handler);
@@ -319,15 +301,6 @@ public class SmartHRServiceTest
     #endregion
 
     #region JobTitles
-    /// <summary>役職APIのサンプルレスポンスJSON</summary>
-    private const string JobTitleResponseJson = "{"
-        + "\"id\":\"id\","
-        + "\"name\":\"name\","
-        + "\"rank\":1,"
-        + "\"created_at\":\"2021-10-06T00:24:48.910Z\","
-        + "\"updated_at\":\"2021-10-06T00:24:48.910Z\""
-        + "}";
-
     /// <summary>
     /// <see cref="SmartHRService.DeleteJobTitleAsync"/>は、"/v1/job_titles/{id}"にDELETEリクエストを行う。
     /// </summary>
@@ -367,7 +340,7 @@ public class SmartHRServiceTest
 
         var handler = new Mock<HttpMessageHandler>();
         handler.SetupRequest(req => req.RequestUri?.GetLeftPart(UriPartial.Authority) == BaseUri)
-            .ReturnsResponse(JobTitleResponseJson, "application/json");
+            .ReturnsResponse(JobTitleTest.Json, "application/json");
 
         // Act
         var sut = CreateSut(handler);
@@ -403,7 +376,7 @@ public class SmartHRServiceTest
 
         var handler = new Mock<HttpMessageHandler>();
         handler.SetupRequest(req => req.RequestUri?.GetLeftPart(UriPartial.Authority) == BaseUri)
-            .ReturnsResponse(JobTitleResponseJson, "application/json");
+            .ReturnsResponse(JobTitleTest.Json, "application/json");
 
         // Act
         var sut = CreateSut(handler);
@@ -440,7 +413,7 @@ public class SmartHRServiceTest
 
         var handler = new Mock<HttpMessageHandler>();
         handler.SetupRequest(req => req.RequestUri?.GetLeftPart(UriPartial.Authority) == BaseUri)
-            .ReturnsResponse(JobTitleResponseJson, "application/json");
+            .ReturnsResponse(JobTitleTest.Json, "application/json");
 
         // Act
         var sut = CreateSut(handler);
@@ -470,7 +443,7 @@ public class SmartHRServiceTest
         // Arrange
         var handler = new Mock<HttpMessageHandler>();
         handler.SetupRequest(req => req.RequestUri?.GetLeftPart(UriPartial.Authority) == BaseUri)
-            .ReturnsResponse($"[{JobTitleResponseJson}]", "application/json");
+            .ReturnsResponse($"[{JobTitleTest.Json}]", "application/json");
 
         // Act
         var sut = CreateSut(handler);
@@ -502,7 +475,7 @@ public class SmartHRServiceTest
 
         var handler = new Mock<HttpMessageHandler>();
         handler.SetupRequest(req => req.RequestUri?.GetLeftPart(UriPartial.Authority) == BaseUri)
-            .ReturnsResponse(JobTitleResponseJson, "application/json");
+            .ReturnsResponse(JobTitleTest.Json, "application/json");
 
         // Act
         var sut = CreateSut(handler);
@@ -525,14 +498,6 @@ public class SmartHRServiceTest
     #endregion
 
     #region TaxWithholdings
-    /// <summary>源泉徴収APIのサンプルレスポンスJSON</summary>
-    private const string TaxWithholdingResponseJson = "{"
-    + "\"id\":\"id\","
-    + "\"name\":\"name\","
-    + "\"status\":\"wip\","
-    + "\"year\":\"H23\""
-    + "}";
-
     /// <summary>
     /// <see cref="SmartHRService.DeleteTaxWithholdingAsync"/>は、"/v1/tax_withholdings/{id}"にDELETEリクエストを行う。
     /// </summary>
@@ -572,7 +537,7 @@ public class SmartHRServiceTest
 
         var handler = new Mock<HttpMessageHandler>();
         handler.SetupRequest(req => req.RequestUri?.GetLeftPart(UriPartial.Authority) == BaseUri)
-            .ReturnsResponse(TaxWithholdingResponseJson, "application/json");
+            .ReturnsResponse(TaxWithholdingTest.Json, "application/json");
 
         // Act
         var sut = CreateSut(handler);
@@ -610,7 +575,7 @@ public class SmartHRServiceTest
 
         var handler = new Mock<HttpMessageHandler>();
         handler.SetupRequest(req => req.RequestUri?.GetLeftPart(UriPartial.Authority) == BaseUri)
-            .ReturnsResponse(TaxWithholdingResponseJson, "application/json");
+            .ReturnsResponse(TaxWithholdingTest.Json, "application/json");
 
         // Act
         var sut = CreateSut(handler);
@@ -648,7 +613,7 @@ public class SmartHRServiceTest
 
         var handler = new Mock<HttpMessageHandler>();
         handler.SetupRequest(req => req.RequestUri?.GetLeftPart(UriPartial.Authority) == BaseUri)
-            .ReturnsResponse(TaxWithholdingResponseJson, "application/json");
+            .ReturnsResponse(TaxWithholdingTest.Json, "application/json");
 
         // Act
         var sut = CreateSut(handler);
@@ -678,7 +643,7 @@ public class SmartHRServiceTest
         // Arrange
         var handler = new Mock<HttpMessageHandler>();
         handler.SetupRequest(req => req.RequestUri?.GetLeftPart(UriPartial.Authority) == BaseUri)
-            .ReturnsResponse($"[{TaxWithholdingResponseJson}]", "application/json");
+            .ReturnsResponse($"[{TaxWithholdingTest.Json}]", "application/json");
 
         // Act
         var sut = CreateSut(handler);
@@ -708,7 +673,7 @@ public class SmartHRServiceTest
 
         var handler = new Mock<HttpMessageHandler>();
         handler.SetupRequest(req => req.RequestUri?.GetLeftPart(UriPartial.Authority) == BaseUri)
-            .ReturnsResponse(TaxWithholdingResponseJson, "application/json");
+            .ReturnsResponse(TaxWithholdingTest.Json, "application/json");
 
         // Act
         var sut = CreateSut(handler);
@@ -731,22 +696,6 @@ public class SmartHRServiceTest
     #endregion
 
     #region Payrolls
-    /// <summary>給与APIのサンプルレスポンスJSON</summary>
-    private const string PayrollResponseJson = "{"
-        + "\"id\": \"string\","
-        + "\"payment_type\": \"salary\","
-        + "\"paid_at\": \"2021-09-30\","
-        + "\"period_start_at\": \"2021-09-30\","
-        + "\"period_end_at\": \"2021-09-30\","
-        + "\"source_type\": \"api\","
-        + "\"status\": \"wip\","
-        + "\"published_at\": null,"
-        + "\"notify_with_publish\": true,"
-        + "\"numeral_system_handle_type\": \"as_is\","
-        + "\"name_for_admin\": \"string\","
-        + "\"name_for_crew\": \"string\""
-        + "}";
-
     /// <summary>
     /// <see cref="SmartHRService.DeletePayrollAsync"/>は、"/v1/payrolls/{id}"にDELETEリクエストを行う。
     /// </summary>
@@ -786,27 +735,14 @@ public class SmartHRServiceTest
 
         var handler = new Mock<HttpMessageHandler>();
         handler.SetupRequest(req => req.RequestUri?.GetLeftPart(UriPartial.Authority) == BaseUri)
-            .ReturnsResponse(PayrollResponseJson, "application/json");
+            .ReturnsResponse(PayrollTest.Json, "application/json");
 
         // Act
         var sut = CreateSut(handler);
         var entity = await sut.FetchPayrollAsync(id).ConfigureAwait(false);
 
         // Assert
-        entity.Should().Be(new Payroll(
-            "string",
-            Payroll.Payment.Salary,
-            new(2021, 9, 30),
-            new(2021, 9, 30),
-            new(2021, 9, 30),
-            "api",
-            Payroll.SalaryStatus.Wip,
-            default,
-            true,
-            Payroll.NumeralSystem.AsIs,
-            "string",
-            "string"
-        ));
+        entity.Should().NotBeNull();
         handler.VerifyRequest(req =>
         {
             req.RequestUri.Should().NotBeNull();
@@ -830,7 +766,7 @@ public class SmartHRServiceTest
 
         var handler = new Mock<HttpMessageHandler>();
         handler.SetupRequest(req => req.RequestUri?.GetLeftPart(UriPartial.Authority) == BaseUri)
-            .ReturnsResponse(PayrollResponseJson, "application/json");
+            .ReturnsResponse(PayrollTest.Json, "application/json");
 
         // Act
         var sut = CreateSut(handler);
@@ -868,7 +804,7 @@ public class SmartHRServiceTest
 
         var handler = new Mock<HttpMessageHandler>();
         handler.SetupRequest(req => req.RequestUri?.GetLeftPart(UriPartial.Authority) == BaseUri)
-            .ReturnsResponse(PayrollResponseJson, "application/json");
+            .ReturnsResponse(PayrollTest.Json, "application/json");
 
         // Act
         var sut = CreateSut(handler);
@@ -912,7 +848,7 @@ public class SmartHRServiceTest
 
         var handler = new Mock<HttpMessageHandler>();
         handler.SetupRequest(req => req.RequestUri?.GetLeftPart(UriPartial.Authority) == BaseUri)
-            .ReturnsResponse(PayrollResponseJson, "application/json");
+            .ReturnsResponse(PayrollTest.Json, "application/json");
 
         // Act
         var sut = CreateSut(handler);
@@ -973,7 +909,7 @@ public class SmartHRServiceTest
 
         var handler = new Mock<HttpMessageHandler>();
         handler.SetupRequest(req => req.RequestUri?.GetLeftPart(UriPartial.Authority) == BaseUri)
-            .ReturnsResponse(PayrollResponseJson, "application/json");
+            .ReturnsResponse(PayrollTest.Json, "application/json");
 
         // Act
         var sut = CreateSut(handler);
@@ -1024,7 +960,7 @@ public class SmartHRServiceTest
         // Arrange
         var handler = new Mock<HttpMessageHandler>();
         handler.SetupRequest(req => req.RequestUri?.GetLeftPart(UriPartial.Authority) == BaseUri)
-            .ReturnsResponse($"[{PayrollResponseJson}]", "application/json");
+            .ReturnsResponse($"[{PayrollTest.Json}]", "application/json");
 
         // Act
         var sut = CreateSut(handler);
@@ -1055,7 +991,7 @@ public class SmartHRServiceTest
 
         var handler = new Mock<HttpMessageHandler>();
         handler.SetupRequest(req => req.RequestUri?.GetLeftPart(UriPartial.Authority) == BaseUri)
-            .ReturnsResponse(PayrollResponseJson, "application/json");
+            .ReturnsResponse(PayrollTest.Json, "application/json");
 
         // Act
         var sut = CreateSut(handler);
@@ -1094,45 +1030,6 @@ public class SmartHRServiceTest
     #endregion
 
     #region Payslips
-    /// <summary>給与明細APIのサンプルレスポンスJSON</summary>
-    private const string PayslipResponseJson = "{"
-        + "  \"id\": \"id\","
-        + "  \"crew_id\": \"crew_id\","
-        + "  \"payroll_id\": \"payroll_id\","
-        + "  \"memo\": \"memo\","
-        + "  \"mismatch\": true,"
-        + "  \"last_notified_at\": \"2021-10-01T00:00:00Z\","
-        + "  \"allowances\": ["
-        + "    {"
-        + "      \"name\": \"allowances\","
-        + "      \"amount\": 200000"
-        + "    }"
-        + "  ],"
-        + "  \"deductions\": ["
-        + "    {"
-        + "      \"name\": \"deductions\","
-        + "      \"amount\": 50000"
-        + "    }"
-        + "  ],"
-        + "  \"attendances\": ["
-        + "    {"
-        + "      \"name\": \"attendances\","
-        + "      \"amount\": 160,"
-        + "      \"unit_type\": \"hours\","
-        + "      \"numeral_system_type\": \"decimal\","
-        + "      \"delimiter_type\": \"period\""
-        + "    }"
-        + "  ],"
-        + "  \"payroll_aggregates\": ["
-        + "    {"
-        + "      \"name\": \"payroll_aggregates\","
-        + "      \"aggregate_type\": \"net_payment\","
-        + "      \"amount\": 100,"
-        + "      \"value\": \"string\""
-        + "    }"
-        + "  ]"
-        + "}";
-
     /// <summary>
     /// <see cref="SmartHRService.DeletePayslipAsync"/>は、"/v1/payrolls/{payrollId}/payslip/{id}"にDELETEリクエストを行う。
     /// </summary>
@@ -1174,7 +1071,7 @@ public class SmartHRServiceTest
 
         var handler = new Mock<HttpMessageHandler>();
         handler.SetupRequest(req => req.RequestUri?.GetLeftPart(UriPartial.Authority) == BaseUri)
-            .ReturnsResponse(PayslipResponseJson, "application/json");
+            .ReturnsResponse(PayslipTest.Json, "application/json");
 
         // Act
         var sut = CreateSut(handler);
@@ -1203,7 +1100,7 @@ public class SmartHRServiceTest
 
         var handler = new Mock<HttpMessageHandler>();
         handler.SetupRequest(req => req.RequestUri?.GetLeftPart(UriPartial.Authority) == BaseUri)
-            .ReturnsResponse($"[{PayslipResponseJson}]", "application/json");
+            .ReturnsResponse($"[{PayslipTest.Json}]", "application/json");
 
         // Act
         var sut = CreateSut(handler);
@@ -1247,7 +1144,7 @@ public class SmartHRServiceTest
 
         var handler = new Mock<HttpMessageHandler>();
         handler.SetupRequest(req => req.RequestUri?.GetLeftPart(UriPartial.Authority) == BaseUri)
-            .ReturnsResponse(PayslipResponseJson, "application/json");
+            .ReturnsResponse(PayslipTest.Json, "application/json");
 
         // Act
         var sut = CreateSut(handler);
@@ -1309,7 +1206,7 @@ public class SmartHRServiceTest
 
         var handler = new Mock<HttpMessageHandler>();
         handler.SetupRequest(req => req.RequestUri?.GetLeftPart(UriPartial.Authority) == BaseUri)
-            .ReturnsResponse(PayslipResponseJson, "application/json");
+            .ReturnsResponse(PayslipTest.Json, "application/json");
 
         // Act
         var sut = CreateSut(handler);
