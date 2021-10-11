@@ -189,6 +189,52 @@ public class SmartHRServiceTest
     }
     #endregion
 
+    #region DependentRelations
+    private const string DependentRelationResponseJson = "{"
+    + "\"id\":\"9ba6128d-9a8a-4b6a-9464-03907dc37e71\","
+    + "\"name\":\"妻\","
+    + "\"preset_type\":\"wife\","
+    + "\"is_child\":false,"
+    + "\"position\":1,"
+    + "\"created_at\":\"2021-09-24T17:22:12.426Z\","
+    + "\"updated_at\":\"2021-09-24T17:22:12.426Z\""
+    + "}";
+
+    /// <summary>
+    /// <see cref="SmartHRService.FetchDependentRelationListAsync"/>は、"/v1/dependent_relations"にGETリクエストを行う。
+    /// </summary>
+    [InlineData(true, "/v1/dependent_relations?filter=spouse&page=1&per_page=10")]
+    [InlineData(false, "/v1/dependent_relations?page=1&per_page=10")]
+    [Theory(DisplayName = $"{nameof(SmartHRService)} > {nameof(SmartHRService.FetchDependentRelationListAsync)} > GET /v1/dependent_relations をコールする。")]
+    public async Task FetchDependentRelationListAsync_Calls_GetApi(bool spouse, string expected)
+    {
+        // Arrange
+        string accessToken = GenerateRandomString();
+
+        var handler = new Mock<HttpMessageHandler>();
+        handler.SetupRequest(req => req.RequestUri?.GetLeftPart(UriPartial.Authority) == BaseUri)
+            .ReturnsResponse($"[{DependentRelationResponseJson}]", "application/json");
+
+        // Act
+        var sut = CreateSut(handler, accessToken);
+        var entities = await sut.FetchDependentRelationListAsync(spouse, 1, 10).ConfigureAwait(false);
+
+        // Assert
+        entities.Should().NotBeNullOrEmpty();
+        handler.VerifyRequest((req) =>
+        {
+            req.RequestUri.Should().NotBeNull();
+            req.RequestUri!.GetLeftPart(UriPartial.Authority).Should().Be(BaseUri);
+            req.RequestUri!.PathAndQuery.Should().Be(expected);
+            req.Method.Should().Be(HttpMethod.Get);
+            req.Headers.Authorization.Should().NotBeNull();
+            req.Headers.Authorization!.Scheme.Should().Be("Bearer");
+            req.Headers.Authorization!.Parameter.Should().Be(accessToken);
+            return true;
+        }, Times.Once());
+    }
+    #endregion
+
     #region PaymentPeriods
     /// <summary>給与支給形態APIのサンプルレスポンスJSON</summary>
     private const string PaymentPeriodResponseJson = "{"
