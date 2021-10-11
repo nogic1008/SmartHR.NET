@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Net.Http;
 using System.Net.Http.Json;
-using System.Runtime.CompilerServices;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -107,41 +106,21 @@ public class SmartHRService : ISmartHRService
     /// <exception cref="ArgumentOutOfRangeException"><paramref name="rank"/>が1未満か、99999を超えています。</exception>
     /// <exception cref="ApiFailedException">APIがエラーレスポンスを返した場合にスローされます。</exception>
     public ValueTask<JobTitle> UpdateJobTitleAsync(string id, string? name = null, int? rank = default, CancellationToken cancellationToken = default)
-    {
-        if (rank is < 1 or > 99999)
-            throw new ArgumentOutOfRangeException(nameof(rank));
-
-        var parameters = new Dictionary<string, string>(2);
-        if (name is not null)
-            parameters.Add(nameof(name), name);
-        if (rank is not null)
-            parameters.Add(nameof(rank), rank.ToString()!);
-
-        return CallApiAsync<JobTitle>(
+        => CallApiAsync<JobTitle>(
             new(new("PATCH"), $"/v1/job_titles/{id}")
             {
-                Content = new FormUrlEncodedContent(parameters)
+                Content = CreateJobTitleContent(name, rank)
             }, cancellationToken);
-    }
 
     /// <inheritdoc/>
     /// <exception cref="ArgumentOutOfRangeException"><paramref name="rank"/>が1未満か、99999を超えています。</exception>
     /// <exception cref="ApiFailedException">APIがエラーレスポンスを返した場合にスローされます。</exception>
     public ValueTask<JobTitle> ReplaceJobTitleAsync(string id, string name, int? rank = default, CancellationToken cancellationToken = default)
-    {
-        if (rank is < 1 or > 99999)
-            throw new ArgumentOutOfRangeException(nameof(rank));
-
-        var parameters = new Dictionary<string, string>(2) { { nameof(name), name } };
-        if (rank is not null)
-            parameters.Add(nameof(rank), rank.ToString()!);
-
-        return CallApiAsync<JobTitle>(
+        => CallApiAsync<JobTitle>(
             new(HttpMethod.Put, $"/v1/job_titles/{id}")
             {
-                Content = new FormUrlEncodedContent(parameters)
+                Content = CreateJobTitleContent(name, rank)
             }, cancellationToken);
-    }
 
     /// <inheritdoc/>
     /// <exception cref="ArgumentOutOfRangeException">
@@ -156,19 +135,28 @@ public class SmartHRService : ISmartHRService
     /// <exception cref="ArgumentOutOfRangeException"><paramref name="rank"/>が1未満か、99999を超えています。</exception>
     /// <exception cref="ApiFailedException">APIがエラーレスポンスを返した場合にスローされます。</exception>
     public ValueTask<JobTitle> AddJobTitleAsync(string name, int? rank = default, CancellationToken cancellationToken = default)
+        => CallApiAsync<JobTitle>(
+            new(HttpMethod.Post, "/v1/job_titles")
+            {
+                Content = CreateJobTitleContent(name, rank)
+            }, cancellationToken);
+
+    /// <summary>役職APIのリクエストBodyを生成します。</summary>
+    /// <param name="name">役職の名前</param>
+    /// <param name="rank">役職のランク (1 ~ 99999)</param>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="rank"/>が1未満か、99999を超えています。</exception>
+    private static FormUrlEncodedContent CreateJobTitleContent(string? name, int? rank)
     {
         if (rank is < 1 or > 99999)
             throw new ArgumentOutOfRangeException(nameof(rank));
 
-        var parameters = new Dictionary<string, string>(2) { { nameof(name), name } };
+        var parameters = new Dictionary<string, string>(2);
+        if (name is not null)
+            parameters.Add(nameof(name), name);
         if (rank is not null)
             parameters.Add(nameof(rank), rank.ToString()!);
 
-        return CallApiAsync<JobTitle>(
-            new(HttpMethod.Post, "/v1/job_titles")
-            {
-                Content = new FormUrlEncodedContent(parameters)
-            }, cancellationToken);
+        return new FormUrlEncodedContent(parameters);
     }
     #endregion
 

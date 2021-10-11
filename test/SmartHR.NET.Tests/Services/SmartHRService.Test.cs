@@ -359,6 +359,34 @@ public class SmartHRServiceTest
     }
 
     /// <summary>
+    /// <paramref name="rank"/>が範囲外のとき、<see cref="SmartHRService.UpdateJobTitleAsync"/>は、ArgumentOutOfRangeExceptionをスローする。
+    /// </summary>
+    /// <param name="rank">役職のランク</param>
+    [InlineData(0)]
+    [InlineData(100000)]
+    [InlineData(int.MinValue)]
+    [InlineData(int.MaxValue)]
+    [Theory(DisplayName = $"{nameof(SmartHRService)} > {nameof(SmartHRService.UpdateJobTitleAsync)} > ArgumentOutOfRangeExceptionをスローする。")]
+    public async Task UpdateJobTitleAsync_Throws_ArgumentOutOfRangeException(int rank)
+    {
+        // Arrange
+        string id = GenerateRandomString();
+
+        var handler = new Mock<HttpMessageHandler>();
+        handler.SetupRequest(req => req.RequestUri?.GetLeftPart(UriPartial.Authority) == BaseUri)
+            .ReturnsResponse(JobTitleTest.Json, "application/json");
+
+        // Act
+        var sut = CreateSut(handler);
+        var action = async () => await sut.UpdateJobTitleAsync(id, rank: rank).ConfigureAwait(false);
+
+        // Assert
+        (await action.Should().ThrowExactlyAsync<ArgumentOutOfRangeException>().ConfigureAwait(false))
+            .WithParameterName(nameof(rank));
+        handler.VerifyAnyRequest(Times.Never());
+    }
+
+    /// <summary>
     /// <see cref="SmartHRService.UpdateJobTitleAsync"/>は、"/v1/job_titles/{id}"にPATCHリクエストを行う。
     /// </summary>
     /// <param name="name">役職名</param>
