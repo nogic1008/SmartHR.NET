@@ -8,53 +8,51 @@ namespace SmartHR.NET.Tests.Entities;
 /// </summary>
 public class PayslipTest
 {
-    /// <summary>
-    /// JSONからデシリアライズできる。
-    /// </summary>
+    /// <summary>給与明細APIのサンプルレスポンスJSON</summary>
+    internal const string Json = "{"
+    + "  \"id\": \"id\","
+    + "  \"crew_id\": \"crew_id\","
+    + "  \"payroll_id\": \"payroll_id\","
+    + "  \"memo\": \"memo\","
+    + "  \"mismatch\": true,"
+    + "  \"last_notified_at\": \"2021-10-01T00:00:00Z\","
+    + "  \"allowances\": ["
+    + "    {"
+    + "      \"name\": \"allowances\","
+    + "      \"amount\": 200000"
+    + "    }"
+    + "  ],"
+    + "  \"deductions\": ["
+    + "    {"
+    + "      \"name\": \"deductions\","
+    + "      \"amount\": 50000"
+    + "    }"
+    + "  ],"
+    + "  \"attendances\": ["
+    + "    {"
+    + "      \"name\": \"attendances\","
+    + "      \"amount\": 160,"
+    + "      \"unit_type\": \"hours\","
+    + "      \"numeral_system_type\": \"decimal\","
+    + "      \"delimiter_type\": \"period\""
+    + "    }"
+    + "  ],"
+    + "  \"payroll_aggregates\": ["
+    + "    {"
+    + "      \"name\": \"payroll_aggregates\","
+    + "      \"aggregate_type\": \"net_payment\","
+    + "      \"amount\": 100,"
+    + "      \"value\": \"string\""
+    + "    }"
+    + "  ]"
+    + "}";
+
+    /// <summary>JSONからデシリアライズできる。</summary>
     [Fact(DisplayName = $"{nameof(Payslip)} > JSONからデシリアライズできる。")]
     public void CanDeserializeJSON()
     {
-        // Arrange
-        const string jsonString = "{"
-        + "  \"id\": \"id\","
-        + "  \"crew_id\": \"crew_id\","
-        + "  \"payroll_id\": \"payroll_id\","
-        + "  \"memo\": \"memo\","
-        + "  \"mismatch\": true,"
-        + "  \"last_notified_at\": \"2021-10-01T00:00:00Z\","
-        + "  \"allowances\": ["
-        + "    {"
-        + "      \"name\": \"allowances\","
-        + "      \"amount\": 200000"
-        + "    }"
-        + "  ],"
-        + "  \"deductions\": ["
-        + "    {"
-        + "      \"name\": \"deductions\","
-        + "      \"amount\": 50000"
-        + "    }"
-        + "  ],"
-        + "  \"attendances\": ["
-        + "    {"
-        + "      \"name\": \"attendances\","
-        + "      \"amount\": 160,"
-        + "      \"unit_type\": \"hours\","
-        + "      \"numeral_system_type\": \"decimal\","
-        + "      \"delimiter_type\": \"period\""
-        + "    }"
-        + "  ],"
-        + "  \"payroll_aggregates\": ["
-        + "    {"
-        + "      \"name\": \"payroll_aggregates\","
-        + "      \"aggregate_type\": \"net_payment\","
-        + "      \"amount\": 100,"
-        + "      \"value\": \"string\""
-        + "    }"
-        + "  ]"
-        + "}";
-
-        // Act
-        var entity = JsonSerializer.Deserialize<Payslip>(jsonString, JsonConfig.Default);
+        // Arrange - Act
+        var entity = JsonSerializer.Deserialize<Payslip>(Json, JsonConfig.Default);
 
         // Assert
         entity.Should().NotBeNull();

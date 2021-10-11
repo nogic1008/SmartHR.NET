@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using SmartHR.NET.Entities;
 using SmartHR.NET.Services;
+using SmartHR.NET.Tests.Entities;
 
 namespace SmartHR.NET.Tests.Services;
 
@@ -85,7 +86,7 @@ public class SmartHRServiceTest
     /// </summary>
     /// <param name="handler">HttpClientをモックするためのHandlerオブジェクト</param>
     /// <param name="accessToken">アクセストークン</param>
-    private static SmartHRService CreateSut(Mock<HttpMessageHandler> handler, string accessToken)
+    private static SmartHRService CreateSut(Mock<HttpMessageHandler> handler, string accessToken = "")
     {
         var client = handler.CreateClient();
         client.BaseAddress = new(BaseUri);
@@ -124,19 +125,29 @@ public class SmartHRServiceTest
     public async Task ApiCaller_Throws_ApiFailedException(string json, string message)
     {
         // Arrange
+        string accessToken = GenerateRandomString();
         var handler = new Mock<HttpMessageHandler>();
         handler.SetupRequest(req => req.RequestUri?.GetLeftPart(UriPartial.Authority) == BaseUri)
             .ReturnsResponse(HttpStatusCode.BadRequest, json, "application/json");
         var request = new HttpRequestMessage(HttpMethod.Get, "/v1");
 
         // Act
-        var sut = CreateSut(handler, "");
+        var sut = CreateSut(handler, accessToken);
         var action = async () => await sut.CallApiAsync<string>(request, default).ConfigureAwait(false);
 
         // Assert
         (await action.Should().ThrowExactlyAsync<ApiFailedException>().ConfigureAwait(false))
             .WithMessage(message)
             .WithInnerExceptionExactly<HttpRequestException>();
+        handler.VerifyRequest((req) =>
+        {
+            req.RequestUri.Should().NotBeNull();
+            req.RequestUri!.GetLeftPart(UriPartial.Authority).Should().Be(BaseUri);
+            req.Headers.Authorization.Should().NotBeNull();
+            req.Headers.Authorization!.Scheme.Should().Be("Bearer");
+            req.Headers.Authorization!.Parameter.Should().Be(accessToken);
+            return true;
+        }, Times.Once());
     }
 
     /// <summary>
@@ -150,17 +161,28 @@ public class SmartHRServiceTest
     public async Task ApiCaller_Throws_HttpRequestException(string body)
     {
         // Arrange
+        string accessToken = GenerateRandomString();
+
         var handler = new Mock<HttpMessageHandler>();
         handler.SetupRequest(req => req.RequestUri?.GetLeftPart(UriPartial.Authority) == BaseUri)
             .ReturnsResponse(HttpStatusCode.BadRequest, body);
         var request = new HttpRequestMessage(HttpMethod.Get, "/v1");
 
         // Act
-        var sut = CreateSut(handler, "");
+        var sut = CreateSut(handler, accessToken);
         var action = async () => await sut.CallApiAsync<string>(request, default).ConfigureAwait(false);
 
         // Assert
         await action.Should().ThrowExactlyAsync<HttpRequestException>().ConfigureAwait(false);
+        handler.VerifyRequest((req) =>
+        {
+            req.RequestUri.Should().NotBeNull();
+            req.RequestUri!.GetLeftPart(UriPartial.Authority).Should().Be(BaseUri);
+            req.Headers.Authorization.Should().NotBeNull();
+            req.Headers.Authorization!.Scheme.Should().Be("Bearer");
+            req.Headers.Authorization!.Parameter.Should().Be(accessToken);
+            return true;
+        }, Times.Once());
     }
 
     /// <summary>
@@ -189,16 +211,38 @@ public class SmartHRServiceTest
     }
     #endregion
 
-    #region PaymentPeriods
-    /// <summary>給与支給形態APIのサンプルレスポンスJSON</summary>
-    private const string PaymentPeriodResponseJson = "{"
-    + "\"id\":\"id\","
-    + "\"name\":\"name\","
-    + "\"period_type\":\"monthly\","
-    + "\"updated_at\":\"2021-10-06T00:24:48.897Z\","
-    + "\"created_at\":\"2021-10-06T00:24:48.897Z\""
-    + "}";
+    #region DependentRelations
+    /// <summary>
+    /// <see cref="SmartHRService.FetchDependentRelationListAsync"/>は、"/v1/dependent_relations"にGETリクエストを行う。
+    /// </summary>
+    [InlineData(true, "/v1/dependent_relations?filter=spouse&page=1&per_page=10")]
+    [InlineData(false, "/v1/dependent_relations?page=1&per_page=10")]
+    [Theory(DisplayName = $"{nameof(SmartHRService)} > {nameof(SmartHRService.FetchDependentRelationListAsync)} > GET /v1/dependent_relations をコールする。")]
+    public async Task FetchDependentRelationListAsync_Calls_GetApi(bool spouse, string expected)
+    {
+        // Arrange
+        var handler = new Mock<HttpMessageHandler>();
+        handler.SetupRequest(req => req.RequestUri?.GetLeftPart(UriPartial.Authority) == BaseUri)
+            .ReturnsResponse($"[{DependentRelationTest.Json}]", "application/json");
 
+        // Act
+        var sut = CreateSut(handler);
+        var entities = await sut.FetchDependentRelationListAsync(spouse, 1, 10).ConfigureAwait(false);
+
+        // Assert
+        entities.Should().NotBeNullOrEmpty();
+        handler.VerifyRequest((req) =>
+        {
+            req.RequestUri.Should().NotBeNull();
+            req.RequestUri!.GetLeftPart(UriPartial.Authority).Should().Be(BaseUri);
+            req.RequestUri!.PathAndQuery.Should().Be(expected);
+            req.Method.Should().Be(HttpMethod.Get);
+            return true;
+        }, Times.Once());
+    }
+    #endregion
+
+    #region PaymentPeriods
     /// <summary>
     /// <see cref="SmartHRService.FetchPaymentPeriodAsync"/>は、"/v1/payment_periods/{id}"にGETリクエストを行う。
     /// </summary>
@@ -207,27 +251,23 @@ public class SmartHRServiceTest
     {
         // Arrange
         string id = GenerateRandomString();
-        string accessToken = GenerateRandomString();
 
         var handler = new Mock<HttpMessageHandler>();
         handler.SetupRequest(req => req.RequestUri?.GetLeftPart(UriPartial.Authority) == BaseUri)
-            .ReturnsResponse(PaymentPeriodResponseJson, "application/json");
+            .ReturnsResponse(PaymentPeriodTest.Json, "application/json");
 
         // Act
-        var sut = CreateSut(handler, accessToken);
-        var jobTitle = await sut.FetchPaymentPeriodAsync(id).ConfigureAwait(false);
+        var sut = CreateSut(handler);
+        var entity = await sut.FetchPaymentPeriodAsync(id).ConfigureAwait(false);
 
         // Assert
-        jobTitle.Should().NotBeNull();
+        entity.Should().NotBeNull();
         handler.VerifyRequest(req =>
         {
             req.RequestUri.Should().NotBeNull();
             req.RequestUri!.GetLeftPart(UriPartial.Authority).Should().Be(BaseUri);
-            req.RequestUri!.AbsolutePath.Should().Be($"/v1/payment_periods/{id}");
+            req.RequestUri.PathAndQuery.Should().Be($"/v1/payment_periods/{id}");
             req.Method.Should().Be(HttpMethod.Get);
-            req.Headers.Authorization.Should().NotBeNull();
-            req.Headers.Authorization!.Scheme.Should().Be("Bearer");
-            req.Headers.Authorization!.Parameter.Should().Be(accessToken);
             return true;
         }, Times.Once());
     }
@@ -239,42 +279,28 @@ public class SmartHRServiceTest
     public async Task FetchPaymentPeriodListAsync_Calls_GetApi()
     {
         // Arrange
-        string accessToken = GenerateRandomString();
-
         var handler = new Mock<HttpMessageHandler>();
         handler.SetupRequest(req => req.RequestUri?.GetLeftPart(UriPartial.Authority) == BaseUri)
-            .ReturnsResponse($"[{PaymentPeriodResponseJson}]", "application/json");
+            .ReturnsResponse($"[{PaymentPeriodTest.Json}]", "application/json");
 
         // Act
-        var sut = CreateSut(handler, accessToken);
-        var jobTitles = await sut.FetchPaymentPeriodListAsync(1, 10).ConfigureAwait(false);
+        var sut = CreateSut(handler);
+        var entities = await sut.FetchPaymentPeriodListAsync(1, 10).ConfigureAwait(false);
 
         // Assert
-        jobTitles.Should().NotBeNullOrEmpty();
+        entities.Should().NotBeNullOrEmpty();
         handler.VerifyRequest((req) =>
         {
             req.RequestUri.Should().NotBeNull();
             req.RequestUri!.GetLeftPart(UriPartial.Authority).Should().Be(BaseUri);
-            req.RequestUri!.AbsolutePath.Should().Be("/v1/payment_periods");
+            req.RequestUri.PathAndQuery.Should().Be("/v1/payment_periods?page=1&per_page=10");
             req.Method.Should().Be(HttpMethod.Get);
-            req.Headers.Authorization.Should().NotBeNull();
-            req.Headers.Authorization!.Scheme.Should().Be("Bearer");
-            req.Headers.Authorization!.Parameter.Should().Be(accessToken);
             return true;
         }, Times.Once());
     }
     #endregion
 
     #region JobTitles
-    /// <summary>役職APIのサンプルレスポンスJSON</summary>
-    private const string JobTitleResponseJson = "{"
-        + "\"id\":\"id\","
-        + "\"name\":\"name\","
-        + "\"rank\":1,"
-        + "\"created_at\":\"2021-10-06T00:24:48.910Z\","
-        + "\"updated_at\":\"2021-10-06T00:24:48.910Z\""
-        + "}";
-
     /// <summary>
     /// <see cref="SmartHRService.DeleteJobTitleAsync"/>は、"/v1/job_titles/{id}"にDELETEリクエストを行う。
     /// </summary>
@@ -283,14 +309,13 @@ public class SmartHRServiceTest
     {
         // Arrange
         string id = GenerateRandomString();
-        string accessToken = GenerateRandomString();
 
         var handler = new Mock<HttpMessageHandler>();
         handler.SetupRequest(req => req.RequestUri?.GetLeftPart(UriPartial.Authority) == BaseUri)
             .ReturnsResponse(HttpStatusCode.NoContent);
 
         // Act
-        var sut = CreateSut(handler, accessToken);
+        var sut = CreateSut(handler);
         await sut.DeleteJobTitleAsync(id).ConfigureAwait(false);
 
         // Assert
@@ -298,11 +323,8 @@ public class SmartHRServiceTest
         {
             req.RequestUri.Should().NotBeNull();
             req.RequestUri!.GetLeftPart(UriPartial.Authority).Should().Be(BaseUri);
-            req.RequestUri!.AbsolutePath.Should().Be($"/v1/job_titles/{id}");
+            req.RequestUri.PathAndQuery.Should().Be($"/v1/job_titles/{id}");
             req.Method.Should().Be(HttpMethod.Delete);
-            req.Headers.Authorization.Should().NotBeNull();
-            req.Headers.Authorization!.Scheme.Should().Be("Bearer");
-            req.Headers.Authorization!.Parameter.Should().Be(accessToken);
             return true;
         }, Times.Once());
     }
@@ -315,29 +337,53 @@ public class SmartHRServiceTest
     {
         // Arrange
         string id = GenerateRandomString();
-        string accessToken = GenerateRandomString();
 
         var handler = new Mock<HttpMessageHandler>();
         handler.SetupRequest(req => req.RequestUri?.GetLeftPart(UriPartial.Authority) == BaseUri)
-            .ReturnsResponse(JobTitleResponseJson, "application/json");
+            .ReturnsResponse(JobTitleTest.Json, "application/json");
 
         // Act
-        var sut = CreateSut(handler, accessToken);
-        var jobTitle = await sut.FetchJobTitleAsync(id).ConfigureAwait(false);
+        var sut = CreateSut(handler);
+        var entity = await sut.FetchJobTitleAsync(id).ConfigureAwait(false);
 
         // Assert
-        jobTitle.Should().NotBeNull();
+        entity.Should().NotBeNull();
         handler.VerifyRequest(req =>
         {
             req.RequestUri.Should().NotBeNull();
             req.RequestUri!.GetLeftPart(UriPartial.Authority).Should().Be(BaseUri);
-            req.RequestUri!.AbsolutePath.Should().Be($"/v1/job_titles/{id}");
+            req.RequestUri.PathAndQuery.Should().Be($"/v1/job_titles/{id}");
             req.Method.Should().Be(HttpMethod.Get);
-            req.Headers.Authorization.Should().NotBeNull();
-            req.Headers.Authorization!.Scheme.Should().Be("Bearer");
-            req.Headers.Authorization!.Parameter.Should().Be(accessToken);
             return true;
         }, Times.Once());
+    }
+
+    /// <summary>
+    /// <paramref name="rank"/>が範囲外のとき、<see cref="SmartHRService.UpdateJobTitleAsync"/>は、ArgumentOutOfRangeExceptionをスローする。
+    /// </summary>
+    /// <param name="rank">役職のランク</param>
+    [InlineData(0)]
+    [InlineData(100000)]
+    [InlineData(int.MinValue)]
+    [InlineData(int.MaxValue)]
+    [Theory(DisplayName = $"{nameof(SmartHRService)} > {nameof(SmartHRService.UpdateJobTitleAsync)} > ArgumentOutOfRangeExceptionをスローする。")]
+    public async Task UpdateJobTitleAsync_Throws_ArgumentOutOfRangeException(int rank)
+    {
+        // Arrange
+        string id = GenerateRandomString();
+
+        var handler = new Mock<HttpMessageHandler>();
+        handler.SetupRequest(req => req.RequestUri?.GetLeftPart(UriPartial.Authority) == BaseUri)
+            .ReturnsResponse(JobTitleTest.Json, "application/json");
+
+        // Act
+        var sut = CreateSut(handler);
+        var action = async () => await sut.UpdateJobTitleAsync(id, rank: rank).ConfigureAwait(false);
+
+        // Assert
+        (await action.Should().ThrowExactlyAsync<ArgumentOutOfRangeException>().ConfigureAwait(false))
+            .WithParameterName(nameof(rank));
+        handler.VerifyAnyRequest(Times.Never());
     }
 
     /// <summary>
@@ -350,32 +396,28 @@ public class SmartHRServiceTest
     [InlineData("name1", null, "name=name1")]
     [InlineData(null, 1, "rank=1")]
     [InlineData("name1", 1, "name=name1&rank=1")]
-    [Theory(DisplayName = $"{nameof(SmartHRService)} > {nameof(SmartHRService.UpdateJobTitleAsync)} > PATCH /v1/job_titles/:id/publish をコールする。")]
+    [Theory(DisplayName = $"{nameof(SmartHRService)} > {nameof(SmartHRService.UpdateJobTitleAsync)} > PATCH /v1/job_titles/:id をコールする。")]
     public async Task UpdateJobTitleAsync_Calls_PatchApi(string? name, int? rank, string expected)
     {
         // Arrange
         string id = GenerateRandomString();
-        string accessToken = GenerateRandomString();
 
         var handler = new Mock<HttpMessageHandler>();
         handler.SetupRequest(req => req.RequestUri?.GetLeftPart(UriPartial.Authority) == BaseUri)
-            .ReturnsResponse(JobTitleResponseJson, "application/json");
+            .ReturnsResponse(JobTitleTest.Json, "application/json");
 
         // Act
-        var sut = CreateSut(handler, accessToken);
-        var payRoll = await sut.UpdateJobTitleAsync(id, name, rank).ConfigureAwait(false);
+        var sut = CreateSut(handler);
+        var entity = await sut.UpdateJobTitleAsync(id, name, rank).ConfigureAwait(false);
 
         // Assert
-        payRoll.Should().NotBeNull();
+        entity.Should().NotBeNull();
         handler.VerifyRequest(async (req) =>
         {
             req.RequestUri.Should().NotBeNull();
             req.RequestUri!.GetLeftPart(UriPartial.Authority).Should().Be(BaseUri);
-            req.RequestUri!.AbsolutePath.Should().Be($"/v1/job_titles/{id}");
+            req.RequestUri.PathAndQuery.Should().Be($"/v1/job_titles/{id}");
             req.Method.Should().Be(HttpMethod.Patch);
-            req.Headers.Authorization.Should().NotBeNull();
-            req.Headers.Authorization!.Scheme.Should().Be("Bearer");
-            req.Headers.Authorization!.Parameter.Should().Be(accessToken);
 
             string receivedParameters = await req.Content!.ReadAsStringAsync().ConfigureAwait(false);
             receivedParameters.Should().Be(expected);
@@ -396,27 +438,23 @@ public class SmartHRServiceTest
         // Arrange
         string id = GenerateRandomString();
         string name = GenerateRandomString();
-        string accessToken = GenerateRandomString();
 
         var handler = new Mock<HttpMessageHandler>();
         handler.SetupRequest(req => req.RequestUri?.GetLeftPart(UriPartial.Authority) == BaseUri)
-            .ReturnsResponse(JobTitleResponseJson, "application/json");
+            .ReturnsResponse(JobTitleTest.Json, "application/json");
 
         // Act
-        var sut = CreateSut(handler, accessToken);
-        var payRoll = await sut.ReplaceJobTitleAsync(id, name, rank).ConfigureAwait(false);
+        var sut = CreateSut(handler);
+        var entity = await sut.ReplaceJobTitleAsync(id, name, rank).ConfigureAwait(false);
 
         // Assert
-        payRoll.Should().NotBeNull();
+        entity.Should().NotBeNull();
         handler.VerifyRequest(async (req) =>
         {
             req.RequestUri.Should().NotBeNull();
             req.RequestUri!.GetLeftPart(UriPartial.Authority).Should().Be(BaseUri);
-            req.RequestUri!.AbsolutePath.Should().Be($"/v1/job_titles/{id}");
+            req.RequestUri.PathAndQuery.Should().Be($"/v1/job_titles/{id}");
             req.Method.Should().Be(HttpMethod.Put);
-            req.Headers.Authorization.Should().NotBeNull();
-            req.Headers.Authorization!.Scheme.Should().Be("Bearer");
-            req.Headers.Authorization!.Parameter.Should().Be(accessToken);
 
             string receivedParameters = await req.Content!.ReadAsStringAsync().ConfigureAwait(false);
             receivedParameters.Should().Be($"name={name}{expected}");
@@ -431,27 +469,22 @@ public class SmartHRServiceTest
     public async Task FetchJobTitleListAsync_Calls_GetApi()
     {
         // Arrange
-        string accessToken = GenerateRandomString();
-
         var handler = new Mock<HttpMessageHandler>();
         handler.SetupRequest(req => req.RequestUri?.GetLeftPart(UriPartial.Authority) == BaseUri)
-            .ReturnsResponse($"[{JobTitleResponseJson}]", "application/json");
+            .ReturnsResponse($"[{JobTitleTest.Json}]", "application/json");
 
         // Act
-        var sut = CreateSut(handler, accessToken);
-        var jobTitles = await sut.FetchJobTitleListAsync(1, 10).ConfigureAwait(false);
+        var sut = CreateSut(handler);
+        var entities = await sut.FetchJobTitleListAsync(1, 10).ConfigureAwait(false);
 
         // Assert
-        jobTitles.Should().NotBeNullOrEmpty();
+        entities.Should().NotBeNullOrEmpty();
         handler.VerifyRequest((req) =>
         {
             req.RequestUri.Should().NotBeNull();
             req.RequestUri!.GetLeftPart(UriPartial.Authority).Should().Be(BaseUri);
-            req.RequestUri!.AbsolutePath.Should().Be("/v1/job_titles");
+            req.RequestUri.PathAndQuery.Should().Be("/v1/job_titles?page=1&per_page=10");
             req.Method.Should().Be(HttpMethod.Get);
-            req.Headers.Authorization.Should().NotBeNull();
-            req.Headers.Authorization!.Scheme.Should().Be("Bearer");
-            req.Headers.Authorization!.Parameter.Should().Be(accessToken);
             return true;
         }, Times.Once());
     }
@@ -466,29 +499,24 @@ public class SmartHRServiceTest
     {
         // Arrange
         string id = GenerateRandomString();
-        string accessToken = GenerateRandomString();
         string name = GenerateRandomString();
-        string nameForCrew = GenerateRandomString();
 
         var handler = new Mock<HttpMessageHandler>();
         handler.SetupRequest(req => req.RequestUri?.GetLeftPart(UriPartial.Authority) == BaseUri)
-            .ReturnsResponse(JobTitleResponseJson, "application/json");
+            .ReturnsResponse(JobTitleTest.Json, "application/json");
 
         // Act
-        var sut = CreateSut(handler, accessToken);
-        var jobTitle = await sut.AddJobTitleAsync(name, rank).ConfigureAwait(false);
+        var sut = CreateSut(handler);
+        var entity = await sut.AddJobTitleAsync(name, rank).ConfigureAwait(false);
 
         // Assert
-        jobTitle.Should().NotBeNull();
+        entity.Should().NotBeNull();
         handler.VerifyRequest(async (req) =>
         {
             req.RequestUri.Should().NotBeNull();
             req.RequestUri!.GetLeftPart(UriPartial.Authority).Should().Be(BaseUri);
-            req.RequestUri!.AbsolutePath.Should().Be("/v1/job_titles");
+            req.RequestUri.PathAndQuery.Should().Be("/v1/job_titles");
             req.Method.Should().Be(HttpMethod.Post);
-            req.Headers.Authorization.Should().NotBeNull();
-            req.Headers.Authorization!.Scheme.Should().Be("Bearer");
-            req.Headers.Authorization!.Parameter.Should().Be(accessToken);
 
             string receivedParameters = await req.Content!.ReadAsStringAsync().ConfigureAwait(false);
             receivedParameters.Should().Be($"name={name}{expected}");
@@ -497,15 +525,36 @@ public class SmartHRServiceTest
     }
     #endregion
 
-    #region TaxWithholdings
-    /// <summary>源泉徴収APIのサンプルレスポンスJSON</summary>
-    private const string TaxWithholdingResponseJson = "{"
-    + "\"id\":\"id\","
-    + "\"name\":\"name\","
-    + "\"status\":\"wip\","
-    + "\"year\":\"H23\""
-    + "}";
+    #region BankAccountSettings
+    /// <summary>
+    /// <see cref="SmartHRService.FetchBankAccountSettingListAsync"/>は、"/v1/bank_account_settings"にGETリクエストを行う。
+    /// </summary>
+    [Fact(DisplayName = $"{nameof(SmartHRService)} > {nameof(SmartHRService.FetchBankAccountSettingListAsync)} > GET /v1/bank_account_settings をコールする。")]
+    public async Task FetchBankAccountSettingListAsync_Calls_GetApi()
+    {
+        // Arrange
+        var handler = new Mock<HttpMessageHandler>();
+        handler.SetupRequest(req => req.RequestUri?.GetLeftPart(UriPartial.Authority) == BaseUri)
+            .ReturnsResponse($"[{BankAccountSettingTest.Json}]", "application/json");
 
+        // Act
+        var sut = CreateSut(handler);
+        var entities = await sut.FetchBankAccountSettingListAsync(1, 10).ConfigureAwait(false);
+
+        // Assert
+        entities.Should().NotBeNullOrEmpty();
+        handler.VerifyRequest((req) =>
+        {
+            req.RequestUri.Should().NotBeNull();
+            req.RequestUri!.GetLeftPart(UriPartial.Authority).Should().Be(BaseUri);
+            req.RequestUri!.PathAndQuery.Should().Be("/v1/bank_account_settings?page=1&per_page=10");
+            req.Method.Should().Be(HttpMethod.Get);
+            return true;
+        }, Times.Once());
+    }
+    #endregion
+
+    #region TaxWithholdings
     /// <summary>
     /// <see cref="SmartHRService.DeleteTaxWithholdingAsync"/>は、"/v1/tax_withholdings/{id}"にDELETEリクエストを行う。
     /// </summary>
@@ -514,14 +563,13 @@ public class SmartHRServiceTest
     {
         // Arrange
         string id = GenerateRandomString();
-        string accessToken = GenerateRandomString();
 
         var handler = new Mock<HttpMessageHandler>();
         handler.SetupRequest(req => req.RequestUri?.GetLeftPart(UriPartial.Authority) == BaseUri)
             .ReturnsResponse(HttpStatusCode.NoContent);
 
         // Act
-        var sut = CreateSut(handler, accessToken);
+        var sut = CreateSut(handler);
         await sut.DeleteTaxWithholdingAsync(id).ConfigureAwait(false);
 
         // Assert
@@ -529,11 +577,8 @@ public class SmartHRServiceTest
         {
             req.RequestUri.Should().NotBeNull();
             req.RequestUri!.GetLeftPart(UriPartial.Authority).Should().Be(BaseUri);
-            req.RequestUri!.AbsolutePath.Should().Be($"/v1/tax_withholdings/{id}");
+            req.RequestUri.PathAndQuery.Should().Be($"/v1/tax_withholdings/{id}");
             req.Method.Should().Be(HttpMethod.Delete);
-            req.Headers.Authorization.Should().NotBeNull();
-            req.Headers.Authorization!.Scheme.Should().Be("Bearer");
-            req.Headers.Authorization!.Parameter.Should().Be(accessToken);
             return true;
         }, Times.Once());
     }
@@ -546,27 +591,23 @@ public class SmartHRServiceTest
     {
         // Arrange
         string id = GenerateRandomString();
-        string accessToken = GenerateRandomString();
 
         var handler = new Mock<HttpMessageHandler>();
         handler.SetupRequest(req => req.RequestUri?.GetLeftPart(UriPartial.Authority) == BaseUri)
-            .ReturnsResponse(TaxWithholdingResponseJson, "application/json");
+            .ReturnsResponse(TaxWithholdingTest.Json, "application/json");
 
         // Act
-        var sut = CreateSut(handler, accessToken);
-        var taxWithholding = await sut.FetchTaxWithholdingAsync(id).ConfigureAwait(false);
+        var sut = CreateSut(handler);
+        var entity = await sut.FetchTaxWithholdingAsync(id).ConfigureAwait(false);
 
         // Assert
-        taxWithholding.Should().NotBeNull();
+        entity.Should().NotBeNull();
         handler.VerifyRequest(req =>
         {
             req.RequestUri.Should().NotBeNull();
             req.RequestUri!.GetLeftPart(UriPartial.Authority).Should().Be(BaseUri);
-            req.RequestUri!.AbsolutePath.Should().Be($"/v1/tax_withholdings/{id}");
+            req.RequestUri.PathAndQuery.Should().Be($"/v1/tax_withholdings/{id}");
             req.Method.Should().Be(HttpMethod.Get);
-            req.Headers.Authorization.Should().NotBeNull();
-            req.Headers.Authorization!.Scheme.Should().Be("Bearer");
-            req.Headers.Authorization!.Parameter.Should().Be(accessToken);
             return true;
         }, Times.Once());
     }
@@ -577,7 +618,7 @@ public class SmartHRServiceTest
     /// <param name="name">名前</param>
     /// <param name="status">ステータス</param>
     /// <param name="year">源泉徴収票に印字される年</param>
-    /// <param name="expected">サーバー側が受け取るパラメータ</param>
+    /// <param name="expected">サーバー側が受け取るJSON</param>
     [InlineData(null, null, null, "{}")]
     [InlineData("name", null, null, "{\"name\":\"name\"}")]
     [InlineData(null, TaxWithholding.FormStatus.Wip, null, "{\"status\":\"wip\"}")]
@@ -588,30 +629,26 @@ public class SmartHRServiceTest
     {
         // Arrange
         string id = GenerateRandomString();
-        string accessToken = GenerateRandomString();
 
         var handler = new Mock<HttpMessageHandler>();
         handler.SetupRequest(req => req.RequestUri?.GetLeftPart(UriPartial.Authority) == BaseUri)
-            .ReturnsResponse(TaxWithholdingResponseJson, "application/json");
+            .ReturnsResponse(TaxWithholdingTest.Json, "application/json");
 
         // Act
-        var sut = CreateSut(handler, accessToken);
-        var payRoll = await sut.UpdateTaxWithholdingAsync(id, name, status, year).ConfigureAwait(false);
+        var sut = CreateSut(handler);
+        var entity = await sut.UpdateTaxWithholdingAsync(id, name, status, year).ConfigureAwait(false);
 
         // Assert
-        payRoll.Should().NotBeNull();
+        entity.Should().NotBeNull();
         handler.VerifyRequest(async (req) =>
         {
             req.RequestUri.Should().NotBeNull();
             req.RequestUri!.GetLeftPart(UriPartial.Authority).Should().Be(BaseUri);
-            req.RequestUri!.AbsolutePath.Should().Be($"/v1/tax_withholdings/{id}");
+            req.RequestUri!.PathAndQuery.Should().Be($"/v1/tax_withholdings/{id}");
             req.Method.Should().Be(HttpMethod.Patch);
-            req.Headers.Authorization.Should().NotBeNull();
-            req.Headers.Authorization!.Scheme.Should().Be("Bearer");
-            req.Headers.Authorization!.Parameter.Should().Be(accessToken);
 
-            string receivedParameters = await req.Content!.ReadAsStringAsync().ConfigureAwait(false);
-            receivedParameters.Should().Be(expected);
+            string jsonString = await req.Content!.ReadAsStringAsync().ConfigureAwait(false);
+            jsonString.Should().Be(expected);
             return true;
         }, Times.Once());
     }
@@ -622,7 +659,7 @@ public class SmartHRServiceTest
     /// <param name="name">名前</param>
     /// <param name="status">ステータス</param>
     /// <param name="year">源泉徴収票に印字される年</param>
-    /// <param name="expected">サーバー側が受け取るパラメータ</param>
+    /// <param name="expected">サーバー側が受け取るJSON</param>
     [InlineData("name", TaxWithholding.FormStatus.Wip, "R04", "{\"name\":\"name\",\"status\":\"wip\",\"year\":\"R04\"}")]
     [InlineData("name", TaxWithholding.FormStatus.Fixed, "H24", "{\"name\":\"name\",\"status\":\"fixed\",\"year\":\"H24\"}")]
     [Theory(DisplayName = $"{nameof(SmartHRService)} > {nameof(SmartHRService.ReplaceTaxWithholdingAsync)} > PUT /v1/tax_withholdings/:id をコールする。")]
@@ -630,30 +667,26 @@ public class SmartHRServiceTest
     {
         // Arrange
         string id = GenerateRandomString();
-        string accessToken = GenerateRandomString();
 
         var handler = new Mock<HttpMessageHandler>();
         handler.SetupRequest(req => req.RequestUri?.GetLeftPart(UriPartial.Authority) == BaseUri)
-            .ReturnsResponse(TaxWithholdingResponseJson, "application/json");
+            .ReturnsResponse(TaxWithholdingTest.Json, "application/json");
 
         // Act
-        var sut = CreateSut(handler, accessToken);
-        var payRoll = await sut.ReplaceTaxWithholdingAsync(id, name, status, year).ConfigureAwait(false);
+        var sut = CreateSut(handler);
+        var entity = await sut.ReplaceTaxWithholdingAsync(id, name, status, year).ConfigureAwait(false);
 
         // Assert
-        payRoll.Should().NotBeNull();
+        entity.Should().NotBeNull();
         handler.VerifyRequest(async (req) =>
         {
             req.RequestUri.Should().NotBeNull();
             req.RequestUri!.GetLeftPart(UriPartial.Authority).Should().Be(BaseUri);
-            req.RequestUri!.AbsolutePath.Should().Be($"/v1/tax_withholdings/{id}");
+            req.RequestUri.PathAndQuery.Should().Be($"/v1/tax_withholdings/{id}");
             req.Method.Should().Be(HttpMethod.Put);
-            req.Headers.Authorization.Should().NotBeNull();
-            req.Headers.Authorization!.Scheme.Should().Be("Bearer");
-            req.Headers.Authorization!.Parameter.Should().Be(accessToken);
 
-            string receivedParameters = await req.Content!.ReadAsStringAsync().ConfigureAwait(false);
-            receivedParameters.Should().Be(expected);
+            string jsonString = await req.Content!.ReadAsStringAsync().ConfigureAwait(false);
+            jsonString.Should().Be(expected);
             return true;
         }, Times.Once());
     }
@@ -665,27 +698,22 @@ public class SmartHRServiceTest
     public async Task FetchTaxWithholdingListAsync_Calls_GetApi()
     {
         // Arrange
-        string accessToken = GenerateRandomString();
-
         var handler = new Mock<HttpMessageHandler>();
         handler.SetupRequest(req => req.RequestUri?.GetLeftPart(UriPartial.Authority) == BaseUri)
-            .ReturnsResponse($"[{TaxWithholdingResponseJson}]", "application/json");
+            .ReturnsResponse($"[{TaxWithholdingTest.Json}]", "application/json");
 
         // Act
-        var sut = CreateSut(handler, accessToken);
-        var jobTitles = await sut.FetchTaxWithholdingListAsync(1, 10).ConfigureAwait(false);
+        var sut = CreateSut(handler);
+        var entities = await sut.FetchTaxWithholdingListAsync(1, 10).ConfigureAwait(false);
 
         // Assert
-        jobTitles.Should().NotBeNullOrEmpty();
+        entities.Should().NotBeNullOrEmpty();
         handler.VerifyRequest((req) =>
         {
             req.RequestUri.Should().NotBeNull();
             req.RequestUri!.GetLeftPart(UriPartial.Authority).Should().Be(BaseUri);
-            req.RequestUri!.AbsolutePath.Should().Be("/v1/tax_withholdings");
+            req.RequestUri.PathAndQuery.Should().Be("/v1/tax_withholdings?page=1&per_page=10");
             req.Method.Should().Be(HttpMethod.Get);
-            req.Headers.Authorization.Should().NotBeNull();
-            req.Headers.Authorization!.Scheme.Should().Be("Bearer");
-            req.Headers.Authorization!.Parameter.Should().Be(accessToken);
             return true;
         }, Times.Once());
     }
@@ -698,53 +726,33 @@ public class SmartHRServiceTest
     {
         // Arrange
         string id = GenerateRandomString();
-        string accessToken = GenerateRandomString();
         string name = GenerateRandomString();
 
         var handler = new Mock<HttpMessageHandler>();
         handler.SetupRequest(req => req.RequestUri?.GetLeftPart(UriPartial.Authority) == BaseUri)
-            .ReturnsResponse(TaxWithholdingResponseJson, "application/json");
+            .ReturnsResponse(TaxWithholdingTest.Json, "application/json");
 
         // Act
-        var sut = CreateSut(handler, accessToken);
-        var jobTitle = await sut.AddTaxWithholdingAsync(name, "R03").ConfigureAwait(false);
+        var sut = CreateSut(handler);
+        var entity = await sut.AddTaxWithholdingAsync(name, "R03").ConfigureAwait(false);
 
         // Assert
-        jobTitle.Should().NotBeNull();
+        entity.Should().NotBeNull();
         handler.VerifyRequest(async (req) =>
         {
             req.RequestUri.Should().NotBeNull();
             req.RequestUri!.GetLeftPart(UriPartial.Authority).Should().Be(BaseUri);
-            req.RequestUri!.AbsolutePath.Should().Be("/v1/tax_withholdings");
+            req.RequestUri.PathAndQuery.Should().Be("/v1/tax_withholdings");
             req.Method.Should().Be(HttpMethod.Post);
-            req.Headers.Authorization.Should().NotBeNull();
-            req.Headers.Authorization!.Scheme.Should().Be("Bearer");
-            req.Headers.Authorization!.Parameter.Should().Be(accessToken);
 
-            string receivedParameters = await req.Content!.ReadAsStringAsync().ConfigureAwait(false);
-            receivedParameters.Should().Be($"{{\"name\":\"{name}\",\"year\":\"R03\"}}");
+            string jsonString = await req.Content!.ReadAsStringAsync().ConfigureAwait(false);
+            jsonString.Should().Be($"{{\"name\":\"{name}\",\"year\":\"R03\"}}");
             return true;
         }, Times.Once());
     }
     #endregion
 
     #region Payrolls
-    /// <summary>給与APIのサンプルレスポンスJSON</summary>
-    private const string PayrollResponseJson = "{"
-        + "\"id\": \"string\","
-        + "\"payment_type\": \"salary\","
-        + "\"paid_at\": \"2021-09-30\","
-        + "\"period_start_at\": \"2021-09-30\","
-        + "\"period_end_at\": \"2021-09-30\","
-        + "\"source_type\": \"api\","
-        + "\"status\": \"wip\","
-        + "\"published_at\": null,"
-        + "\"notify_with_publish\": true,"
-        + "\"numeral_system_handle_type\": \"as_is\","
-        + "\"name_for_admin\": \"string\","
-        + "\"name_for_crew\": \"string\""
-        + "}";
-
     /// <summary>
     /// <see cref="SmartHRService.DeletePayrollAsync"/>は、"/v1/payrolls/{id}"にDELETEリクエストを行う。
     /// </summary>
@@ -753,14 +761,13 @@ public class SmartHRServiceTest
     {
         // Arrange
         string id = GenerateRandomString();
-        string accessToken = GenerateRandomString();
 
         var handler = new Mock<HttpMessageHandler>();
         handler.SetupRequest(req => req.RequestUri?.GetLeftPart(UriPartial.Authority) == BaseUri)
             .ReturnsResponse(HttpStatusCode.NoContent);
 
         // Act
-        var sut = CreateSut(handler, accessToken);
+        var sut = CreateSut(handler);
         await sut.DeletePayrollAsync(id).ConfigureAwait(false);
 
         // Assert
@@ -768,11 +775,8 @@ public class SmartHRServiceTest
         {
             req.RequestUri.Should().NotBeNull();
             req.RequestUri!.GetLeftPart(UriPartial.Authority).Should().Be(BaseUri);
-            req.RequestUri!.AbsolutePath.Should().Be($"/v1/payrolls/{id}");
+            req.RequestUri.PathAndQuery.Should().Be($"/v1/payrolls/{id}");
             req.Method.Should().Be(HttpMethod.Delete);
-            req.Headers.Authorization.Should().NotBeNull();
-            req.Headers.Authorization!.Scheme.Should().Be("Bearer");
-            req.Headers.Authorization!.Parameter.Should().Be(accessToken);
             return true;
         }, Times.Once());
     }
@@ -785,40 +789,23 @@ public class SmartHRServiceTest
     {
         // Arrange
         string id = GenerateRandomString();
-        string accessToken = GenerateRandomString();
 
         var handler = new Mock<HttpMessageHandler>();
         handler.SetupRequest(req => req.RequestUri?.GetLeftPart(UriPartial.Authority) == BaseUri)
-            .ReturnsResponse(PayrollResponseJson, "application/json");
+            .ReturnsResponse(PayrollTest.Json, "application/json");
 
         // Act
-        var sut = CreateSut(handler, accessToken);
-        var payRoll = await sut.FetchPayrollAsync(id).ConfigureAwait(false);
+        var sut = CreateSut(handler);
+        var entity = await sut.FetchPayrollAsync(id).ConfigureAwait(false);
 
         // Assert
-        payRoll.Should().Be(new Payroll(
-            "string",
-            Payroll.Payment.Salary,
-            new(2021, 9, 30),
-            new(2021, 9, 30),
-            new(2021, 9, 30),
-            "api",
-            Payroll.SalaryStatus.Wip,
-            default,
-            true,
-            Payroll.NumeralSystem.AsIs,
-            "string",
-            "string"
-        ));
+        entity.Should().NotBeNull();
         handler.VerifyRequest(req =>
         {
             req.RequestUri.Should().NotBeNull();
             req.RequestUri!.GetLeftPart(UriPartial.Authority).Should().Be(BaseUri);
-            req.RequestUri!.AbsolutePath.Should().Be($"/v1/payrolls/{id}");
+            req.RequestUri.PathAndQuery.Should().Be($"/v1/payrolls/{id}");
             req.Method.Should().Be(HttpMethod.Get);
-            req.Headers.Authorization.Should().NotBeNull();
-            req.Headers.Authorization!.Scheme.Should().Be("Bearer");
-            req.Headers.Authorization!.Parameter.Should().Be(accessToken);
             return true;
         }, Times.Once());
     }
@@ -826,34 +813,30 @@ public class SmartHRServiceTest
     /// <summary>
     /// <see cref="SmartHRService.UpdatePayrollAsync"/>は、"/v1/payrolls/{id}"にPATCHリクエストを行う。
     /// </summary>
-    [Fact(DisplayName = $"{nameof(SmartHRService)} > {nameof(SmartHRService.PublishPayrollAsync)} > PATCH /v1/payrolls/:id/publish をコールする。")]
+    [Fact(DisplayName = $"{nameof(SmartHRService)} > {nameof(SmartHRService.PublishPayrollAsync)} > PATCH /v1/payrolls/:id をコールする。")]
     public async Task UpdatePayrollAsync_Calls_PatchApi()
     {
         // Arrange
         string id = GenerateRandomString();
-        string accessToken = GenerateRandomString();
         string nameForAdmin = GenerateRandomString();
         string nameForCrew = GenerateRandomString();
 
         var handler = new Mock<HttpMessageHandler>();
         handler.SetupRequest(req => req.RequestUri?.GetLeftPart(UriPartial.Authority) == BaseUri)
-            .ReturnsResponse(PayrollResponseJson, "application/json");
+            .ReturnsResponse(PayrollTest.Json, "application/json");
 
         // Act
-        var sut = CreateSut(handler, accessToken);
-        var payRoll = await sut.UpdatePayrollAsync(id, nameForAdmin, nameForCrew).ConfigureAwait(false);
+        var sut = CreateSut(handler);
+        var entity = await sut.UpdatePayrollAsync(id, nameForAdmin, nameForCrew).ConfigureAwait(false);
 
         // Assert
-        payRoll.Should().NotBeNull();
+        entity.Should().NotBeNull();
         handler.VerifyRequest(async (req) =>
         {
             req.RequestUri.Should().NotBeNull();
             req.RequestUri!.GetLeftPart(UriPartial.Authority).Should().Be(BaseUri);
-            req.RequestUri!.AbsolutePath.Should().Be($"/v1/payrolls/{id}");
+            req.RequestUri.PathAndQuery.Should().Be($"/v1/payrolls/{id}");
             req.Method.Should().Be(HttpMethod.Patch);
-            req.Headers.Authorization.Should().NotBeNull();
-            req.Headers.Authorization!.Scheme.Should().Be("Bearer");
-            req.Headers.Authorization!.Parameter.Should().Be(accessToken);
 
             string receivedParameters = await req.Content!.ReadAsStringAsync().ConfigureAwait(false);
             receivedParameters.Should().Be($"name_for_admin={nameForAdmin}&name_for_crew={nameForCrew}");
@@ -875,31 +858,27 @@ public class SmartHRServiceTest
     {
         // Arrange
         string id = GenerateRandomString();
-        string accessToken = GenerateRandomString();
 
         var handler = new Mock<HttpMessageHandler>();
         handler.SetupRequest(req => req.RequestUri?.GetLeftPart(UriPartial.Authority) == BaseUri)
-            .ReturnsResponse(PayrollResponseJson, "application/json");
+            .ReturnsResponse(PayrollTest.Json, "application/json");
 
         // Act
-        var sut = CreateSut(handler, accessToken);
-        var payRoll = await sut.PublishPayrollAsync(
+        var sut = CreateSut(handler);
+        var entity = await sut.PublishPayrollAsync(
             id,
             publishedAt is not null ? DateTimeOffset.Parse(publishedAt, CultureInfo.InvariantCulture) : null,
             notifyWithPublish
         ).ConfigureAwait(false);
 
         // Assert
-        payRoll.Should().NotBeNull();
+        entity.Should().NotBeNull();
         handler.VerifyRequest(async (req) =>
         {
             req.RequestUri.Should().NotBeNull();
             req.RequestUri!.GetLeftPart(UriPartial.Authority).Should().Be(BaseUri);
-            req.RequestUri!.AbsolutePath.Should().Be($"/v1/payrolls/{id}/publish");
+            req.RequestUri.PathAndQuery.Should().Be($"/v1/payrolls/{id}/publish");
             req.Method.Should().Be(HttpMethod.Patch);
-            req.Headers.Authorization.Should().NotBeNull();
-            req.Headers.Authorization!.Scheme.Should().Be("Bearer");
-            req.Headers.Authorization!.Parameter.Should().Be(accessToken);
 
             string receivedParameters = await req.Content!.ReadAsStringAsync().ConfigureAwait(false);
             receivedParameters.Should().Be(expected);
@@ -923,15 +902,14 @@ public class SmartHRServiceTest
         string id = GenerateRandomString();
         string nameForAdmin = GenerateRandomString();
         string nameForCrew = GenerateRandomString();
-        string accessToken = GenerateRandomString();
 
         var handler = new Mock<HttpMessageHandler>();
         handler.SetupRequest(req => req.RequestUri?.GetLeftPart(UriPartial.Authority) == BaseUri)
-            .ReturnsResponse(PayrollResponseJson, "application/json");
+            .ReturnsResponse(PayrollTest.Json, "application/json");
 
         // Act
-        var sut = CreateSut(handler, accessToken);
-        var payRoll = await sut.UnconfirmPayrollAsync(
+        var sut = CreateSut(handler);
+        var entity = await sut.UnconfirmPayrollAsync(
             id,
             Payroll.Payment.Salary,
             new(2021, 11, 1),
@@ -946,16 +924,13 @@ public class SmartHRServiceTest
         ).ConfigureAwait(false);
 
         // Assert
-        payRoll.Should().NotBeNull();
+        entity.Should().NotBeNull();
         handler.VerifyRequest(async (req) =>
         {
             req.RequestUri.Should().NotBeNull();
             req.RequestUri!.GetLeftPart(UriPartial.Authority).Should().Be(BaseUri);
-            req.RequestUri!.AbsolutePath.Should().Be($"/v1/payrolls/{id}/unfix");
+            req.RequestUri.PathAndQuery.Should().Be($"/v1/payrolls/{id}/unfix");
             req.Method.Should().Be(HttpMethod.Patch);
-            req.Headers.Authorization.Should().NotBeNull();
-            req.Headers.Authorization!.Scheme.Should().Be("Bearer");
-            req.Headers.Authorization!.Parameter.Should().Be(accessToken);
 
             string receivedParameters = await req.Content!.ReadAsStringAsync().ConfigureAwait(false);
             receivedParameters.Should().Be(
@@ -988,15 +963,14 @@ public class SmartHRServiceTest
         string id = GenerateRandomString();
         string nameForAdmin = GenerateRandomString();
         string nameForCrew = GenerateRandomString();
-        string accessToken = GenerateRandomString();
 
         var handler = new Mock<HttpMessageHandler>();
         handler.SetupRequest(req => req.RequestUri?.GetLeftPart(UriPartial.Authority) == BaseUri)
-            .ReturnsResponse(PayrollResponseJson, "application/json");
+            .ReturnsResponse(PayrollTest.Json, "application/json");
 
         // Act
-        var sut = CreateSut(handler, accessToken);
-        var payRoll = await sut.ConfirmPayrollAsync(
+        var sut = CreateSut(handler);
+        var entity = await sut.ConfirmPayrollAsync(
             id,
             Payroll.Payment.Salary,
             new(2021, 11, 1),
@@ -1011,16 +985,13 @@ public class SmartHRServiceTest
         ).ConfigureAwait(false);
 
         // Assert
-        payRoll.Should().NotBeNull();
+        entity.Should().NotBeNull();
         handler.VerifyRequest(async (req) =>
         {
             req.RequestUri.Should().NotBeNull();
             req.RequestUri!.GetLeftPart(UriPartial.Authority).Should().Be(BaseUri);
-            req.RequestUri!.AbsolutePath.Should().Be($"/v1/payrolls/{id}/fix");
+            req.RequestUri.PathAndQuery.Should().Be($"/v1/payrolls/{id}/fix");
             req.Method.Should().Be(HttpMethod.Patch);
-            req.Headers.Authorization.Should().NotBeNull();
-            req.Headers.Authorization!.Scheme.Should().Be("Bearer");
-            req.Headers.Authorization!.Parameter.Should().Be(accessToken);
 
             string receivedParameters = await req.Content!.ReadAsStringAsync().ConfigureAwait(false);
             receivedParameters.Should().Be(
@@ -1044,27 +1015,22 @@ public class SmartHRServiceTest
     public async Task FetchPayrollListAsync_Calls_GetApi()
     {
         // Arrange
-        string accessToken = GenerateRandomString();
-
         var handler = new Mock<HttpMessageHandler>();
         handler.SetupRequest(req => req.RequestUri?.GetLeftPart(UriPartial.Authority) == BaseUri)
-            .ReturnsResponse($"[{PayrollResponseJson}]", "application/json");
+            .ReturnsResponse($"[{PayrollTest.Json}]", "application/json");
 
         // Act
-        var sut = CreateSut(handler, accessToken);
-        var payRolls = await sut.FetchPayrollListAsync(1, 10).ConfigureAwait(false);
+        var sut = CreateSut(handler);
+        var entities = await sut.FetchPayrollListAsync(1, 10).ConfigureAwait(false);
 
         // Assert
-        payRolls.Should().NotBeNullOrEmpty();
+        entities.Should().NotBeNullOrEmpty();
         handler.VerifyRequest((req) =>
         {
             req.RequestUri.Should().NotBeNull();
             req.RequestUri!.GetLeftPart(UriPartial.Authority).Should().Be(BaseUri);
-            req.RequestUri!.AbsolutePath.Should().Be("/v1/payrolls");
+            req.RequestUri.PathAndQuery.Should().Be("/v1/payrolls?page=1&per_page=10");
             req.Method.Should().Be(HttpMethod.Get);
-            req.Headers.Authorization.Should().NotBeNull();
-            req.Headers.Authorization!.Scheme.Should().Be("Bearer");
-            req.Headers.Authorization!.Parameter.Should().Be(accessToken);
             return true;
         }, Times.Once());
     }
@@ -1077,17 +1043,16 @@ public class SmartHRServiceTest
     {
         // Arrange
         string id = GenerateRandomString();
-        string accessToken = GenerateRandomString();
         string nameForAdmin = GenerateRandomString();
         string nameForCrew = GenerateRandomString();
 
         var handler = new Mock<HttpMessageHandler>();
         handler.SetupRequest(req => req.RequestUri?.GetLeftPart(UriPartial.Authority) == BaseUri)
-            .ReturnsResponse(PayrollResponseJson, "application/json");
+            .ReturnsResponse(PayrollTest.Json, "application/json");
 
         // Act
-        var sut = CreateSut(handler, accessToken);
-        var payRoll = await sut.AddPayrollAsync(
+        var sut = CreateSut(handler);
+        var entity = await sut.AddPayrollAsync(
             Payroll.Payment.Salary,
             new(2021, 11, 1),
             new(2021, 10, 1),
@@ -1098,16 +1063,13 @@ public class SmartHRServiceTest
         ).ConfigureAwait(false);
 
         // Assert
-        payRoll.Should().NotBeNull();
+        entity.Should().NotBeNull();
         handler.VerifyRequest(async (req) =>
         {
             req.RequestUri.Should().NotBeNull();
             req.RequestUri!.GetLeftPart(UriPartial.Authority).Should().Be(BaseUri);
-            req.RequestUri!.AbsolutePath.Should().Be("/v1/payrolls");
+            req.RequestUri.PathAndQuery.Should().Be("/v1/payrolls");
             req.Method.Should().Be(HttpMethod.Post);
-            req.Headers.Authorization.Should().NotBeNull();
-            req.Headers.Authorization!.Scheme.Should().Be("Bearer");
-            req.Headers.Authorization!.Parameter.Should().Be(accessToken);
 
             string receivedParameters = await req.Content!.ReadAsStringAsync().ConfigureAwait(false);
             receivedParameters.Should().Be(
@@ -1125,45 +1087,6 @@ public class SmartHRServiceTest
     #endregion
 
     #region Payslips
-    /// <summary>給与明細APIのサンプルレスポンスJSON</summary>
-    private const string PayslipResponseJson = "{"
-        + "  \"id\": \"id\","
-        + "  \"crew_id\": \"crew_id\","
-        + "  \"payroll_id\": \"payroll_id\","
-        + "  \"memo\": \"memo\","
-        + "  \"mismatch\": true,"
-        + "  \"last_notified_at\": \"2021-10-01T00:00:00Z\","
-        + "  \"allowances\": ["
-        + "    {"
-        + "      \"name\": \"allowances\","
-        + "      \"amount\": 200000"
-        + "    }"
-        + "  ],"
-        + "  \"deductions\": ["
-        + "    {"
-        + "      \"name\": \"deductions\","
-        + "      \"amount\": 50000"
-        + "    }"
-        + "  ],"
-        + "  \"attendances\": ["
-        + "    {"
-        + "      \"name\": \"attendances\","
-        + "      \"amount\": 160,"
-        + "      \"unit_type\": \"hours\","
-        + "      \"numeral_system_type\": \"decimal\","
-        + "      \"delimiter_type\": \"period\""
-        + "    }"
-        + "  ],"
-        + "  \"payroll_aggregates\": ["
-        + "    {"
-        + "      \"name\": \"payroll_aggregates\","
-        + "      \"aggregate_type\": \"net_payment\","
-        + "      \"amount\": 100,"
-        + "      \"value\": \"string\""
-        + "    }"
-        + "  ]"
-        + "}";
-
     /// <summary>
     /// <see cref="SmartHRService.DeletePayslipAsync"/>は、"/v1/payrolls/{payrollId}/payslip/{id}"にDELETEリクエストを行う。
     /// </summary>
@@ -1173,14 +1096,13 @@ public class SmartHRServiceTest
         // Arrange
         string payrollId = GenerateRandomString();
         string id = GenerateRandomString();
-        string accessToken = GenerateRandomString();
 
         var handler = new Mock<HttpMessageHandler>();
         handler.SetupRequest(req => req.RequestUri?.GetLeftPart(UriPartial.Authority) == BaseUri)
             .ReturnsResponse(HttpStatusCode.NoContent);
 
         // Act
-        var sut = CreateSut(handler, accessToken);
+        var sut = CreateSut(handler);
         await sut.DeletePayslipAsync(payrollId, id).ConfigureAwait(false);
 
         // Assert
@@ -1188,11 +1110,8 @@ public class SmartHRServiceTest
         {
             req.RequestUri.Should().NotBeNull();
             req.RequestUri!.GetLeftPart(UriPartial.Authority).Should().Be(BaseUri);
-            req.RequestUri!.AbsolutePath.Should().Be($"/v1/payrolls/{payrollId}/payslips/{id}");
+            req.RequestUri.PathAndQuery.Should().Be($"/v1/payrolls/{payrollId}/payslips/{id}");
             req.Method.Should().Be(HttpMethod.Delete);
-            req.Headers.Authorization.Should().NotBeNull();
-            req.Headers.Authorization!.Scheme.Should().Be("Bearer");
-            req.Headers.Authorization!.Parameter.Should().Be(accessToken);
             return true;
         }, Times.Once());
     }
@@ -1206,27 +1125,23 @@ public class SmartHRServiceTest
         // Arrange
         string payrollId = GenerateRandomString();
         string id = GenerateRandomString();
-        string accessToken = GenerateRandomString();
 
         var handler = new Mock<HttpMessageHandler>();
         handler.SetupRequest(req => req.RequestUri?.GetLeftPart(UriPartial.Authority) == BaseUri)
-            .ReturnsResponse(PayslipResponseJson, "application/json");
+            .ReturnsResponse(PayslipTest.Json, "application/json");
 
         // Act
-        var sut = CreateSut(handler, accessToken);
-        var payslip = await sut.FetchPayslipAsync(payrollId, id).ConfigureAwait(false);
+        var sut = CreateSut(handler);
+        var entity = await sut.FetchPayslipAsync(payrollId, id).ConfigureAwait(false);
 
         // Assert
-        payslip.Should().NotBeNull();
+        entity.Should().NotBeNull();
         handler.VerifyRequest(req =>
         {
             req.RequestUri.Should().NotBeNull();
             req.RequestUri!.GetLeftPart(UriPartial.Authority).Should().Be(BaseUri);
-            req.RequestUri!.AbsolutePath.Should().Be($"/v1/payrolls/{payrollId}/payslips/{id}");
+            req.RequestUri.PathAndQuery.Should().Be($"/v1/payrolls/{payrollId}/payslips/{id}");
             req.Method.Should().Be(HttpMethod.Get);
-            req.Headers.Authorization.Should().NotBeNull();
-            req.Headers.Authorization!.Scheme.Should().Be("Bearer");
-            req.Headers.Authorization!.Parameter.Should().Be(accessToken);
             return true;
         }, Times.Once());
     }
@@ -1238,28 +1153,24 @@ public class SmartHRServiceTest
     public async Task FetchPayslipListAsync_Calls_GetApi()
     {
         // Arrange
-        string accessToken = GenerateRandomString();
         string payrollId = GenerateRandomString();
 
         var handler = new Mock<HttpMessageHandler>();
         handler.SetupRequest(req => req.RequestUri?.GetLeftPart(UriPartial.Authority) == BaseUri)
-            .ReturnsResponse($"[{PayslipResponseJson}]", "application/json");
+            .ReturnsResponse($"[{PayslipTest.Json}]", "application/json");
 
         // Act
-        var sut = CreateSut(handler, accessToken);
-        var payslips = await sut.FetchPayslipListAsync(payrollId).ConfigureAwait(false);
+        var sut = CreateSut(handler);
+        var entities = await sut.FetchPayslipListAsync(payrollId).ConfigureAwait(false);
 
         // Assert
-        payslips.Should().NotBeNullOrEmpty();
+        entities.Should().NotBeNullOrEmpty();
         handler.VerifyRequest((req) =>
         {
             req.RequestUri.Should().NotBeNull();
             req.RequestUri!.GetLeftPart(UriPartial.Authority).Should().Be(BaseUri);
-            req.RequestUri!.AbsolutePath.Should().Be($"/v1/payrolls/{payrollId}/payslips");
+            req.RequestUri.PathAndQuery.Should().Be($"/v1/payrolls/{payrollId}/payslips?page=1&per_page=10");
             req.Method.Should().Be(HttpMethod.Get);
-            req.Headers.Authorization.Should().NotBeNull();
-            req.Headers.Authorization!.Scheme.Should().Be("Bearer");
-            req.Headers.Authorization!.Parameter.Should().Be(accessToken);
             return true;
         }, Times.Once());
     }
@@ -1271,7 +1182,6 @@ public class SmartHRServiceTest
     public async Task AddPayslipListAsync_Calls_PostApi()
     {
         // Arrange
-        string accessToken = GenerateRandomString();
         string payrollId = GenerateRandomString();
         var request = new PayslipRequest("従業員ID", new Dictionary<string, string>()
         {
@@ -1291,23 +1201,21 @@ public class SmartHRServiceTest
 
         var handler = new Mock<HttpMessageHandler>();
         handler.SetupRequest(req => req.RequestUri?.GetLeftPart(UriPartial.Authority) == BaseUri)
-            .ReturnsResponse(PayslipResponseJson, "application/json");
+            .ReturnsResponse(PayslipTest.Json, "application/json");
 
         // Act
-        var sut = CreateSut(handler, accessToken);
-        var payslip = await sut.AddPayslipListAsync(payrollId, new[] { request }).ConfigureAwait(false);
+        var sut = CreateSut(handler);
+        var entity = await sut.AddPayslipListAsync(payrollId, new[] { request }).ConfigureAwait(false);
 
         // Assert
-        payslip.Should().NotBeNull();
+        entity.Should().NotBeNull();
         handler.VerifyRequest(async (req) =>
         {
             req.RequestUri.Should().NotBeNull();
             req.RequestUri!.GetLeftPart(UriPartial.Authority).Should().Be(BaseUri);
-            req.RequestUri!.AbsolutePath.Should().Be($"/v1/payrolls/{payrollId}/payslips/bulk");
+            req.RequestUri.PathAndQuery.Should().Be($"/v1/payrolls/{payrollId}/payslips/bulk");
             req.Method.Should().Be(HttpMethod.Post);
-            req.Headers.Authorization.Should().NotBeNull();
-            req.Headers.Authorization!.Scheme.Should().Be("Bearer");
-            req.Headers.Authorization!.Parameter.Should().Be(accessToken);
+
             string jsonString = await req.Content!.ReadAsStringAsync().ConfigureAwait(false);
             jsonString.Should().Be("[{"
             + "\"crew_id\":\"従業員ID\","
@@ -1336,7 +1244,6 @@ public class SmartHRServiceTest
     public async Task AddPayslipAsync_Calls_PostApi()
     {
         // Arrange
-        string accessToken = GenerateRandomString();
         string payrollId = GenerateRandomString();
         var request = new PayslipRequest("従業員ID", new Dictionary<string, string>()
         {
@@ -1356,23 +1263,21 @@ public class SmartHRServiceTest
 
         var handler = new Mock<HttpMessageHandler>();
         handler.SetupRequest(req => req.RequestUri?.GetLeftPart(UriPartial.Authority) == BaseUri)
-            .ReturnsResponse(PayslipResponseJson, "application/json");
+            .ReturnsResponse(PayslipTest.Json, "application/json");
 
         // Act
-        var sut = CreateSut(handler, accessToken);
-        var payslip = await sut.AddPayslipAsync(payrollId, request).ConfigureAwait(false);
+        var sut = CreateSut(handler);
+        var entity = await sut.AddPayslipAsync(payrollId, request).ConfigureAwait(false);
 
         // Assert
-        payslip.Should().NotBeNull();
+        entity.Should().NotBeNull();
         handler.VerifyRequest(async (req) =>
         {
             req.RequestUri.Should().NotBeNull();
             req.RequestUri!.GetLeftPart(UriPartial.Authority).Should().Be(BaseUri);
-            req.RequestUri!.AbsolutePath.Should().Be($"/v1/payrolls/{payrollId}/payslips");
+            req.RequestUri.PathAndQuery.Should().Be($"/v1/payrolls/{payrollId}/payslips");
             req.Method.Should().Be(HttpMethod.Post);
-            req.Headers.Authorization.Should().NotBeNull();
-            req.Headers.Authorization!.Scheme.Should().Be("Bearer");
-            req.Headers.Authorization!.Parameter.Should().Be(accessToken);
+
             string jsonString = await req.Content!.ReadAsStringAsync().ConfigureAwait(false);
             jsonString.Should().Be("{"
             + "\"crew_id\":\"従業員ID\","

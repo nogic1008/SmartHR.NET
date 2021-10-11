@@ -11,6 +11,21 @@ namespace SmartHR.NET.Services;
 /// </summary>
 public interface ISmartHRService
 {
+    #region DependentRelations
+    /// <summary>
+    /// 続柄をリストで取得します。
+    /// </summary>
+    /// <remarks>
+    /// <seealso href="https://developer.smarthr.jp/api/index.html#!/%E7%B6%9A%E6%9F%84/getV1DependentRelations"/>
+    /// </remarks>
+    /// <param name="spouse">配偶者のみを抽出するかどうか</param>
+    /// <param name="page">1から始まるページ番号</param>
+    /// <param name="perPage">1ページあたりに含まれる要素数</param>
+    /// <param name="cancellationToken">キャンセル通知を受け取るために他のオブジェクトまたはスレッドで使用できるキャンセル トークン。</param>
+    /// <returns>続柄の一覧</returns>
+    public ValueTask<IReadOnlyList<DependentRelation>> FetchDependentRelationListAsync(bool spouse = false, int page = 1, int perPage = 10, CancellationToken cancellationToken = default);
+    #endregion
+
     #region PaymentPeriods
     /// <summary>
     /// <paramref name="id"/>と一致する給与支給形態情報を取得します。
