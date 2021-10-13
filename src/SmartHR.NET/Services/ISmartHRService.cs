@@ -99,6 +99,16 @@ public interface ISmartHRService
     /// <param name="cancellationToken">キャンセル通知を受け取るために他のオブジェクトまたはスレッドで使用できるキャンセル トークン。</param>
     /// <returns>更新処理後のCrewオブジェクト。</returns>
     public ValueTask<JsonElement> AddCrewAsync(JsonElement payload, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// <paramref name="id"/>と一致する従業員の部署情報を削除します。
+    /// </summary>
+    /// <remarks>
+    /// <seealso href="https://developer.smarthr.jp/api/index.html#!/%E5%BE%93%E6%A5%AD%E5%93%A1/deleteV1CrewsCrewIdDepartments"/>
+    /// </remarks>
+    /// <param name="id">従業員ID</param>
+    /// <param name="cancellationToken">キャンセル通知を受け取るために他のオブジェクトまたはスレッドで使用できるキャンセル トークン。</param>
+    public ValueTask DeleteCrewDepartmentsAsync(string id, CancellationToken cancellationToken = default);
     #endregion
 
     #region DependentRelations

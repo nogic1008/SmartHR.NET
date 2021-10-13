@@ -144,6 +144,14 @@ public class SmartHRService : ISmartHRService
             {
                 Content = JsonContent.Create(payload, options: _serializerOptions)
             }, cancellationToken);
+
+    /// <inheritdoc/>
+    /// <exception cref="ApiFailedException">APIがエラーレスポンスを返した場合にスローされます。</exception>
+    public async ValueTask DeleteCrewDepartmentsAsync(string id, CancellationToken cancellationToken = default)
+    {
+        var response = await _httpClient.DeleteAsync($"/v1/crews/{id}/departments", cancellationToken).ConfigureAwait(false);
+        await ValidateResponseAsync(response, cancellationToken).ConfigureAwait(false);
+    }
     #endregion
 
     #region DependentRelations

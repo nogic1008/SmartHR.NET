@@ -430,6 +430,34 @@ public class SmartHRServiceTest
             return true;
         }, Times.Once());
     }
+
+    /// <summary>
+    /// <see cref="SmartHRService.DeleteCrewDepartmentsAsync"/>は、"/v1/crews/{id}/departments"にDELETEリクエストを行う。
+    /// </summary>
+    [Fact(DisplayName = $"{nameof(SmartHRService)} > {nameof(SmartHRService.DeleteCrewDepartmentsAsync)} > DELETE /v1/crews/:id/departments をコールする。")]
+    public async Task DeleteCrewDepartmentsAsync_Calls_DeleteApi()
+    {
+        // Arrange
+        string id = GenerateRandomString();
+
+        var handler = new Mock<HttpMessageHandler>();
+        handler.SetupRequest(req => req.RequestUri?.GetLeftPart(UriPartial.Authority) == BaseUri)
+            .ReturnsResponse(HttpStatusCode.NoContent);
+
+        // Act
+        var sut = CreateSut(handler);
+        await sut.DeleteCrewDepartmentsAsync(id).ConfigureAwait(false);
+
+        // Assert
+        handler.VerifyRequest(req =>
+        {
+            req.RequestUri.Should().NotBeNull();
+            req.RequestUri!.GetLeftPart(UriPartial.Authority).Should().Be(BaseUri);
+            req.RequestUri.PathAndQuery.Should().Be($"/v1/crews/{id}/departments");
+            req.Method.Should().Be(HttpMethod.Delete);
+            return true;
+        }, Times.Once());
+    }
     #endregion
 
     #region DependentRelations
