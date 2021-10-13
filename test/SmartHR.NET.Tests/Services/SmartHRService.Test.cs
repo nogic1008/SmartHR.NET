@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Globalization;
+using System.Text.Json;
 using SmartHR.NET.Entities;
 using SmartHR.NET.Services;
 using SmartHR.NET.Tests.Entities;
@@ -208,6 +209,226 @@ public class SmartHRServiceTest
         // Assert
         await action.Should().ThrowExactlyAsync<ArgumentOutOfRangeException>().ConfigureAwait(false);
         handler.VerifyAnyRequest(Times.Never());
+    }
+    #endregion
+
+    #region Crews
+    /// <summary>
+    /// <see cref="SmartHRService.InviteCrewAsync"/>は、"/v1/crews/{id}"にPUTリクエストを行う。
+    /// </summary>
+    [InlineData(null, "")]
+    [InlineData("foo", "&crew_input_form_id=foo")]
+    [Theory(DisplayName = $"{nameof(SmartHRService)} > {nameof(SmartHRService.InviteCrewAsync)} > PUT /v1/crews/:id をコールする。")]
+    public async Task InviteCrewAsync_Calls_PutApi(string? crewInputFormId, string expected)
+    {
+        // Arrange
+        string id = GenerateRandomString();
+        string inviterCrewId = GenerateRandomString();
+
+        var handler = new Mock<HttpMessageHandler>();
+        handler.SetupRequest(req => req.RequestUri?.GetLeftPart(UriPartial.Authority) == BaseUri)
+            .ReturnsResponse(HttpStatusCode.NoContent);
+
+        // Act
+        var sut = CreateSut(handler);
+        await sut.InviteCrewAsync(id, inviterCrewId, crewInputFormId).ConfigureAwait(false);
+
+        // Assert
+        handler.VerifyRequest(async (req) =>
+        {
+            req.RequestUri.Should().NotBeNull();
+            req.RequestUri!.GetLeftPart(UriPartial.Authority).Should().Be(BaseUri);
+            req.RequestUri.PathAndQuery.Should().Be($"/v1/crews/{id}/invite");
+            req.Method.Should().Be(HttpMethod.Put);
+
+            string receivedParameters = await req.Content!.ReadAsStringAsync().ConfigureAwait(false);
+            receivedParameters.Should().Be($"inviter_crew_id={inviterCrewId}{expected}");
+            return true;
+        }, Times.Once());
+    }
+
+    /// <summary>
+    /// <see cref="SmartHRService.DeleteCrewAsync"/>は、"/v1/crews/{id}"にDELETEリクエストを行う。
+    /// </summary>
+    [Fact(DisplayName = $"{nameof(SmartHRService)} > {nameof(SmartHRService.DeleteCrewAsync)} > DELETE /v1/crews/:id をコールする。")]
+    public async Task DeleteCrewAsync_Calls_DeleteApi()
+    {
+        // Arrange
+        string id = GenerateRandomString();
+
+        var handler = new Mock<HttpMessageHandler>();
+        handler.SetupRequest(req => req.RequestUri?.GetLeftPart(UriPartial.Authority) == BaseUri)
+            .ReturnsResponse(HttpStatusCode.NoContent);
+
+        // Act
+        var sut = CreateSut(handler);
+        await sut.DeleteCrewAsync(id).ConfigureAwait(false);
+
+        // Assert
+        handler.VerifyRequest(req =>
+        {
+            req.RequestUri.Should().NotBeNull();
+            req.RequestUri!.GetLeftPart(UriPartial.Authority).Should().Be(BaseUri);
+            req.RequestUri.PathAndQuery.Should().Be($"/v1/crews/{id}");
+            req.Method.Should().Be(HttpMethod.Delete);
+            return true;
+        }, Times.Once());
+    }
+
+    /// <summary>
+    /// <see cref="SmartHRService.FetchCrewAsync"/>は、"/v1/crews/{id}"にGETリクエストを行う。
+    /// </summary>
+    [Fact(DisplayName = $"{nameof(SmartHRService)} > {nameof(SmartHRService.FetchCrewAsync)} > GET /v1/crews/:id をコールする。")]
+    public async Task FetchCrewAsync_Calls_GetApi()
+    {
+        // Arrange
+        string id = GenerateRandomString();
+
+        var handler = new Mock<HttpMessageHandler>();
+        handler.SetupRequest(req => req.RequestUri?.GetLeftPart(UriPartial.Authority) == BaseUri)
+            .ReturnsResponse(CrewTest.Json, "application/json");
+
+        // Act
+        var sut = CreateSut(handler);
+        var entity = await sut.FetchCrewAsync(id).ConfigureAwait(false);
+
+        // Assert
+        entity.Should().NotBeNull();
+        handler.VerifyRequest(req =>
+        {
+            req.RequestUri.Should().NotBeNull();
+            req.RequestUri!.GetLeftPart(UriPartial.Authority).Should().Be(BaseUri);
+            req.RequestUri.PathAndQuery.Should().Be($"/v1/crews/{id}");
+            req.Method.Should().Be(HttpMethod.Get);
+            return true;
+        }, Times.Once());
+    }
+
+    /// <summary>
+    /// <see cref="SmartHRService.UpdateCrewAsync"/>は、"/v1/crews/{id}"にPATCHリクエストを行う。
+    /// </summary>
+    [Fact(DisplayName = $"{nameof(SmartHRService)} > {nameof(SmartHRService.UpdateCrewAsync)} > PATCH /v1/crews/:id をコールする。")]
+    public async Task UpdateCrewAsync_Calls_PatchApi()
+    {
+        // Arrange
+        string id = GenerateRandomString();
+        var element = JsonSerializer.Deserialize<JsonElement>(CrewTest.Json);
+
+        var handler = new Mock<HttpMessageHandler>();
+        handler.SetupRequest(req => req.RequestUri?.GetLeftPart(UriPartial.Authority) == BaseUri)
+            .ReturnsResponse(CrewTest.Json, "application/json");
+
+        // Act
+        var sut = CreateSut(handler);
+        var entity = await sut.UpdateCrewAsync(id, element).ConfigureAwait(false);
+
+        // Assert
+        entity.Should().NotBeNull();
+        handler.VerifyRequest(async (req) =>
+        {
+            req.RequestUri.Should().NotBeNull();
+            req.RequestUri!.GetLeftPart(UriPartial.Authority).Should().Be(BaseUri);
+            req.RequestUri.PathAndQuery.Should().Be($"/v1/crews/{id}");
+            req.Method.Should().Be(HttpMethod.Patch);
+
+            string receivedJson = await req.Content!.ReadAsStringAsync().ConfigureAwait(false);
+            receivedJson.Should().NotBeNullOrEmpty();
+            return true;
+        }, Times.Once());
+    }
+
+    /// <summary>
+    /// <see cref="SmartHRService.FetchCrewListAsync"/>は、"/v1/crews"にGETリクエストを行う。
+    /// </summary>
+    [InlineData(null, null, null, null, null, null, null, null, null, "page=1&per_page=10")]
+    [InlineData(
+        "0000",
+        "board_member",
+        "employed",
+        "male",
+        "emp_code",
+        "2021-04-01",
+        "2021-09-01",
+        "query",
+        "field1,field2",
+        "emp_code=0000&emp_type=board_member&emp_status=employed&gender=male&sort=emp_code&entered_at_from=2021-04-01&entered_at_to=2021-09-01&q=query&fields=field1%2cfield2&page=1&per_page=10")]
+    [Theory(DisplayName = $"{nameof(SmartHRService)} > {nameof(SmartHRService.FetchCrewListAsync)} > GET /v1/crews をコールする。")]
+    public async Task FetchCrewListAsync_Calls_GetApi(
+        string? empCode,
+        string? empType,
+        string? empStatus,
+        string? gender,
+        string? sort,
+        string? from,
+        string? to,
+        string? query,
+        string? field,
+        string expected
+    )
+    {
+        // Arrange
+        var handler = new Mock<HttpMessageHandler>();
+        handler.SetupRequest(req => req.RequestUri?.GetLeftPart(UriPartial.Authority) == BaseUri)
+            .ReturnsResponse($"[{CrewTest.Json}]", "application/json");
+
+        // Act
+        var sut = CreateSut(handler);
+        var entities = await sut.FetchCrewListAsync(
+            1,
+            10,
+            empCode,
+            empType,
+            empStatus,
+            gender,
+            sort,
+            from is null ? null : DateTime.Parse(from),
+            to is null ? null : DateTime.Parse(to),
+            query,
+            field?.Split(',')
+        ).ConfigureAwait(false);
+
+        // Assert
+        entities.Should().NotBeNullOrEmpty();
+        handler.VerifyRequest((req) =>
+        {
+            req.RequestUri.Should().NotBeNull();
+            req.RequestUri!.GetLeftPart(UriPartial.Authority).Should().Be(BaseUri);
+            req.RequestUri.PathAndQuery.Should().Be($"/v1/crews?{expected}");
+            req.Method.Should().Be(HttpMethod.Get);
+            return true;
+        }, Times.Once());
+    }
+
+    /// <summary>
+    /// <see cref="SmartHRService.AddCrewAsync"/>は、"/v1/crews"にPOSTリクエストを行う。
+    /// </summary>
+    [Fact(DisplayName = $"{nameof(SmartHRService)} > {nameof(SmartHRService.AddCrewAsync)} > POST /v1/crews をコールする。")]
+    public async Task AddCrewAsync_Calls_PostApi()
+    {
+        // Arrange
+        var element = JsonSerializer.Deserialize<JsonElement>(CrewTest.Json);
+
+        var handler = new Mock<HttpMessageHandler>();
+        handler.SetupRequest(req => req.RequestUri?.GetLeftPart(UriPartial.Authority) == BaseUri)
+            .ReturnsResponse(CrewTest.Json, "application/json");
+
+        // Act
+        var sut = CreateSut(handler);
+        var entity = await sut.AddCrewAsync(element).ConfigureAwait(false);
+
+        // Assert
+        entity.Should().NotBeNull();
+        handler.VerifyRequest(async (req) =>
+        {
+            req.RequestUri.Should().NotBeNull();
+            req.RequestUri!.GetLeftPart(UriPartial.Authority).Should().Be(BaseUri);
+            req.RequestUri.PathAndQuery.Should().Be("/v1/crews");
+            req.Method.Should().Be(HttpMethod.Post);
+
+            string receivedJson = await req.Content!.ReadAsStringAsync().ConfigureAwait(false);
+            receivedJson.Should().NotBeNullOrEmpty();
+            return true;
+        }, Times.Once());
     }
     #endregion
 
