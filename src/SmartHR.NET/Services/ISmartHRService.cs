@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using SmartHR.NET.Entities;
@@ -11,6 +12,95 @@ namespace SmartHR.NET.Services;
 /// </summary>
 public interface ISmartHRService
 {
+    #region Crews
+    /// <summary>
+    /// <paramref name="id"/>と一致する従業員に設定されているメールアドレスでユーザを招待します。
+    /// </summary>
+    /// <remarks>
+    /// <seealso href="https://developer.smarthr.jp/api/index.html#!/%E5%BE%93%E6%A5%AD%E5%93%A1/putV1CrewsIdInvite"/>
+    /// <list type="bullet">
+    /// <item><paramref name="crewInputFormId"/>に紐づくメールフォーマットで招待メールが送信されます</item>
+    /// <item>一度招待した従業員に対する2回目以降の招待リクエストは、再招待扱いになります</item>
+    /// <item>従業員のメールアドレスが変わっていた場合は、招待中ユーザのメールアドレスが更新されます</item>
+    /// <item>招待を承認済みの従業員に対しての再招待はできません</item>
+    /// </list>
+    /// </remarks>
+    /// <param name="id">従業員ID</param>
+    /// <param name="inviterCrewId">
+    /// 招待者のユーザーID
+    /// <para>管理者権限を持つユーザを指定してください。</para>
+    /// </param>
+    /// <param name="crewInputFormId">従業員情報収集フォームID</param>
+    /// <param name="cancellationToken">キャンセル通知を受け取るために他のオブジェクトまたはスレッドで使用できるキャンセル トークン。</param>
+    public ValueTask InviteCrewAsync(string id, string inviterCrewId, string? crewInputFormId = null, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// <paramref name="id"/>と一致する従業員情報を削除します。
+    /// </summary>
+    /// <remarks>
+    /// <seealso href="https://developer.smarthr.jp/api/index.html#!/%E5%BE%93%E6%A5%AD%E5%93%A1/deleteV1CrewsId"/>
+    /// </remarks>
+    /// <param name="id">従業員ID</param>
+    /// <param name="cancellationToken">キャンセル通知を受け取るために他のオブジェクトまたはスレッドで使用できるキャンセル トークン。</param>
+    public ValueTask DeleteCrewAsync(string id, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// <paramref name="id"/>と一致する従業員情報を取得します。
+    /// </summary>
+    /// <remarks>
+    /// <seealso href="https://developer.smarthr.jp/api/index.html#!/%E5%BE%93%E6%A5%AD%E5%93%A1/getV1CrewsId"/>
+    /// </remarks>
+    /// <param name="id">従業員ID</param>
+    /// <param name="cancellationToken">キャンセル通知を受け取るために他のオブジェクトまたはスレッドで使用できるキャンセル トークン。</param>
+    public ValueTask<JsonElement> FetchCrewAsync(string id, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// <paramref name="id"/>と一致する従業員情報を部分更新します。
+    /// </summary>
+    /// <remarks>
+    /// <seealso href="https://developer.smarthr.jp/api/index.html#!/%E5%BE%93%E6%A5%AD%E5%93%A1/patchV1CrewsId"/>
+    /// </remarks>
+    /// <param name="id">従業員ID</param>
+    /// <param name="payload">従業員情報</param>
+    /// <param name="cancellationToken">キャンセル通知を受け取るために他のオブジェクトまたはスレッドで使用できるキャンセル トークン。</param>
+    /// <returns>更新処理後のCrewオブジェクト。</returns>
+    public ValueTask<JsonElement> UpdateCrewAsync(string id, JsonElement payload, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// 指定した条件に合致する従業員をリストで取得します。
+    /// </summary>
+    /// <remarks>
+    /// <seealso href="https://developer.smarthr.jp/api/index.html#!/%E5%BE%93%E6%A5%AD%E5%93%A1/getV1Crews"/>
+    /// </remarks>
+    /// <param name="page">1から始まるページ番号</param>
+    /// <param name="perPage">1ページあたりに含まれる要素数</param>
+    /// <param name="cancellationToken">キャンセル通知を受け取るために他のオブジェクトまたはスレッドで使用できるキャンセル トークン。</param>
+    public ValueTask<IReadOnlyList<JsonElement>> FetchCrewListAsync(
+        int page = 1,
+        int perPage = 10,
+        string? empCode = null,
+        string? empType = null,
+        string? empStatus= null,
+        string? gender = null,
+        string? sort = null,
+        DateTime? enteredAtFrom = default,
+        DateTime? enteredAtTo = default,
+        string? query = null,
+        IReadOnlyList<string>? fields = null,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// 従業員情報を新規登録します。
+    /// </summary>
+    /// <remarks>
+    /// <seealso href="https://developer.smarthr.jp/api/index.html#!/%E5%BE%93%E6%A5%AD%E5%93%A1/patchV1CrewsId"/>
+    /// </remarks>
+    /// <param name="payload">従業員情報</param>
+    /// <param name="cancellationToken">キャンセル通知を受け取るために他のオブジェクトまたはスレッドで使用できるキャンセル トークン。</param>
+    /// <returns>更新処理後のCrewオブジェクト。</returns>
+    public ValueTask<JsonElement> AddCrewAsync(JsonElement payload, CancellationToken cancellationToken = default);
+    #endregion
+
     #region DependentRelations
     /// <summary>
     /// 続柄をリストで取得します。

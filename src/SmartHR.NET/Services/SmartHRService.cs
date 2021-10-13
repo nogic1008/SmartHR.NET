@@ -9,6 +9,7 @@ using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using SmartHR.NET.Entities;
+using HttpUtility = System.Web.HttpUtility;
 
 namespace SmartHR.NET.Services;
 
@@ -55,6 +56,95 @@ public class SmartHRService : ISmartHRService
         if (!string.IsNullOrEmpty(accessToken))
             _httpClient.DefaultRequestHeaders.Authorization = new("Bearer", accessToken);
     }
+
+    #region Crews
+    /// <inheritdoc/>
+    /// <exception cref="ApiFailedException">APIがエラーレスポンスを返した場合にスローされます。</exception>
+    public async ValueTask InviteCrewAsync(string id, string inviterCrewId, string? crewInputFormId = null, CancellationToken cancellationToken = default)
+    {
+        var parameters = new Dictionary<string, string>(2)
+        {
+            {"inviter_crew_id", inviterCrewId}
+        };
+        if (crewInputFormId is not null)
+            parameters.Add("crew_input_form_id", crewInputFormId);
+
+        var content = new FormUrlEncodedContent(parameters);
+        var response = await _httpClient.PutAsync($"/v1/crews/{id}/invite", content, cancellationToken).ConfigureAwait(false);
+        await ValidateResponseAsync(response, cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <inheritdoc/>
+    /// <exception cref="ApiFailedException">APIがエラーレスポンスを返した場合にスローされます。</exception>
+    public async ValueTask DeleteCrewAsync(string id, CancellationToken cancellationToken = default)
+    {
+        var response = await _httpClient.DeleteAsync($"/v1/crews/{id}", cancellationToken).ConfigureAwait(false);
+        await ValidateResponseAsync(response, cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <inheritdoc/>
+    /// <exception cref="ApiFailedException">APIがエラーレスポンスを返した場合にスローされます。</exception>
+    public ValueTask<JsonElement> FetchCrewAsync(string id, CancellationToken cancellationToken = default)
+        => CallApiAsync<JsonElement>(new(HttpMethod.Get, $"/v1/crews/{id}"), cancellationToken);
+
+    /// <inheritdoc/>
+    /// <exception cref="ApiFailedException">APIがエラーレスポンスを返した場合にスローされます。</exception>
+    public ValueTask<JsonElement> UpdateCrewAsync(string id, JsonElement payload, CancellationToken cancellationToken = default)
+        => CallApiAsync<JsonElement>(
+            new(new("PATCH"), $"/v1/crews/{id}")
+            {
+                Content = JsonContent.Create(payload, options: _serializerOptions)
+            }, cancellationToken);
+
+    /// <inheritdoc/>
+    /// <exception cref="ApiFailedException">APIがエラーレスポンスを返した場合にスローされます。</exception>
+    public ValueTask<IReadOnlyList<JsonElement>> FetchCrewListAsync(
+        int page = 1,
+        int perPage = 10,
+        string? empCode = null,
+        string? empType = null,
+        string? empStatus = null,
+        string? gender = null,
+        string? sort = null,
+        DateTime? enteredAtFrom = default,
+        DateTime? enteredAtTo = default,
+        string? query = null,
+        IReadOnlyList<string>? fields = null,
+        CancellationToken cancellationToken = default)
+    {
+        var queries = HttpUtility.ParseQueryString("");
+        if (!string.IsNullOrEmpty(empCode))
+            queries.Add("emp_code", empCode);
+        if (!string.IsNullOrEmpty(empType))
+            queries.Add("emp_type", empType);
+        if (!string.IsNullOrEmpty(empStatus))
+            queries.Add("emp_status", empStatus);
+        if (!string.IsNullOrEmpty(gender))
+            queries.Add("gender", gender);
+        if (!string.IsNullOrEmpty(sort))
+            queries.Add("sort", sort);
+        if (enteredAtFrom is not null)
+            queries.Add("entered_at_from", enteredAtFrom.GetValueOrDefault().ToString("yyyy-MM-dd"));
+        if (enteredAtTo is not null)
+            queries.Add("entered_at_to", enteredAtTo.GetValueOrDefault().ToString("yyyy-MM-dd"));
+        if (!string.IsNullOrEmpty(query))
+            queries.Add("q", query);
+        if (fields?.Count > 0)
+            queries.Add("fields", string.Join(",", fields));
+
+        string endpoint = queries.Count > 0 ? $"/v1/crews?{queries}&" : "/v1/crews?";
+        return FetchListAsync<JsonElement>(endpoint, page, perPage, cancellationToken);
+    }
+
+    /// <inheritdoc/>
+    /// <exception cref="ApiFailedException">APIがエラーレスポンスを返した場合にスローされます。</exception>
+    public ValueTask<JsonElement> AddCrewAsync(JsonElement payload, CancellationToken cancellationToken = default)
+        => CallApiAsync<JsonElement>(
+            new(HttpMethod.Post, "/v1/crews")
+            {
+                Content = JsonContent.Create(payload, options: _serializerOptions)
+            }, cancellationToken);
+    #endregion
 
     #region DependentRelations
     /// <summary>
