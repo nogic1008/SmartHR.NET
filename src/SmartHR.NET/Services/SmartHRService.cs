@@ -212,6 +212,25 @@ public class SmartHRService : ISmartHRService
         => FetchListAsync<JsonElement>($"/v1/users?{(includeCrewInfo ? "embed=crew&" : "")}", page, perPage, cancellationToken);
     #endregion
 
+    #region BizEstablishments
+    /// <inheritdoc/>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// <paramref name="page"/>か<paramref name="perPage"/>が0以下です。
+    /// もしくは<paramref name="perPage"/>が100を超えています。
+    /// </exception>
+    /// <exception cref="ApiFailedException">APIがエラーレスポンスを返した場合にスローされます。</exception>
+    public ValueTask<IReadOnlyList<JsonElement>> FetchBizEstablishmentListAsync(BizEstablishmentEmbed embed = default, int page = 1, int perPage = 10, CancellationToken cancellationToken = default)
+    {
+        string query = embed switch
+        {
+            BizEstablishmentEmbed.SocInsOwner => "embed=soc_ins_owner&",
+            BizEstablishmentEmbed.LabInsOwner => "embed=lab_ins_owner&",
+            _ => "",
+        };
+        return FetchListAsync<JsonElement>($"v1/biz_establishments?{query}", page, perPage, cancellationToken);
+    }
+    #endregion
+
     #region DependentRelations
     /// <summary>
     /// 続柄をリストで取得します。

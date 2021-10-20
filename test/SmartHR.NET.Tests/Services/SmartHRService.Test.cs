@@ -683,6 +683,40 @@ public class SmartHRServiceTest
     }
     #endregion
 
+    #region BizEstablishments
+    /// <summary>
+    /// <see cref="SmartHRService.FetchBizEstablishmentListAsync"/>は、"/v1/biz_establishments"にGETリクエストを行う。
+    /// </summary>
+    /// <param name="embed">ユーザー情報を含めるか</param>
+    /// <param name="expectedQuery">パラメータクエリ</param>
+    [InlineData(BizEstablishmentEmbed.None, "page=1&per_page=10")]
+    [InlineData(BizEstablishmentEmbed.SocInsOwner, "embed=soc_ins_owner&page=1&per_page=10")]
+    [InlineData(BizEstablishmentEmbed.LabInsOwner, "embed=lab_ins_owner&page=1&per_page=10")]
+    [Theory(DisplayName = $"{nameof(SmartHRService)} > {nameof(SmartHRService.FetchBizEstablishmentListAsync)} > GET /v1/biz_establishments をコールする。")]
+    public async Task FetchBizEstablishmentListAsync_Calls_GetApi(BizEstablishmentEmbed embed, string expectedQuery)
+    {
+        // Arrange
+        var handler = new Mock<HttpMessageHandler>();
+        handler.SetupRequest(req => req.RequestUri?.GetLeftPart(UriPartial.Authority) == BaseUri)
+            .ReturnsResponse($"[{BizEstablishmentTest.Json}]", "application/json");
+
+        // Act
+        var sut = CreateSut(handler);
+        var entities = await sut.FetchBizEstablishmentListAsync(embed, 1, 10).ConfigureAwait(false);
+
+        // Assert
+        entities.Should().NotBeNullOrEmpty();
+        handler.VerifyRequest((req) =>
+        {
+            req.RequestUri.Should().NotBeNull();
+            req.RequestUri!.GetLeftPart(UriPartial.Authority).Should().Be(BaseUri);
+            req.RequestUri!.PathAndQuery.Should().Be($"/v1/biz_establishments?{expectedQuery}");
+            req.Method.Should().Be(HttpMethod.Get);
+            return true;
+        }, Times.Once());
+    }
+    #endregion
+
     #region DependentRelations
     /// <summary>
     /// <see cref="SmartHRService.FetchDependentRelationListAsync"/>は、"/v1/dependent_relations"にGETリクエストを行う。

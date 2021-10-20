@@ -198,6 +198,21 @@ public interface ISmartHRService
     public ValueTask<IReadOnlyList<JsonElement>> FetchUserListAsync(bool includeCrewInfo = false, int page = 1, int perPage = 10, CancellationToken cancellationToken = default);
     #endregion
 
+    #region BizEstablishments
+    /// <summary>
+    /// 事業所情報をリストで取得します。
+    /// </summary>
+    /// <remarks>
+    /// <seealso href="https://developer.smarthr.jp/api/index.html#!/%E4%BA%8B%E6%A5%AD%E6%89%80/getV1BizEstablishments"/>
+    /// </remarks>
+    /// <param name="embed">ユーザー情報を含めるか</param>
+    /// <param name="page">1から始まるページ番号</param>
+    /// <param name="perPage">1ページあたりに含まれる要素数</param>
+    /// <param name="cancellationToken">キャンセル通知を受け取るために他のオブジェクトまたはスレッドで使用できるキャンセル トークン。</param>
+    /// <returns>事業所情報の一覧</returns>
+    public ValueTask<IReadOnlyList<JsonElement>> FetchBizEstablishmentListAsync(BizEstablishmentEmbed embed = default, int page = 1, int perPage = 10, CancellationToken cancellationToken = default);
+    #endregion
+
     #region DependentRelations
     /// <summary>
     /// 続柄をリストで取得します。
