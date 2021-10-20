@@ -111,6 +111,67 @@ public interface ISmartHRService
     public ValueTask DeleteCrewDepartmentsAsync(string id, CancellationToken cancellationToken = default);
     #endregion
 
+    #region Dependents
+    /// <summary>
+    /// <paramref name="id"/>と一致する家族情報を削除します。
+    /// </summary>
+    /// <remarks>
+    /// <seealso href="https://developer.smarthr.jp/api/index.html#!/%E5%AE%B6%E6%97%8F%E6%83%85%E5%A0%B1/deleteV1CrewsCrewIdDependentsId"/>
+    /// </remarks>
+    /// <param name="crewId">従業員ID</param>
+    /// <param name="id">家族ID</param>
+    /// <param name="cancellationToken">キャンセル通知を受け取るために他のオブジェクトまたはスレッドで使用できるキャンセル トークン。</param>
+    public ValueTask DeleteDependentAsync(string crewId, string id, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// <paramref name="id"/>と一致する家族情報を取得します。
+    /// </summary>
+    /// <remarks>
+    /// <seealso href="https://developer.smarthr.jp/api/index.html#!/%E5%AE%B6%E6%97%8F%E6%83%85%E5%A0%B1/getV1CrewsCrewIdDependentsId"/>
+    /// </remarks>
+    /// <param name="crewId">従業員ID</param>
+    /// <param name="id">家族ID</param>
+    /// <param name="cancellationToken">キャンセル通知を受け取るために他のオブジェクトまたはスレッドで使用できるキャンセル トークン。</param>
+    public ValueTask<JsonElement> FetchDependentAsync(string crewId, string id, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// <paramref name="id"/>と一致する家族情報を部分更新します。
+    /// </summary>
+    /// <remarks>
+    /// <seealso href="https://developer.smarthr.jp/api/index.html#!/%E5%AE%B6%E6%97%8F%E6%83%85%E5%A0%B1/patchV1CrewsCrewIdDependentsId"/>
+    /// </remarks>
+    /// <param name="crewId">従業員ID</param>
+    /// <param name="id">家族ID</param>
+    /// <param name="payload">家族情報</param>
+    /// <param name="cancellationToken">キャンセル通知を受け取るために他のオブジェクトまたはスレッドで使用できるキャンセル トークン。</param>
+    /// <returns>更新処理後のDependentオブジェクト。</returns>
+    public ValueTask<JsonElement> UpdateDependentAsync(string crewId, string id, JsonElement payload, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// <paramref name="crewId"/>と一致する従業員に紐づく家族情報をリストで取得します。
+    /// </summary>
+    /// <remarks>
+    /// <seealso href="https://developer.smarthr.jp/api/index.html#!/%E5%AE%B6%E6%97%8F%E6%83%85%E5%A0%B1/getV1CrewsCrewIdDependents"/>
+    /// </remarks>
+    /// <param name="crewId">従業員ID</param>
+    /// <param name="page">1から始まるページ番号</param>
+    /// <param name="perPage">1ページあたりに含まれる要素数</param>
+    /// <param name="cancellationToken">キャンセル通知を受け取るために他のオブジェクトまたはスレッドで使用できるキャンセル トークン。</param>
+    public ValueTask<IReadOnlyList<JsonElement>> FetchDependentListAsync(string crewId, int page = 1, int perPage = 10, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// 家族情報を新規登録します。
+    /// </summary>
+    /// <remarks>
+    /// <seealso href="https://developer.smarthr.jp/api/index.html#!/%E5%AE%B6%E6%97%8F%E6%83%85%E5%A0%B1/postV1CrewsCrewIdDependents"/>
+    /// </remarks>
+    /// <param name="crewId">従業員ID</param>
+    /// <param name="payload">家族情報</param>
+    /// <param name="cancellationToken">キャンセル通知を受け取るために他のオブジェクトまたはスレッドで使用できるキャンセル トークン。</param>
+    /// <returns>更新処理後のDependentオブジェクト。</returns>
+    public ValueTask<JsonElement> AddDependentAsync(string crewId, JsonElement payload, CancellationToken cancellationToken = default);
+    #endregion
+
     #region DependentRelations
     /// <summary>
     /// 続柄をリストで取得します。
