@@ -617,6 +617,72 @@ public class SmartHRServiceTest
     }
     #endregion
 
+    #region Users
+    /// <summary>
+    /// <see cref="SmartHRService.FetchUserAsync"/>は、"/v1/users/{id}"にGETリクエストを行う。
+    /// </summary>
+    /// <param name="includeCrewInfo">従業員情報を含めるか</param>
+    /// <param name="expectedQuery">パラメータクエリ</param>
+    [InlineData(true, "?embed=crew")]
+    [InlineData(false, "")]
+    [Theory(DisplayName = $"{nameof(SmartHRService)} > {nameof(SmartHRService.FetchUserAsync)} > GET /v1/users/:id をコールする。")]
+    public async Task FetchUserAsync_Calls_GetApi(bool includeCrewInfo, string expectedQuery)
+    {
+        // Arrange
+        string id = GenerateRandomString();
+
+        var handler = new Mock<HttpMessageHandler>();
+        handler.SetupRequest(req => req.RequestUri?.GetLeftPart(UriPartial.Authority) == BaseUri)
+            .ReturnsResponse(UserTest.Json, "application/json");
+
+        // Act
+        var sut = CreateSut(handler);
+        var entity = await sut.FetchUserAsync(id, includeCrewInfo).ConfigureAwait(false);
+
+        // Assert
+        entity.Should().NotBeNull();
+        handler.VerifyRequest(req =>
+        {
+            req.RequestUri.Should().NotBeNull();
+            req.RequestUri!.GetLeftPart(UriPartial.Authority).Should().Be(BaseUri);
+            req.RequestUri.PathAndQuery.Should().Be($"/v1/users/{id}{expectedQuery}");
+            req.Method.Should().Be(HttpMethod.Get);
+            return true;
+        }, Times.Once());
+    }
+
+    /// <summary>
+    /// <see cref="SmartHRService.FetchUserListAsync"/>は、"/v1/users"にGETリクエストを行う。
+    /// </summary>
+    /// <param name="includeCrewInfo">従業員情報を含めるか</param>
+    /// <param name="expectedQuery">パラメータクエリ</param>
+    [InlineData(true, "embed=crew&page=1&per_page=10")]
+    [InlineData(false, "page=1&per_page=10")]
+    [Theory(DisplayName = $"{nameof(SmartHRService)} > {nameof(SmartHRService.FetchUserListAsync)} > GET /v1/users をコールする。")]
+    public async Task FetchUserListAsync_Calls_GetApi(bool includeCrewInfo, string expectedQuery)
+    {
+        // Arrange
+        var handler = new Mock<HttpMessageHandler>();
+        handler.SetupRequest(req => req.RequestUri?.GetLeftPart(UriPartial.Authority) == BaseUri)
+            .ReturnsResponse($"[{UserTest.Json}]", "application/json");
+
+        // Act
+        var sut = CreateSut(handler);
+        var entities = await sut.FetchUserListAsync(includeCrewInfo, 1, 10).ConfigureAwait(false);
+
+        // Assert
+        entities.Should().NotBeNullOrEmpty();
+        handler.VerifyRequest((req) =>
+        {
+            req.RequestUri.Should().NotBeNull();
+            req.RequestUri!.GetLeftPart(UriPartial.Authority).Should().Be(BaseUri);
+            req.RequestUri!.PathAndQuery.Should().Be($"/v1/users?{expectedQuery}");
+            req.Method.Should().Be(HttpMethod.Get);
+            return true;
+        }, Times.Once());
+    }
+    #endregion
+
     #region DependentRelations
     /// <summary>
     /// <see cref="SmartHRService.FetchDependentRelationListAsync"/>は、"/v1/dependent_relations"にGETリクエストを行う。

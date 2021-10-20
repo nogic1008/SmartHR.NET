@@ -172,6 +172,32 @@ public interface ISmartHRService
     public ValueTask<JsonElement> AddDependentAsync(string crewId, JsonElement payload, CancellationToken cancellationToken = default);
     #endregion
 
+    #region Users
+    /// <summary>
+    /// <paramref name="id"/>と一致するユーザ情報を取得します。
+    /// </summary>
+    /// <remarks>
+    /// <seealso href="https://developer.smarthr.jp/api/index.html#!/%E3%83%A6%E3%83%BC%E3%82%B6/getV1UsersId"/>
+    /// </remarks>
+    /// <param name="id">ユーザID</param>
+    /// <param name="includeCrewInfo">従業員情報を含めるか</param>
+    /// <param name="cancellationToken">キャンセル通知を受け取るために他のオブジェクトまたはスレッドで使用できるキャンセル トークン。</param>
+    public ValueTask<JsonElement> FetchUserAsync(string id, bool includeCrewInfo = false, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// ユーザ情報をリストで取得します。
+    /// </summary>
+    /// <remarks>
+    /// <seealso href="https://developer.smarthr.jp/api/index.html#!/%E3%83%A6%E3%83%BC%E3%82%B6/getV1Users"/>
+    /// </remarks>
+    /// <param name="includeCrewInfo">従業員情報を含めるか</param>
+    /// <param name="page">1から始まるページ番号</param>
+    /// <param name="perPage">1ページあたりに含まれる要素数</param>
+    /// <param name="cancellationToken">キャンセル通知を受け取るために他のオブジェクトまたはスレッドで使用できるキャンセル トークン。</param>
+    /// <returns>ユーザ情報の一覧</returns>
+    public ValueTask<IReadOnlyList<JsonElement>> FetchUserListAsync(bool includeCrewInfo = false, int page = 1, int perPage = 10, CancellationToken cancellationToken = default);
+    #endregion
+
     #region DependentRelations
     /// <summary>
     /// 続柄をリストで取得します。

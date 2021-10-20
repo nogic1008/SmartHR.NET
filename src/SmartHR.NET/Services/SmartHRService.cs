@@ -196,6 +196,22 @@ public class SmartHRService : ISmartHRService
             }, cancellationToken);
     #endregion
 
+    #region Users
+    /// <inheritdoc/>
+    /// <exception cref="ApiFailedException">APIがエラーレスポンスを返した場合にスローされます。</exception>
+    public ValueTask<JsonElement> FetchUserAsync(string id, bool includeCrewInfo = false, CancellationToken cancellationToken = default)
+        => CallApiAsync<JsonElement>(new(HttpMethod.Get, $"/v1/users/{id}{(includeCrewInfo ? "?embed=crew" : "")}"), cancellationToken);
+
+    /// <inheritdoc/>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// <paramref name="page"/>か<paramref name="perPage"/>が0以下です。
+    /// もしくは<paramref name="perPage"/>が100を超えています。
+    /// </exception>
+    /// <exception cref="ApiFailedException">APIがエラーレスポンスを返した場合にスローされます。</exception>
+    public ValueTask<IReadOnlyList<JsonElement>> FetchUserListAsync(bool includeCrewInfo = false, int page = 1, int perPage = 10, CancellationToken cancellationToken = default)
+        => FetchListAsync<JsonElement>($"/v1/users?{(includeCrewInfo ? "embed=crew&" : "")}", page, perPage, cancellationToken);
+    #endregion
+
     #region DependentRelations
     /// <summary>
     /// 続柄をリストで取得します。
