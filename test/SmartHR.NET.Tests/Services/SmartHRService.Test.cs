@@ -410,6 +410,186 @@ public class SmartHRServiceTest
     }
     #endregion
 
+    #region 雇用形態
+    /// <summary>
+    /// <see cref="SmartHRService.DeleteEmploymentTypeAsync"/>は、"/v1/departments/{id}"にDELETEリクエストを行う。
+    /// </summary>
+    [Fact(DisplayName = $"{nameof(SmartHRService)} > {nameof(SmartHRService.DeleteEmploymentTypeAsync)} > DELETE /v1/departments/:id をコールする。")]
+    public async Task DeleteEmploymentTypeAsync_Calls_DeleteApi()
+    {
+        // Arrange
+        string id = GenerateRandomString();
+
+        var handler = new Mock<HttpMessageHandler>();
+        handler.SetupRequest(req => req.RequestUri?.GetLeftPart(UriPartial.Authority) == BaseUri)
+            .ReturnsResponse(HttpStatusCode.NoContent);
+
+        // Act
+        var sut = CreateSut(handler);
+        await sut.DeleteEmploymentTypeAsync(id).ConfigureAwait(false);
+
+        // Assert
+        handler.VerifyRequest(req =>
+        {
+            req.RequestUri.Should().NotBeNull();
+            req.RequestUri!.GetLeftPart(UriPartial.Authority).Should().Be(BaseUri);
+            req.RequestUri.PathAndQuery.Should().Be($"/v1/employment_types/{id}");
+            req.Method.Should().Be(HttpMethod.Delete);
+            return true;
+        }, Times.Once());
+    }
+
+    /// <summary>
+    /// <see cref="SmartHRService.FetchEmploymentTypeAsync"/>は、"/v1/employment_types/{id}"にGETリクエストを行う。
+    /// </summary>
+    [Fact(DisplayName = $"{nameof(SmartHRService)} > {nameof(SmartHRService.FetchEmploymentTypeAsync)} > GET /v1/employment_types/:id をコールする。")]
+    public async Task FetchEmploymentTypeAsync_Calls_GetApi()
+    {
+        // Arrange
+        string id = GenerateRandomString();
+
+        var handler = new Mock<HttpMessageHandler>();
+        handler.SetupRequest(req => req.RequestUri?.GetLeftPart(UriPartial.Authority) == BaseUri)
+            .ReturnsResponse(EmploymentTypeTest.Json, "application/json");
+
+        // Act
+        var sut = CreateSut(handler);
+        var entity = await sut.FetchEmploymentTypeAsync(id).ConfigureAwait(false);
+
+        // Assert
+        entity.Should().NotBeNull();
+        handler.VerifyRequest(req =>
+        {
+            req.RequestUri.Should().NotBeNull();
+            req.RequestUri!.GetLeftPart(UriPartial.Authority).Should().Be(BaseUri);
+            req.RequestUri.PathAndQuery.Should().Be($"/v1/employment_types/{id}");
+            req.Method.Should().Be(HttpMethod.Get);
+            return true;
+        }, Times.Once());
+    }
+
+    /// <summary>
+    /// <see cref="SmartHRService.UpdateEmploymentTypeAsync"/>は、"/v1/employment_types/{id}"にPATCHリクエストを行う。
+    /// </summary>
+    [Fact(DisplayName = $"{nameof(SmartHRService)} > {nameof(SmartHRService.UpdateEmploymentTypeAsync)} > PATCH /v1/employment_types/:id をコールする。")]
+    public async Task UpdateEmploymentTypeAsync_Calls_PatchApi()
+    {
+        // Arrange
+        string id = GenerateRandomString();
+
+        var handler = new Mock<HttpMessageHandler>();
+        handler.SetupRequest(req => req.RequestUri?.GetLeftPart(UriPartial.Authority) == BaseUri)
+            .ReturnsResponse(EmploymentTypeTest.Json, "application/json");
+
+        // Act
+        var sut = CreateSut(handler);
+        var entity = await sut.UpdateEmploymentTypeAsync(id, "foo").ConfigureAwait(false);
+
+        // Assert
+        entity.Should().NotBeNull();
+        handler.VerifyRequest(async (req) =>
+        {
+            req.RequestUri.Should().NotBeNull();
+            req.RequestUri!.GetLeftPart(UriPartial.Authority).Should().Be(BaseUri);
+            req.RequestUri.PathAndQuery.Should().Be($"/v1/employment_types/{id}");
+            req.Method.Should().Be(HttpMethod.Patch);
+
+            string receivedJson = await req.Content!.ReadAsStringAsync().ConfigureAwait(false);
+            receivedJson.Should().Be("{\"name\":\"foo\"}");
+            return true;
+        }, Times.Once());
+    }
+
+    /// <summary>
+    /// <see cref="SmartHRService.ReplaceEmploymentTypeAsync"/>は、"/v1/employment_types/{id}"にPUTリクエストを行う。
+    /// </summary>
+    [Fact(DisplayName = $"{nameof(SmartHRService)} > {nameof(SmartHRService.ReplaceEmploymentTypeAsync)} > PUT /v1/employment_types/:id をコールする。")]
+    public async Task ReplaceEmploymentTypeAsync_Calls_PutApi()
+    {
+        // Arrange
+        string id = GenerateRandomString();
+
+        var handler = new Mock<HttpMessageHandler>();
+        handler.SetupRequest(req => req.RequestUri?.GetLeftPart(UriPartial.Authority) == BaseUri)
+            .ReturnsResponse(EmploymentTypeTest.Json, "application/json");
+
+        // Act
+        var sut = CreateSut(handler);
+        var entity = await sut.ReplaceEmploymentTypeAsync(id, "test").ConfigureAwait(false);
+
+        // Assert
+        entity.Should().NotBeNull();
+        handler.VerifyRequest(async (req) =>
+        {
+            req.RequestUri.Should().NotBeNull();
+            req.RequestUri!.GetLeftPart(UriPartial.Authority).Should().Be(BaseUri);
+            req.RequestUri.PathAndQuery.Should().Be($"/v1/employment_types/{id}");
+            req.Method.Should().Be(HttpMethod.Put);
+
+            string receivedJson = await req.Content!.ReadAsStringAsync().ConfigureAwait(false);
+            receivedJson.Should().Be("{\"name\":\"test\"}");
+            return true;
+        }, Times.Once());
+    }
+
+    /// <summary>
+    /// <see cref="SmartHRService.FetchEmploymentTypeListAsync"/>は、"/v1/employment_types"にGETリクエストを行う。
+    /// </summary>
+    [Fact(DisplayName = $"{nameof(SmartHRService)} > {nameof(SmartHRService.FetchEmploymentTypeListAsync)} > GET /v1/employment_types をコールする。")]
+    public async Task FetchEmploymentTypeListAsync_Calls_GetApi()
+    {
+        // Arrange
+        var handler = new Mock<HttpMessageHandler>();
+        handler.SetupRequest(req => req.RequestUri?.GetLeftPart(UriPartial.Authority) == BaseUri)
+            .ReturnsResponse($"[{EmploymentTypeTest.Json}]", "application/json");
+
+        // Act
+        var sut = CreateSut(handler);
+        var entities = await sut.FetchEmploymentTypeListAsync(1, 10).ConfigureAwait(false);
+
+        // Assert
+        entities.Should().NotBeNullOrEmpty();
+        handler.VerifyRequest((req) =>
+        {
+            req.RequestUri.Should().NotBeNull();
+            req.RequestUri!.GetLeftPart(UriPartial.Authority).Should().Be(BaseUri);
+            req.RequestUri.PathAndQuery.Should().Be($"/v1/employment_types?page=1&per_page=10");
+            req.Method.Should().Be(HttpMethod.Get);
+            return true;
+        }, Times.Once());
+    }
+
+    /// <summary>
+    /// <see cref="SmartHRService.AddEmploymentTypeAsync"/>は、"/v1/employment_types"にPOSTリクエストを行う。
+    /// </summary>
+    [Fact(DisplayName = $"{nameof(SmartHRService)} > {nameof(SmartHRService.AddEmploymentTypeAsync)} > POST /v1/employment_types をコールする。")]
+    public async Task AddEmploymentTypeAsync_Calls_PostApi()
+    {
+        // Arrange
+        var handler = new Mock<HttpMessageHandler>();
+        handler.SetupRequest(req => req.RequestUri?.GetLeftPart(UriPartial.Authority) == BaseUri)
+            .ReturnsResponse(EmploymentTypeTest.Json, "application/json");
+
+        // Act
+        var sut = CreateSut(handler);
+        var entity = await sut.AddEmploymentTypeAsync("test", EmploymentType.Preset.BoardMember).ConfigureAwait(false);
+
+        // Assert
+        entity.Should().NotBeNull();
+        handler.VerifyRequest(async (req) =>
+        {
+            req.RequestUri.Should().NotBeNull();
+            req.RequestUri!.GetLeftPart(UriPartial.Authority).Should().Be(BaseUri);
+            req.RequestUri.PathAndQuery.Should().Be("/v1/employment_types");
+            req.Method.Should().Be(HttpMethod.Post);
+
+            string receivedJson = await req.Content!.ReadAsStringAsync().ConfigureAwait(false);
+            receivedJson.Should().Be("{\"name\":\"test\",\"preset_type\":\"board_member\"}");
+            return true;
+        }, Times.Once());
+    }
+    #endregion
+
     #region DependentRelations
     /// <summary>
     /// <see cref="SmartHRService.FetchDependentRelationListAsync"/>は、"/v1/dependent_relations"にGETリクエストを行う。

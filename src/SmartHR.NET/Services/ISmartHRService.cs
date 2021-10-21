@@ -98,6 +98,69 @@ public interface ISmartHRService
     public ValueTask<Department> AddDepartmentAsync(string name, int? position = null, string? code = null, string? parentId = null, CancellationToken cancellationToken = default);
     #endregion
 
+    #region 雇用形態
+    /// <summary>
+    /// <paramref name="id"/>と一致する<inheritdoc cref="EmploymentType" path="/summary/text()"/>を削除します。
+    /// <see href="https://developer.smarthr.jp/api/index.html#!/%E9%9B%87%E7%94%A8%E5%BD%A2%E6%85%8B/deleteV1EmploymentTypesId"/>
+    /// </summary>
+    /// <remarks>従業員と紐付いている雇用形態の削除はできません。</remarks>
+    /// <param name="id"><inheritdoc cref="EmploymentType" path="/param[@name='Id']"/></param>
+    /// <param name="cancellationToken">キャンセル通知を受け取るために他のオブジェクトまたはスレッドで使用できるキャンセル トークン。</param>
+    public ValueTask DeleteEmploymentTypeAsync(string id, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// <paramref name="id"/>と一致する<inheritdoc cref="EmploymentType" path="/summary/text()"/>を取得します。
+    /// <see href="https://developer.smarthr.jp/api/index.html#!/%E9%9B%87%E7%94%A8%E5%BD%A2%E6%85%8B/getV1EmploymentTypesId"/>
+    /// </summary>
+    /// <param name="id"><inheritdoc cref="EmploymentType" path="/param[@name='Id']"/></param>
+    /// <param name="cancellationToken">キャンセル通知を受け取るために他のオブジェクトまたはスレッドで使用できるキャンセル トークン。</param>
+    public ValueTask<EmploymentType> FetchEmploymentTypeAsync(string id, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// <paramref name="id"/>と一致する<inheritdoc cref="EmploymentType" path="/summary/text()"/>を部分更新します。
+    /// <see href="https://developer.smarthr.jp/api/index.html#!/%E9%9B%87%E7%94%A8%E5%BD%A2%E6%85%8B/patchV1EmploymentTypesId"/>
+    /// </summary>
+    /// <param name="id"><inheritdoc cref="EmploymentType" path="/param[@name='Id']"/></param>
+    /// <param name="name"><inheritdoc cref="EmploymentType" path="/param[@name='Name']"/></param>
+    /// <param name="cancellationToken">キャンセル通知を受け取るために他のオブジェクトまたはスレッドで使用できるキャンセル トークン。</param>
+    /// <returns>更新処理後の<see cref="EmploymentType"/>オブジェクト。</returns>
+    public ValueTask<EmploymentType> UpdateEmploymentTypeAsync(string id, string name, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// <paramref name="id"/>と一致する<inheritdoc cref="EmploymentType" path="/summary/text()"/>を更新します。
+    /// <see href="https://developer.smarthr.jp/api/index.html#!/%E9%9B%87%E7%94%A8%E5%BD%A2%E6%85%8B/putV1EmploymentTypesId"/>
+    /// </summary>
+    /// <remarks>
+    /// 未指定の属性は情報が削除されます。
+    /// 未指定の属性を消したくない場合は<see cref="UpdateEmploymentTypeAsync"/>をご利用ください。
+    /// </remarks>
+    /// <param name="id"><inheritdoc cref="EmploymentType" path="/param[@name='Id']"/></param>
+    /// <param name="name"><inheritdoc cref="EmploymentType" path="/param[@name='Name']"/></param>
+    /// <param name="cancellationToken">キャンセル通知を受け取るために他のオブジェクトまたはスレッドで使用できるキャンセル トークン。</param>
+    /// <returns>更新処理後の<see cref="EmploymentType"/>オブジェクト。</returns>
+    public ValueTask<EmploymentType> ReplaceEmploymentTypeAsync(string id, string name, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// <inheritdoc cref="EmploymentType" path="/summary/text()"/>をリストで取得します。
+    /// <see href="https://developer.smarthr.jp/api/index.html#!/%E9%9B%87%E7%94%A8%E5%BD%A2%E6%85%8B/getV1EmploymentTypes"/>
+    /// </summary>
+    /// <param name="page">1から始まるページ番号</param>
+    /// <param name="perPage">1ページあたりに含まれる要素数</param>
+    /// <param name="cancellationToken">キャンセル通知を受け取るために他のオブジェクトまたはスレッドで使用できるキャンセル トークン。</param>
+    /// <returns><inheritdoc cref="EmploymentType" path="/summary/text()"/>の一覧</returns>
+    public ValueTask<IReadOnlyList<EmploymentType>> FetchEmploymentTypeListAsync(int page = 1, int perPage = 10, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// <inheritdoc cref="EmploymentType" path="/summary/text()"/>を新規登録します。
+    /// <see href="https://developer.smarthr.jp/api/index.html#!/%E9%9B%87%E7%94%A8%E5%BD%A2%E6%85%8B/postV1EmploymentTypes"/>
+    /// </summary>
+    /// <param name="name"><inheritdoc cref="EmploymentType" path="/param[@name='Name']"/></param>
+    /// <param name="presetType"><inheritdoc cref="EmploymentType" path="/param[@name='PresetType']"/></param>
+    /// <param name="cancellationToken">キャンセル通知を受け取るために他のオブジェクトまたはスレッドで使用できるキャンセル トークン。</param>
+    /// <returns>登録処理後の<see cref="EmploymentType"/>オブジェクト。</returns>
+    public ValueTask<EmploymentType> AddEmploymentTypeAsync(string name, EmploymentType.Preset? presetType = default, CancellationToken cancellationToken = default);
+    #endregion
+
     #region DependentRelations
     /// <summary>
     /// 続柄をリストで取得します。
