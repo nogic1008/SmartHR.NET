@@ -111,6 +111,57 @@ public class SmartHRService : ISmartHRService
     );
     #endregion
 
+    #region 雇用形態
+    /// <inheritdoc />
+    /// <inheritdoc cref="ValidateResponseAsync" path="/exception"/>
+    public ValueTask DeleteEmploymentTypeAsync(string id, CancellationToken cancellationToken = default)
+        => CallDeleteApiAsync($"/v1/employment_types/{id}", cancellationToken);
+
+    /// <inheritdoc />
+    /// <inheritdoc cref="ValidateResponseAsync" path="/exception"/>
+    public ValueTask<EmploymentType> FetchEmploymentTypeAsync(string id, CancellationToken cancellationToken = default)
+        => CallApiAsync<EmploymentType>(new(HttpMethod.Get, $"/v1/employment_types/{id}"), cancellationToken);
+
+    /// <inheritdoc />
+    /// <inheritdoc cref="ValidateResponseAsync" path="/exception"/>
+    public ValueTask<EmploymentType> UpdateEmploymentTypeAsync(string id, string name, CancellationToken cancellationToken = default)
+        => CallApiAsync<EmploymentType>(
+            new(new("PATCH"), $"/v1/employment_types/{id}")
+            {
+                Content = JsonContent.Create(new EmploymentTypeContent(name), options: _serializerOptions)
+            }, cancellationToken);
+
+    /// <inheritdoc />
+    /// <inheritdoc cref="ValidateResponseAsync" path="/exception"/>
+    public ValueTask<EmploymentType> ReplaceEmploymentTypeAsync(string id, string name, CancellationToken cancellationToken = default)
+        => CallApiAsync<EmploymentType>(
+            new(HttpMethod.Put, $"/v1/employment_types/{id}")
+            {
+                Content = JsonContent.Create(new EmploymentTypeContent(name), options: _serializerOptions)
+            }, cancellationToken);
+
+    /// <inheritdoc />
+    /// <inheritdoc cref="FetchListAsync" path="/exception"/>
+    /// <inheritdoc cref="ValidateResponseAsync" path="/exception"/>
+    public ValueTask<IReadOnlyList<EmploymentType>> FetchEmploymentTypeListAsync(int page = 1, int perPage = 10, CancellationToken cancellationToken = default)
+        => FetchListAsync<EmploymentType>("/v1/employment_types?", page, perPage, cancellationToken);
+
+    /// <inheritdoc />
+    /// <inheritdoc cref="ValidateResponseAsync" path="/exception"/>
+    public ValueTask<EmploymentType> AddEmploymentTypeAsync(string name, EmploymentType.Preset? presetType = default, CancellationToken cancellationToken = default)
+        => CallApiAsync<EmploymentType>(
+            new(HttpMethod.Post, "/v1/employment_types")
+            {
+                Content = JsonContent.Create(new EmploymentTypeContent(name, presetType), options: _serializerOptions)
+            }, cancellationToken);
+
+    /// <summary><inheritdoc cref="EmploymentType" path="/summary/text()"/>APIのリクエストボディ</summary>
+    private record EmploymentTypeContent(
+        [property: JsonPropertyName("name")] string? Name = null,
+        [property: JsonPropertyName("preset_type")] EmploymentType.Preset? PresetType = default
+    );
+    #endregion
+
     #region DependentRelations
     /// <summary>
     /// 続柄をリストで取得します。
