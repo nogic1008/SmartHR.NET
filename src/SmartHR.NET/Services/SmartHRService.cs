@@ -56,6 +56,61 @@ public class SmartHRService : ISmartHRService
             _httpClient.DefaultRequestHeaders.Authorization = new("Bearer", accessToken);
     }
 
+    #region 部署
+    /// <inheritdoc />
+    /// <inheritdoc cref="ValidateResponseAsync" path="/exception"/>
+    public ValueTask DeleteDepartmentAsync(string id, CancellationToken cancellationToken = default)
+        => CallDeleteApiAsync($"/v1/departments/{id}", cancellationToken);
+
+    /// <inheritdoc />
+    /// <inheritdoc cref="ValidateResponseAsync" path="/exception"/>
+    public ValueTask<Department> FetchDepartmentAsync(string id, CancellationToken cancellationToken = default)
+        => CallApiAsync<Department>(new(HttpMethod.Get, $"/v1/departments/{id}"), cancellationToken);
+
+    /// <inheritdoc />
+    /// <inheritdoc cref="ValidateResponseAsync" path="/exception"/>
+    public ValueTask<Department> UpdateDepartmentAsync(string id, string? name = null, int? position = default, string? code = null, string? parentId = null, CancellationToken cancellationToken = default)
+        => CallApiAsync<Department>(
+            new(new("PATCH"), $"/v1/departments/{id}")
+            {
+                Content = JsonContent.Create(new DepartmentContent(name, position, code, parentId), options: _serializerOptions)
+            }, cancellationToken);
+
+    /// <inheritdoc />
+    /// <inheritdoc cref="ValidateResponseAsync" path="/exception"/>
+    public ValueTask<Department> ReplaceDepartmentAsync(string id, string name, int position, string? code = null, string? parentId = null, CancellationToken cancellationToken = default)
+        => CallApiAsync<Department>(
+            new(HttpMethod.Put, $"/v1/departments/{id}")
+            {
+                Content = JsonContent.Create(new DepartmentContent(name, position, code, parentId), options: _serializerOptions)
+            }, cancellationToken);
+
+    /// <inheritdoc />
+    /// <inheritdoc cref="FetchListAsync" path="/exception"/>
+    /// <inheritdoc cref="ValidateResponseAsync" path="/exception"/>
+    public ValueTask<IReadOnlyList<Department>> FetchDepartmentListAsync(string? code = null, string? sortBy = null, int page = 1, int perPage = 10, CancellationToken cancellationToken = default)
+        => FetchListAsync<Department>(
+            $"/v1/departments?{(string.IsNullOrEmpty(code) ? "" : $"code={code}&")}{(string.IsNullOrEmpty(sortBy) ? "" : $"sort={sortBy}&")}",
+            page, perPage, cancellationToken);
+
+    /// <inheritdoc />
+    /// <inheritdoc cref="ValidateResponseAsync" path="/exception"/>
+    public ValueTask<Department> AddDepartmentAsync(string name, int? position = null, string? code = null, string? parentId = null, CancellationToken cancellationToken = default)
+        => CallApiAsync<Department>(
+            new(HttpMethod.Post, "/v1/departments")
+            {
+                Content = JsonContent.Create(new DepartmentContent(name, position, code, parentId), options: _serializerOptions)
+            }, cancellationToken);
+
+    /// <summary><inheritdoc cref="Department" path="/summary/text()"/>APIのリクエストボディ</summary>
+    private record DepartmentContent(
+        [property: JsonPropertyName("name")] string? Name = null,
+        [property: JsonPropertyName("position")] int? Position = null,
+        [property: JsonPropertyName("code")] string? Code = null,
+        [property: JsonPropertyName("parent_id")] string? ParentId = null
+    );
+    #endregion
+
     #region DependentRelations
     /// <summary>
     /// 続柄をリストで取得します。
@@ -465,6 +520,12 @@ public class SmartHRService : ISmartHRService
         var request = new HttpRequestMessage(HttpMethod.Get, $"{endpoint}page={page}&per_page={perPage}");
         return CallApiAsync<IReadOnlyList<T>>(request, cancellationToken);
     }
+
+    /// <inheritdoc cref="HttpClient.DeleteAsync(string, CancellationToken)"/>
+    private async ValueTask CallDeleteApiAsync(string requestUri, CancellationToken cancellationToken)
+        => await ValidateResponseAsync(
+            await _httpClient.DeleteAsync(requestUri, cancellationToken).ConfigureAwait(false),
+            cancellationToken).ConfigureAwait(false);
 
     /// <summary>
     /// APIリクエストが正常に実行できたことを検証します。

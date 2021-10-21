@@ -11,6 +11,93 @@ namespace SmartHR.NET.Services;
 /// </summary>
 public interface ISmartHRService
 {
+    #region 部署
+    /// <summary>
+    /// <paramref name="id"/>と一致する<inheritdoc cref="Department" path="/summary/text()"/>を削除します。
+    /// <see href="https://developer.smarthr.jp/api/index.html#!/%E9%83%A8%E7%BD%B2/deleteV1DepartmentsId"/>
+    /// </summary>
+    /// <param name="id"><inheritdoc cref="Department" path="/param[@name='Id']"/></param>
+    /// <param name="cancellationToken">キャンセル通知を受け取るために他のオブジェクトまたはスレッドで使用できるキャンセル トークン。</param>
+    public ValueTask DeleteDepartmentAsync(string id, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// <paramref name="id"/>と一致する<inheritdoc cref="Department" path="/summary/text()"/>を取得します。
+    /// <see href="https://developer.smarthr.jp/api/index.html#!/%E9%83%A8%E7%BD%B2/getV1DepartmentsId"/>
+    /// </summary>
+    /// <param name="id"><inheritdoc cref="Department" path="/param[@name='Id']"/></param>
+    /// <param name="cancellationToken">キャンセル通知を受け取るために他のオブジェクトまたはスレッドで使用できるキャンセル トークン。</param>
+    public ValueTask<Department> FetchDepartmentAsync(string id, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// <paramref name="id"/>と一致する<inheritdoc cref="Department" path="/summary/text()"/>を部分更新します。
+    /// <see href="https://developer.smarthr.jp/api/index.html#!/%E9%83%A8%E7%BD%B2/patchV1DepartmentsId"/>
+    /// </summary>
+    /// <param name="id"><inheritdoc cref="Department" path="/param[@name='Id']"/></param>
+    /// <param name="name">
+    /// <inheritdoc cref="Department" path="/param[@name='Name']"/>
+    /// <c>"/"</c>を含められません。
+    /// </param>
+    /// <param name="position"><inheritdoc cref="Department" path="/param[@name='Position']"/></param>
+    /// <param name="code"><inheritdoc cref="Department" path="/param[@name='Code']"/></param>
+    /// <param name="parentId"><inheritdoc cref="Department" path="/param[@name='Parent']"/>ID</param>
+    /// <param name="cancellationToken">キャンセル通知を受け取るために他のオブジェクトまたはスレッドで使用できるキャンセル トークン。</param>
+    /// <returns>更新処理後の<see cref="Department"/>オブジェクト。</returns>
+    public ValueTask<Department> UpdateDepartmentAsync(string id, string? name = null, int? position = default, string? code = null, string? parentId = null, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// <paramref name="id"/>と一致する<inheritdoc cref="Department" path="/summary/text()"/>を更新します。
+    /// <see href="https://developer.smarthr.jp/api/index.html#!/%E9%83%A8%E7%BD%B2/putV1DepartmentsId"/>
+    /// </summary>
+    /// <remarks>
+    /// 未指定の属性は情報が削除されます。
+    /// 未指定の属性を消したくない場合は<see cref="UpdateDepartmentAsync"/>をご利用ください。
+    /// </remarks>
+    /// <param name="id"><inheritdoc cref="Department" path="/param[@name='Id']"/></param>
+    /// <param name="name">
+    /// <inheritdoc cref="Department" path="/param[@name='Name']"/>
+    /// <c>"/"</c>を含められません。
+    /// </param>
+    /// <param name="position"><inheritdoc cref="Department" path="/param[@name='Position']"/></param>
+    /// <param name="code"><inheritdoc cref="Department" path="/param[@name='Code']"/></param>
+    /// <param name="parentId"><inheritdoc cref="Department" path="/param[@name='Parent']"/>ID</param>
+    /// <param name="cancellationToken">キャンセル通知を受け取るために他のオブジェクトまたはスレッドで使用できるキャンセル トークン。</param>
+    /// <returns>更新処理後の<see cref="Department"/>オブジェクト。</returns>
+    public ValueTask<Department> ReplaceDepartmentAsync(string id, string name, int position, string? code = null, string? parentId = null, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// <inheritdoc cref="Department" path="/summary/text()"/>をリストで取得します。
+    /// <see href="https://developer.smarthr.jp/api/index.html#!/%E9%83%A8%E7%BD%B2/getV1Departments"/>
+    /// </summary>
+    /// <param name="code"><inheritdoc cref="Department" path="/param[@name='Code']"/></param>
+    /// <param name="sortBy">
+    /// 並び順
+    /// <see href="https://developer.smarthr.jp/api/index.html#!/overview/sort"/>
+    /// </param>
+    /// <param name="page">1から始まるページ番号</param>
+    /// <param name="perPage">1ページあたりに含まれる要素数</param>
+    /// <param name="cancellationToken">キャンセル通知を受け取るために他のオブジェクトまたはスレッドで使用できるキャンセル トークン。</param>
+    /// <returns><inheritdoc cref="Department" path="/summary/text()"/>の一覧</returns>
+    public ValueTask<IReadOnlyList<Department>> FetchDepartmentListAsync(string? code = null, string? sortBy = null, int page = 1, int perPage = 10, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// <inheritdoc cref="Department" path="/summary/text()"/>を新規登録します。
+    /// <see href="https://developer.smarthr.jp/api/index.html#!/%E9%83%A8%E7%BD%B2/postV1Departments"/>
+    /// </summary>
+    /// <param name="name">
+    /// <inheritdoc cref="Department" path="/param[@name='Name']"/>
+    /// <c>"/"</c>を含められません。
+    /// </param>
+    /// <param name="position">
+    /// <inheritdoc cref="Department" path="/param[@name='Position']"/>
+    /// 未指定時には、自動で採番されます。
+    /// </param>
+    /// <param name="code"><inheritdoc cref="Department" path="/param[@name='Code']"/></param>
+    /// <param name="parentId"><inheritdoc cref="Department" path="/param[@name='Parent']"/>ID</param>
+    /// <param name="cancellationToken">キャンセル通知を受け取るために他のオブジェクトまたはスレッドで使用できるキャンセル トークン。</param>
+    /// <returns>登録処理後の<see cref="Department"/>オブジェクト。</returns>
+    public ValueTask<Department> AddDepartmentAsync(string name, int? position = null, string? code = null, string? parentId = null, CancellationToken cancellationToken = default);
+    #endregion
+
     #region DependentRelations
     /// <summary>
     /// 続柄をリストで取得します。
