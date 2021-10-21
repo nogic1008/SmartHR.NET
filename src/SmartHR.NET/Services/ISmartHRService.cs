@@ -161,6 +161,26 @@ public interface ISmartHRService
     public ValueTask<EmploymentType> AddEmploymentTypeAsync(string name, EmploymentType.Preset? presetType = default, CancellationToken cancellationToken = default);
     #endregion
 
+    #region メールフォーマット
+    /// <summary>
+    /// <paramref name="id"/>と一致する<inheritdoc cref="MailFormat" path="/summary/text()"/>を取得します。
+    /// <see href="https://developer.smarthr.jp/api/index.html#!/%E3%83%A1%E3%83%BC%E3%83%AB%E3%83%95%E3%82%A9%E3%83%BC%E3%83%9E%E3%83%83%E3%83%88/getV1MailFormatsId"/>
+    /// </summary>
+    /// <param name="id"><inheritdoc cref="MailFormat" path="/param[@name='Id']"/></param>
+    /// <param name="cancellationToken">キャンセル通知を受け取るために他のオブジェクトまたはスレッドで使用できるキャンセル トークン。</param>
+    public ValueTask<MailFormat> FetchMailFormatAsync(string id, bool includeCrewInputForms = false, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// <inheritdoc cref="MailFormat" path="/summary/text()"/>をリストで取得します。
+    /// <see href="https://developer.smarthr.jp/api/index.html#!/%E3%83%A1%E3%83%BC%E3%83%AB%E3%83%95%E3%82%A9%E3%83%BC%E3%83%9E%E3%83%83%E3%83%88/getV1MailFormats"/>
+    /// </summary>
+    /// <param name="page">1から始まるページ番号</param>
+    /// <param name="perPage">1ページあたりに含まれる要素数</param>
+    /// <param name="cancellationToken">キャンセル通知を受け取るために他のオブジェクトまたはスレッドで使用できるキャンセル トークン。</param>
+    /// <returns><inheritdoc cref="MailFormat" path="/summary/text()"/>の一覧</returns>
+    public ValueTask<IReadOnlyList<MailFormat>> FetchMailFormatListAsync(bool includeCrewInputForms = false, int page = 1, int perPage = 10, CancellationToken cancellationToken = default);
+    #endregion
+
     #region DependentRelations
     /// <summary>
     /// 続柄をリストで取得します。
