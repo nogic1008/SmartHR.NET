@@ -73,7 +73,7 @@ public class SmartHRService : ISmartHRService
         => CallApiAsync<Department>(
             new(new("PATCH"), $"/v1/departments/{id}")
             {
-                Content = JsonContent.Create(new DepartmentContent(name, position, code, parentId))
+                Content = JsonContent.Create(new DepartmentContent(name, position, code, parentId), options: _serializerOptions)
             }, cancellationToken);
 
     /// <inheritdoc />
@@ -82,14 +82,16 @@ public class SmartHRService : ISmartHRService
         => CallApiAsync<Department>(
             new(HttpMethod.Put, $"/v1/departments/{id}")
             {
-                Content = JsonContent.Create(new DepartmentContent(name, position, code, parentId))
+                Content = JsonContent.Create(new DepartmentContent(name, position, code, parentId), options: _serializerOptions)
             }, cancellationToken);
 
     /// <inheritdoc />
     /// <inheritdoc cref="FetchListAsync" path="/exception"/>
     /// <inheritdoc cref="ValidateResponseAsync" path="/exception"/>
     public ValueTask<IReadOnlyList<Department>> FetchDepartmentListAsync(string? code = null, string? sortBy = null, int page = 1, int perPage = 10, CancellationToken cancellationToken = default)
-        => FetchListAsync<Department>("/v1/departments?", page, perPage, cancellationToken);
+        => FetchListAsync<Department>(
+            $"/v1/departments?{(string.IsNullOrEmpty(code) ? "" : $"code={code}&")}{(string.IsNullOrEmpty(sortBy) ? "" : $"sort={sortBy}&")}",
+            page, perPage, cancellationToken);
 
     /// <inheritdoc />
     /// <inheritdoc cref="ValidateResponseAsync" path="/exception"/>
@@ -97,7 +99,7 @@ public class SmartHRService : ISmartHRService
         => CallApiAsync<Department>(
             new(HttpMethod.Post, "/v1/departments")
             {
-                Content = JsonContent.Create(new DepartmentContent(name, position, code, parentId))
+                Content = JsonContent.Create(new DepartmentContent(name, position, code, parentId), options: _serializerOptions)
             }, cancellationToken);
 
     /// <summary><inheritdoc cref="Department" path="/summary/text()"/>APIのリクエストボディ</summary>
