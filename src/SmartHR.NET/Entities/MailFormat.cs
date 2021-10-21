@@ -21,7 +21,8 @@ public record MailFormat(
     [property: JsonPropertyName("crew_input_forms")] IReadOnlyList<JsonElement>? CrewInputForms = null,
     [property: JsonPropertyName("created_at")] DateTimeOffset? CreatedAt = default,
     [property: JsonPropertyName("updated_at")] DateTimeOffset? UpdatedAt = default
-){
+)
+{
     /// <summary>
     /// <inheritdoc cref="MailFormat" path="/param[@name='MailType']/text()"/>
     /// </summary>
