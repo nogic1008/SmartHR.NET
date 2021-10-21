@@ -162,6 +162,23 @@ public class SmartHRService : ISmartHRService
     );
     #endregion
 
+    #region メールフォーマット
+    /// <inheritdoc />
+    /// <inheritdoc cref="ValidateResponseAsync" path="/exception"/>
+    public ValueTask<MailFormat> FetchMailFormatAsync(string id, bool includeCrewInputForms = false, CancellationToken cancellationToken = default)
+        => CallApiAsync<MailFormat>(
+            new(HttpMethod.Get, $"/v1/mail_formats/{id}{(includeCrewInputForms ? "?embed=crew_input_forms" : "")}"),
+            cancellationToken);
+
+    /// <inheritdoc />
+    /// <inheritdoc cref="FetchListAsync" path="/exception"/>
+    /// <inheritdoc cref="ValidateResponseAsync" path="/exception"/>
+    public ValueTask<IReadOnlyList<MailFormat>> FetchMailFormatListAsync(bool includeCrewInputForms = false, int page = 1, int perPage = 10, CancellationToken cancellationToken = default)
+        => FetchListAsync<MailFormat>(
+            $"/v1/mail_formats?{(includeCrewInputForms ? "embed=crew_input_forms&" : "")}",
+            page, perPage, cancellationToken);
+    #endregion
+
     #region DependentRelations
     /// <summary>
     /// 続柄をリストで取得します。

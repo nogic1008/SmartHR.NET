@@ -553,7 +553,7 @@ public class SmartHRServiceTest
         {
             req.RequestUri.Should().NotBeNull();
             req.RequestUri!.GetLeftPart(UriPartial.Authority).Should().Be(BaseUri);
-            req.RequestUri.PathAndQuery.Should().Be($"/v1/employment_types?page=1&per_page=10");
+            req.RequestUri.PathAndQuery.Should().Be("/v1/employment_types?page=1&per_page=10");
             req.Method.Should().Be(HttpMethod.Get);
             return true;
         }, Times.Once());
@@ -585,6 +585,68 @@ public class SmartHRServiceTest
 
             string receivedJson = await req.Content!.ReadAsStringAsync().ConfigureAwait(false);
             receivedJson.Should().Be("{\"name\":\"test\",\"preset_type\":\"board_member\"}");
+            return true;
+        }, Times.Once());
+    }
+    #endregion
+
+    #region メールフォーマット
+    /// <summary>
+    /// <see cref="SmartHRService.FetchMailFormatAsync"/>は、"/v1/mail_formats/{id}"にGETリクエストを行う。
+    /// </summary>
+    [InlineData(false, "")]
+    [InlineData(true, "?embed=crew_input_forms")]
+    [Theory(DisplayName = $"{nameof(SmartHRService)} > {nameof(SmartHRService.FetchMailFormatAsync)} > GET /v1/mail_formats/:id をコールする。")]
+    public async Task FetchMailFormatAsync_Calls_GetApi(bool includeCrewInputForms, string expectedQuery)
+    {
+        // Arrange
+        string id = GenerateRandomString();
+
+        var handler = new Mock<HttpMessageHandler>();
+        handler.SetupRequest(req => req.RequestUri?.GetLeftPart(UriPartial.Authority) == BaseUri)
+            .ReturnsResponse(MailFormatTest.Json, "application/json");
+
+        // Act
+        var sut = CreateSut(handler);
+        var entity = await sut.FetchMailFormatAsync(id, includeCrewInputForms).ConfigureAwait(false);
+
+        // Assert
+        entity.Should().NotBeNull();
+        handler.VerifyRequest(req =>
+        {
+            req.RequestUri.Should().NotBeNull();
+            req.RequestUri!.GetLeftPart(UriPartial.Authority).Should().Be(BaseUri);
+            req.RequestUri.PathAndQuery.Should().Be($"/v1/mail_formats/{id}{expectedQuery}");
+            req.Method.Should().Be(HttpMethod.Get);
+            return true;
+        }, Times.Once());
+    }
+
+    /// <summary>
+    /// <see cref="SmartHRService.FetchMailFormatListAsync"/>は、"/v1/mail_formats"にGETリクエストを行う。
+    /// </summary>
+    [InlineData(false, "page=1&per_page=10")]
+    [InlineData(true, "embed=crew_input_forms&page=1&per_page=10")]
+    [Theory(DisplayName = $"{nameof(SmartHRService)} > {nameof(SmartHRService.FetchMailFormatListAsync)} > GET /v1/mail_formats をコールする。")]
+    public async Task FetchMailFormatListAsync_Calls_GetApi(bool includeCrewInputForms, string expectedQuery)
+    {
+        // Arrange
+        var handler = new Mock<HttpMessageHandler>();
+        handler.SetupRequest(req => req.RequestUri?.GetLeftPart(UriPartial.Authority) == BaseUri)
+            .ReturnsResponse($"[{MailFormatTest.Json}]", "application/json");
+
+        // Act
+        var sut = CreateSut(handler);
+        var entities = await sut.FetchMailFormatListAsync(includeCrewInputForms, 1, 10).ConfigureAwait(false);
+
+        // Assert
+        entities.Should().NotBeNullOrEmpty();
+        handler.VerifyRequest((req) =>
+        {
+            req.RequestUri.Should().NotBeNull();
+            req.RequestUri!.GetLeftPart(UriPartial.Authority).Should().Be(BaseUri);
+            req.RequestUri.PathAndQuery.Should().Be($"/v1/mail_formats?{expectedQuery}");
+            req.Method.Should().Be(HttpMethod.Get);
             return true;
         }, Times.Once());
     }
