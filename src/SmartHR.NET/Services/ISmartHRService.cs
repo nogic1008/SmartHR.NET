@@ -345,7 +345,7 @@ public interface ISmartHRService
     /// <remarks>
     /// <seealso href="https://developer.smarthr.jp/api/index.html#!/%E6%BA%90%E6%B3%89%E5%BE%B4%E5%8F%8E/deleteV1TaxWithholdingsId"/>
     /// </remarks>
-    /// <param name="id">源泉徴収票ID</param>
+    /// <param name="id">源泉徴収ID</param>
     /// <param name="cancellationToken">キャンセル通知を受け取るために他のオブジェクトまたはスレッドで使用できるキャンセル トークン。</param>
     public ValueTask DeleteTaxWithholdingAsync(string id, CancellationToken cancellationToken = default);
 
@@ -355,7 +355,7 @@ public interface ISmartHRService
     /// <remarks>
     /// <seealso href="https://developer.smarthr.jp/api/index.html#!/%E6%BA%90%E6%B3%89%E5%BE%B4%E5%8F%8E/getV1TaxWithholdingsId"/>
     /// </remarks>
-    /// <param name="id">源泉徴収票ID</param>
+    /// <param name="id">源泉徴収ID</param>
     /// <param name="cancellationToken">キャンセル通知を受け取るために他のオブジェクトまたはスレッドで使用できるキャンセル トークン。</param>
     public ValueTask<TaxWithholding> FetchTaxWithholdingAsync(string id, CancellationToken cancellationToken = default);
 
@@ -366,7 +366,7 @@ public interface ISmartHRService
     /// <remarks>
     /// <seealso href="https://developer.smarthr.jp/api/index.html#!/%E6%BA%90%E6%B3%89%E5%BE%B4%E5%8F%8E/patchV1TaxWithholdingsId"/>
     /// </remarks>
-    /// <param name="id">源泉徴収票ID</param>
+    /// <param name="id">源泉徴収ID</param>
     /// <param name="name">名前</param>
     /// <param name="status">ステータス</param>
     /// <param name="year">源泉徴収票に印字される年</param>
@@ -381,7 +381,7 @@ public interface ISmartHRService
     /// <remarks>
     /// <seealso href="https://developer.smarthr.jp/api/index.html#!/%E6%BA%90%E6%B3%89%E5%BE%B4%E5%8F%8E/putV1TaxWithholdingsId"/>
     /// </remarks>
-    /// <param name="id">源泉徴収票ID</param>
+    /// <param name="id">源泉徴収ID</param>
     /// <param name="name">名前</param>
     /// <param name="status">ステータス</param>
     /// <param name="year">源泉徴収票に印字される年</param>
@@ -413,6 +413,81 @@ public interface ISmartHRService
     /// <param name="cancellationToken">キャンセル通知を受け取るために他のオブジェクトまたはスレッドで使用できるキャンセル トークン。</param>
     /// <returns>登録処理後の<see cref="JobTitle"/>オブジェクト。</returns>
     public ValueTask<TaxWithholding> AddTaxWithholdingAsync(string name, string year, CancellationToken cancellationToken = default);
+    #endregion
+
+    #region TaxWithholdingSlips
+    /// <summary>
+    /// <paramref name="id"/>と一致する源泉徴収票情報を削除します。
+    /// </summary>
+    /// <remarks>
+    /// <seealso href="https://developer.smarthr.jp/api/index.html#!/%E6%BA%90%E6%B3%89%E5%BE%B4%E5%8F%8E%E7%A5%A8/deleteV1TaxWithholdingsTaxWithholdingIdTaxWithholdingSlipsId"/>
+    /// </remarks>
+    /// <param name="taxWithholdingId">源泉徴収ID</param>
+    /// <param name="id">源泉徴収票ID</param>
+    /// <param name="cancellationToken">キャンセル通知を受け取るために他のオブジェクトまたはスレッドで使用できるキャンセル トークン。</param>
+    public ValueTask DeleteTaxWithholdingSlipAsync(string taxWithholdingId, string id, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// <paramref name="id"/>と一致する源泉徴収票情報を取得します。
+    /// </summary>
+    /// <remarks>
+    /// <seealso href="https://developer.smarthr.jp/api/index.html#!/%E6%BA%90%E6%B3%89%E5%BE%B4%E5%8F%8E%E7%A5%A8/getV1TaxWithholdingsTaxWithholdingIdTaxWithholdingSlipsId"/>
+    /// </remarks>
+    /// <param name="taxWithholdingId">源泉徴収ID</param>
+    /// <param name="id">源泉徴収票ID</param>
+    /// <param name="cancellationToken">キャンセル通知を受け取るために他のオブジェクトまたはスレッドで使用できるキャンセル トークン。</param>
+    public ValueTask<JsonElement> FetchTaxWithholdingSlipAsync(string taxWithholdingId, string id, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// <paramref name="id"/>と一致する源泉徴収票情報を部分更新します。
+    /// </summary>
+    /// <remarks>
+    /// <seealso href="https://developer.smarthr.jp/api/index.html#!/%E6%BA%90%E6%B3%89%E5%BE%B4%E5%8F%8E%E7%A5%A8/patchV1TaxWithholdingsTaxWithholdingIdTaxWithholdingSlipsId"/>
+    /// </remarks>
+    /// <param name="taxWithholdingId">源泉徴収ID</param>
+    /// <param name="id">源泉徴収票ID</param>
+    /// <param name="payload">源泉徴収票情報</param>
+    /// <param name="cancellationToken">キャンセル通知を受け取るために他のオブジェクトまたはスレッドで使用できるキャンセル トークン。</param>
+    /// <returns>更新処理後のTaxWithholdingSlipオブジェクト。</returns>
+    public ValueTask<JsonElement> UpdateTaxWithholdingSlipAsync(string taxWithholdingId, string id, JsonElement payload, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// <paramref name="id"/>と一致する源泉徴収票情報を更新します。
+    /// </summary>
+    /// <remarks>
+    /// <seealso href="https://developer.smarthr.jp/api/index.html#!/%E6%BA%90%E6%B3%89%E5%BE%B4%E5%8F%8E%E7%A5%A8/patchV1TaxWithholdingsTaxWithholdingIdTaxWithholdingSlipsId"/>
+    /// </remarks>
+    /// <param name="taxWithholdingId">源泉徴収ID</param>
+    /// <param name="id">源泉徴収票ID</param>
+    /// <param name="payload">源泉徴収票情報</param>
+    /// <param name="cancellationToken">キャンセル通知を受け取るために他のオブジェクトまたはスレッドで使用できるキャンセル トークン。</param>
+    /// <returns>更新処理後のTaxWithholdingSlipオブジェクト。</returns>
+    public ValueTask<JsonElement> ReplaceTaxWithholdingSlipAsync(string taxWithholdingId, string id, JsonElement payload, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// 源泉徴収票情報をリストで取得します。
+    /// </summary>
+    /// <remarks>
+    /// <seealso href="https://developer.smarthr.jp/api/index.html#!/%E6%BA%90%E6%B3%89%E5%BE%B4%E5%8F%8E%E7%A5%A8/getV1TaxWithholdingsTaxWithholdingIdTaxWithholdingSlips"/>
+    /// </remarks>
+    /// <param name="taxWithholdingId">源泉徴収ID</param>
+    /// <param name="page">1から始まるページ番号</param>
+    /// <param name="perPage">1ページあたりに含まれる要素数</param>
+    /// <param name="cancellationToken">キャンセル通知を受け取るために他のオブジェクトまたはスレッドで使用できるキャンセル トークン。</param>
+    /// <returns>源泉徴収情報の一覧</returns>
+    public ValueTask<IReadOnlyList<JsonElement>> FetchTaxWithholdingSlipListAsync(string taxWithholdingId, int page = 1, int perPage = 10, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// 源泉徴収票情報を新規登録します。
+    /// </summary>
+    /// <remarks>
+    /// <seealso href="https://developer.smarthr.jp/api/index.html#!/%E6%BA%90%E6%B3%89%E5%BE%B4%E5%8F%8E%E7%A5%A8/postV1TaxWithholdingsTaxWithholdingIdTaxWithholdingSlips"/>
+    /// </remarks>
+    /// <param name="taxWithholdingId">源泉徴収ID</param>
+    /// <param name="payload">源泉徴収票情報</param>
+    /// <param name="cancellationToken">キャンセル通知を受け取るために他のオブジェクトまたはスレッドで使用できるキャンセル トークン。</param>
+    /// <returns>登録処理後のTaxWithholdingSlipオブジェクト。</returns>
+    public ValueTask<JsonElement> AddTaxWithholdingSlipAsync(string taxWithholdingId, JsonElement payload, CancellationToken cancellationToken = default);
     #endregion
 
     #region Payrolls

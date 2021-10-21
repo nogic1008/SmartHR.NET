@@ -1258,6 +1258,198 @@ public class SmartHRServiceTest
     }
     #endregion
 
+    #region TaxWithholdingSlips
+    /// <summary>
+    /// <see cref="SmartHRService.DeleteTaxWithholdingSlipAsync"/>は、"/v1/tax_withholdings/{taxWithholdingId}/tax_withholding_slips/{id}"にDELETEリクエストを行う。
+    /// </summary>
+    [Fact(DisplayName = $"{nameof(SmartHRService)} > {nameof(SmartHRService.DeleteTaxWithholdingSlipAsync)} > DELETE /v1/tax_withholdings/:taxWithholdingId/tax_withholding_slips/:id をコールする。")]
+    public async Task DeleteTaxWithholdingSlipAsync_Calls_DeleteApi()
+    {
+        // Arrange
+        string taxWithholdingId = GenerateRandomString();
+        string id = GenerateRandomString();
+
+        var handler = new Mock<HttpMessageHandler>();
+        handler.SetupRequest(req => req.RequestUri?.GetLeftPart(UriPartial.Authority) == BaseUri)
+            .ReturnsResponse(HttpStatusCode.NoContent);
+
+        // Act
+        var sut = CreateSut(handler);
+        await sut.DeleteTaxWithholdingSlipAsync(taxWithholdingId, id).ConfigureAwait(false);
+
+        // Assert
+        handler.VerifyRequest(req =>
+        {
+            req.RequestUri.Should().NotBeNull();
+            req.RequestUri!.GetLeftPart(UriPartial.Authority).Should().Be(BaseUri);
+            req.RequestUri.PathAndQuery.Should().Be($"/v1/tax_withholdings/{taxWithholdingId}/tax_withholding_slips/{id}");
+            req.Method.Should().Be(HttpMethod.Delete);
+            return true;
+        }, Times.Once());
+    }
+
+    /// <summary>
+    /// <see cref="SmartHRService.FetchTaxWithholdingSlipAsync"/>は、"/v1/tax_withholdings/{taxWithholdingId}/tax_withholding_slips/{id}"にGETリクエストを行う。
+    /// </summary>
+    [Fact(DisplayName = $"{nameof(SmartHRService)} > {nameof(SmartHRService.FetchTaxWithholdingSlipAsync)} > GET /v1/tax_withholdings/:taxWithholdingId/tax_withholding_slips/:id をコールする。")]
+    public async Task FetchTaxWithholdingSlipAsync_Calls_GetApi()
+    {
+        // Arrange
+        string taxWithholdingId = GenerateRandomString();
+        string id = GenerateRandomString();
+
+        var handler = new Mock<HttpMessageHandler>();
+        handler.SetupRequest(req => req.RequestUri?.GetLeftPart(UriPartial.Authority) == BaseUri)
+            .ReturnsResponse(TaxWithholdingSlipTest.Json, "application/json");
+
+        // Act
+        var sut = CreateSut(handler);
+        var entity = await sut.FetchTaxWithholdingAsync(id).ConfigureAwait(false);
+
+        // Assert
+        entity.Should().NotBeNull();
+        handler.VerifyRequest(req =>
+        {
+            req.RequestUri.Should().NotBeNull();
+            req.RequestUri!.GetLeftPart(UriPartial.Authority).Should().Be(BaseUri);
+            req.RequestUri.PathAndQuery.Should().Be($"/v1/tax_withholdings/{id}");
+            req.Method.Should().Be(HttpMethod.Get);
+            return true;
+        }, Times.Once());
+    }
+
+    /// <summary>
+    /// <see cref="SmartHRService.UpdateTaxWithholdingSlipAsync"/>は、"/v1/tax_withholdings/{taxWithholdingId}/tax_withholding_slips/{id}"にPATCHリクエストを行う。
+    /// </summary>
+    [Fact(DisplayName = $"{nameof(SmartHRService)} > {nameof(SmartHRService.UpdateTaxWithholdingSlipAsync)} > PATCH /v1/tax_withholdings/:taxWithholdingId/tax_withholding_slips/:id をコールする。")]
+    public async Task UpdateTaxWithholdingSlipAsync_Calls_PatchApi()
+    {
+        // Arrange
+        string taxWithholdingId = GenerateRandomString();
+        string id = GenerateRandomString();
+        var element = JsonSerializer.Deserialize<JsonElement>(TaxWithholdingSlipTest.Json);
+
+        var handler = new Mock<HttpMessageHandler>();
+        handler.SetupRequest(req => req.RequestUri?.GetLeftPart(UriPartial.Authority) == BaseUri)
+            .ReturnsResponse(TaxWithholdingSlipTest.Json, "application/json");
+
+        // Act
+        var sut = CreateSut(handler);
+        var entity = await sut.UpdateTaxWithholdingSlipAsync(taxWithholdingId, id, element).ConfigureAwait(false);
+
+        // Assert
+        entity.Should().NotBeNull();
+        handler.VerifyRequest(async (req) =>
+        {
+            req.RequestUri.Should().NotBeNull();
+            req.RequestUri!.GetLeftPart(UriPartial.Authority).Should().Be(BaseUri);
+            req.RequestUri!.PathAndQuery.Should().Be($"/v1/tax_withholdings/{taxWithholdingId}/tax_withholding_slips/{id}");
+            req.Method.Should().Be(HttpMethod.Patch);
+
+            string receivedJson = await req.Content!.ReadAsStringAsync().ConfigureAwait(false);
+            receivedJson.Should().NotBeNullOrEmpty();
+            return true;
+        }, Times.Once());
+    }
+
+    /// <summary>
+    /// <see cref="SmartHRService.ReplaceTaxWithholdingSlipAsync"/>は、"/v1/tax_withholdings/{taxWithholdingId}/tax_withholding_slips/{id}"にPUTリクエストを行う。
+    /// </summary>
+    [Fact(DisplayName = $"{nameof(SmartHRService)} > {nameof(SmartHRService.ReplaceTaxWithholdingSlipAsync)} > PUT /v1/tax_withholdings/:taxWithholdingId/tax_withholding_slips/:id をコールする。")]
+    public async Task ReplaceTaxWithholdingSlipAsync_Calls_PutApi()
+    {
+        // Arrange
+        string taxWithholdingId = GenerateRandomString();
+        string id = GenerateRandomString();
+        var element = JsonSerializer.Deserialize<JsonElement>(TaxWithholdingSlipTest.Json);
+
+        var handler = new Mock<HttpMessageHandler>();
+        handler.SetupRequest(req => req.RequestUri?.GetLeftPart(UriPartial.Authority) == BaseUri)
+            .ReturnsResponse(TaxWithholdingSlipTest.Json, "application/json");
+
+        // Act
+        var sut = CreateSut(handler);
+        var entity = await sut.ReplaceTaxWithholdingSlipAsync(taxWithholdingId, id, element).ConfigureAwait(false);
+
+        // Assert
+        entity.Should().NotBeNull();
+        handler.VerifyRequest(async (req) =>
+        {
+            req.RequestUri.Should().NotBeNull();
+            req.RequestUri!.GetLeftPart(UriPartial.Authority).Should().Be(BaseUri);
+            req.RequestUri.PathAndQuery.Should().Be($"/v1/tax_withholdings/{taxWithholdingId}/tax_withholding_slips/{id}");
+            req.Method.Should().Be(HttpMethod.Put);
+
+            string receivedJson = await req.Content!.ReadAsStringAsync().ConfigureAwait(false);
+            receivedJson.Should().NotBeNullOrEmpty();
+            return true;
+        }, Times.Once());
+    }
+
+    /// <summary>
+    /// <see cref="SmartHRService.FetchTaxWithholdingSlipListAsync"/>は、"/v1/tax_withholdings/{taxWithholdingId}/tax_withholding_slips"にGETリクエストを行う。
+    /// </summary>
+    [Fact(DisplayName = $"{nameof(SmartHRService)} > {nameof(SmartHRService.FetchTaxWithholdingSlipListAsync)} > GET /v1/tax_withholdings/:taxWithholdingId/tax_withholding_slips をコールする。")]
+    public async Task FetchTaxWithholdingSlipListAsync_Calls_GetApi()
+    {
+        // Arrange
+        string taxWithholdingId = GenerateRandomString();
+
+        var handler = new Mock<HttpMessageHandler>();
+        handler.SetupRequest(req => req.RequestUri?.GetLeftPart(UriPartial.Authority) == BaseUri)
+            .ReturnsResponse($"[{TaxWithholdingSlipTest.Json}]", "application/json");
+
+        // Act
+        var sut = CreateSut(handler);
+        var entities = await sut.FetchTaxWithholdingSlipListAsync(taxWithholdingId, 1, 10).ConfigureAwait(false);
+
+        // Assert
+        entities.Should().NotBeNullOrEmpty();
+        handler.VerifyRequest((req) =>
+        {
+            req.RequestUri.Should().NotBeNull();
+            req.RequestUri!.GetLeftPart(UriPartial.Authority).Should().Be(BaseUri);
+            req.RequestUri.PathAndQuery.Should().Be($"/v1/tax_withholdings/{taxWithholdingId}/tax_withholding_slips?page=1&per_page=10");
+            req.Method.Should().Be(HttpMethod.Get);
+            return true;
+        }, Times.Once());
+    }
+
+    /// <summary>
+    /// <see cref="SmartHRService.AddTaxWithholdingSlipAsync"/>は、"/v1/tax_withholdings/{taxWithholdingId}/tax_withholding_slips"にPOSTリクエストを行う。
+    /// </summary>
+    [Fact(DisplayName = $"{nameof(SmartHRService)} > {nameof(SmartHRService.AddTaxWithholdingSlipAsync)} > POST /v1/tax_withholdings/:taxWithholdingId/tax_withholding_slips をコールする。")]
+    public async Task AddTaxWithholdingSlipAsync_Calls_PostApi()
+    {
+        // Arrange
+        string taxWithholdingId = GenerateRandomString();
+        var element = JsonSerializer.Deserialize<JsonElement>(TaxWithholdingSlipTest.Json);
+        string name = GenerateRandomString();
+
+        var handler = new Mock<HttpMessageHandler>();
+        handler.SetupRequest(req => req.RequestUri?.GetLeftPart(UriPartial.Authority) == BaseUri)
+            .ReturnsResponse(TaxWithholdingSlipTest.Json, "application/json");
+
+        // Act
+        var sut = CreateSut(handler);
+        var entity = await sut.AddTaxWithholdingSlipAsync(taxWithholdingId, element).ConfigureAwait(false);
+
+        // Assert
+        entity.Should().NotBeNull();
+        handler.VerifyRequest(async (req) =>
+        {
+            req.RequestUri.Should().NotBeNull();
+            req.RequestUri!.GetLeftPart(UriPartial.Authority).Should().Be(BaseUri);
+            req.RequestUri.PathAndQuery.Should().Be($"/v1/tax_withholdings/{taxWithholdingId}/tax_withholding_slips/");
+            req.Method.Should().Be(HttpMethod.Post);
+
+            string receivedJson = await req.Content!.ReadAsStringAsync().ConfigureAwait(false);
+            receivedJson.Should().NotBeNullOrEmpty();
+            return true;
+        }, Times.Once());
+    }
+    #endregion
+
     #region Payrolls
     /// <summary>
     /// <see cref="SmartHRService.DeletePayrollAsync"/>は、"/v1/payrolls/{id}"にDELETEリクエストを行う。

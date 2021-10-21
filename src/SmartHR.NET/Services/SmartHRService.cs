@@ -402,6 +402,57 @@ public class SmartHRService : ISmartHRService
             }, cancellationToken);
     #endregion
 
+    #region TaxWithholdingSlips
+    /// <inheritdoc/>
+    /// <exception cref="ApiFailedException">APIがエラーレスポンスを返した場合にスローされます。</exception>
+    public async ValueTask DeleteTaxWithholdingSlipAsync(string taxWithholdingId, string id, CancellationToken cancellationToken = default)
+    {
+        var response = await _httpClient.DeleteAsync($"/v1/tax_withholdings/{taxWithholdingId}/tax_withholding_slips/{id}", cancellationToken).ConfigureAwait(false);
+        await ValidateResponseAsync(response, cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <inheritdoc/>
+    /// <exception cref="ApiFailedException">APIがエラーレスポンスを返した場合にスローされます。</exception>
+    public ValueTask<JsonElement> FetchTaxWithholdingSlipAsync(string taxWithholdingId, string id, CancellationToken cancellationToken = default)
+        => CallApiAsync<JsonElement>(new(HttpMethod.Get, $"/v1/tax_withholdings/{taxWithholdingId}/tax_withholding_slips/{id}"), cancellationToken);
+
+    /// <inheritdoc/>
+    /// <exception cref="ApiFailedException">APIがエラーレスポンスを返した場合にスローされます。</exception>
+    public ValueTask<JsonElement> UpdateTaxWithholdingSlipAsync(string taxWithholdingId, string id, JsonElement payload, CancellationToken cancellationToken = default)
+        => CallApiAsync<JsonElement>(
+            new(new("PATCH"), $"/v1/tax_withholdings/{taxWithholdingId}/tax_withholding_slips/{id}")
+            {
+                Content = JsonContent.Create(payload, options: _serializerOptions)
+            }, cancellationToken);
+
+    /// <inheritdoc/>
+    /// <exception cref="ApiFailedException">APIがエラーレスポンスを返した場合にスローされます。</exception>
+    public ValueTask<JsonElement> ReplaceTaxWithholdingSlipAsync(string taxWithholdingId, string id, JsonElement payload, CancellationToken cancellationToken = default)
+        => CallApiAsync<JsonElement>(
+            new(HttpMethod.Put, $"/v1/tax_withholdings/{taxWithholdingId}/tax_withholding_slips/{id}")
+            {
+                Content = JsonContent.Create(payload, options: _serializerOptions)
+            }, cancellationToken);
+
+    /// <inheritdoc/>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// <paramref name="page"/>か<paramref name="perPage"/>が0以下です。
+    /// もしくは<paramref name="perPage"/>が100を超えています。
+    /// </exception>
+    /// <exception cref="ApiFailedException">APIがエラーレスポンスを返した場合にスローされます。</exception>
+    public ValueTask<IReadOnlyList<JsonElement>> FetchTaxWithholdingSlipListAsync(string taxWithholdingId, int page = 1, int perPage = 10, CancellationToken cancellationToken = default)
+        => FetchListAsync<JsonElement>($"/v1/tax_withholdings/{taxWithholdingId}/tax_withholding_slips?", page, perPage, cancellationToken);
+
+    /// <inheritdoc/>
+    /// <exception cref="ApiFailedException">APIがエラーレスポンスを返した場合にスローされます。</exception>
+    public ValueTask<JsonElement> AddTaxWithholdingSlipAsync(string taxWithholdingId, JsonElement payload, CancellationToken cancellationToken = default)
+        => CallApiAsync<JsonElement>(
+            new(HttpMethod.Post, $"/v1/tax_withholdings/{taxWithholdingId}/tax_withholding_slips/")
+            {
+                Content = JsonContent.Create(payload, options: _serializerOptions)
+            }, cancellationToken);
+    #endregion
+
     #region Payrolls
     /// <inheritdoc/>
     /// <exception cref="ApiFailedException">APIがエラーレスポンスを返した場合にスローされます。</exception>
