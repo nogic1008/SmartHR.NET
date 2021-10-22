@@ -24,6 +24,31 @@ public class UserTest
     + "},"
     + "\"agreement_for_electronic_delivery\": false,"
     + "\"crew_id\": \"0723a1df-7b50-4c95-ae2f-183d60ec57c0\","
+    + "\"tenants\": ["
+    + "  {"
+    + "    \"id\": \"tenant_id\","
+    + "    \"name\": \"tenant_name\","
+    + "    \"subdomains\": ["
+    + "      {"
+    + "        \"name\": \"example.com\","
+    + "        \"active\": true"
+    + "      }"
+    + "    ],"
+    + "    \"customer_id\": \"customer_id\","
+    + "    \"trial_start_at\": \"2021-10-22\","
+    + "    \"trial_end_at\": \"2021-10-22\","
+    + "    \"addon_subscribable\": true,"
+    + "    \"subscribed_plan\": {"
+    + "      \"name\": \"plan_name\""
+    + "    },"
+    + "    \"general_setting\": {"
+    + "      \"show_agreement_for_electronic_delivery_in_invitation\": true,"
+    + "      \"multilingualization\": true"
+    + "    },"
+    + "    \"updated_at\": \"2021-09-24T17:00:00.000+09:00\","
+    + "    \"created_at\": \"2021-09-24T17:00:00.000+09:00\""
+    + "  }"
+    + "],"
     + "\"invitation_created_at\": \"2021-09-24T17:00:00.000+09:00\","
     + "\"invitation_opened_at\": \"2021-09-24T17:00:00.000+09:00\","
     + "\"invitation_accepted_at\": \"2021-09-24T17:00:00.000+09:00\","
@@ -67,6 +92,18 @@ public class UserTest
         entity.AgreementForElectronicDelivery.Should().BeFalse();
         entity.Crew.Should().BeNull();
         entity.CrewId.Should().Be("0723a1df-7b50-4c95-ae2f-183d60ec57c0");
+        entity.Tenants.Should().HaveCount(1);
+        entity.Tenants![0].Id.Should().Be("tenant_id");
+        entity.Tenants[0].Name.Should().Be("tenant_name");
+        entity.Tenants[0].Subdomains.Should().Equal(new User.Tenant.Subdomain("example.com", true));
+        entity.Tenants[0].CustomerId.Should().Be("customer_id");
+        entity.Tenants[0].TrialStartAt.Should().Be(new DateTimeOffset(new(2021, 10, 22)));
+        entity.Tenants[0].TrialEndAt.Should().Be(new DateTimeOffset(new(2021, 10, 22)));
+        entity.Tenants[0].AddonSubscribable.Should().BeTrue();
+        entity.Tenants[0].SubscribedPlan.Should().Be(new User.Tenant.Plan("plan_name"));
+        entity.Tenants[0].GeneralSetting.Should().Be(new User.Tenant.Setting(true, true));
+        entity.Tenants[0].CreatedAt.Should().Be(date);
+        entity.Tenants[0].UpdatedAt.Should().Be(date);
         entity.InvitationCreatedAt.Should().Be(date);
         entity.InvitationOpenedAt.Should().Be(date);
         entity.InvitationAcceptedAt.Should().Be(date);
