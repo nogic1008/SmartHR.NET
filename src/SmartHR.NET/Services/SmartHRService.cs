@@ -179,6 +179,19 @@ public class SmartHRService : ISmartHRService
             page, perPage, cancellationToken);
     #endregion
 
+    #region ユーザ
+    /// <inheritdoc />
+    /// <inheritdoc cref="ValidateResponseAsync" path="/exception"/>
+    public ValueTask<User> FetchUserAsync(string id, bool includeCrewInfo = false, CancellationToken cancellationToken = default)
+        => CallApiAsync<User>(new(HttpMethod.Get, $"/v1/users/{id}{(includeCrewInfo ? "?embed=crew" : "")}"), cancellationToken);
+
+    /// <inheritdoc />
+    /// <inheritdoc cref="FetchListAsync" path="/exception"/>
+    /// <inheritdoc cref="ValidateResponseAsync" path="/exception"/>
+    public ValueTask<IReadOnlyList<User>> FetchUserListAsync(bool includeCrewInfo = false, int page = 1, int perPage = 10, CancellationToken cancellationToken = default)
+        => FetchListAsync<User>($"/v1/users?{(includeCrewInfo ? "embed=crew&" : "")}", page, perPage, cancellationToken);
+    #endregion
+
     #region DependentRelations
     /// <summary>
     /// 続柄をリストで取得します。
