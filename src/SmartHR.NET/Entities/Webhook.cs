@@ -21,7 +21,7 @@ namespace SmartHR.NET.Entities;
 /// <param name="UpdatedAt">最終更新日</param>
 public record Webhook(
     [property: JsonPropertyName("id")] string Id,
-    [property: JsonPropertyName("url")] string? Url,
+    [property: JsonPropertyName("url")] string Url,
     [property: JsonPropertyName("description")] string? Description,
     [property: JsonPropertyName("secret_token")] string? SecretToken,
     [property: JsonPropertyName("crew_created")] bool CrewCreated,

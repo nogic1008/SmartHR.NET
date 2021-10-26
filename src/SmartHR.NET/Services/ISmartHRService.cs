@@ -222,6 +222,71 @@ public interface ISmartHRService
     public ValueTask<IReadOnlyList<BizEstablishment>> FetchBizEstablishmentListAsync(BizEstablishmentEmbed embed = 0, int page = 1, int perPage = 10, CancellationToken cancellationToken = default);
     #endregion
 
+    #region Webhook
+    /// <summary>
+    /// <paramref name="id"/>と一致する<inheritdoc cref="Webhook" path="/summary/text()"/>を削除します。
+    /// </summary>
+    /// <remarks>
+    /// <seealso href="https://developer.smarthr.jp/api/index.html#!/Webhook/deleteV1WebhooksId"/>
+    /// </remarks>
+    /// <param name="id"><inheritdoc cref="Webhook" path="/param[@name='Id']"/></param>
+    /// <param name="cancellationToken">キャンセル通知を受け取るために他のオブジェクトまたはスレッドで使用できるキャンセル トークン。</param>
+    public ValueTask DeleteWebhookAsync(string id, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// <paramref name="id"/>と一致する<inheritdoc cref="Webhook" path="/summary/text()"/>を取得します。
+    /// <see href="https://developer.smarthr.jp/api/index.html#!/Webhook/getV1WebhooksId"/>
+    /// </summary>
+    /// <param name="id"><inheritdoc cref="Webhook" path="/param[@name='Id']"/></param>
+    /// <param name="cancellationToken">キャンセル通知を受け取るために他のオブジェクトまたはスレッドで使用できるキャンセル トークン。</param>
+    public ValueTask<Webhook> FetchWebhookAsync(string id, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// <paramref name="id"/>と一致する<inheritdoc cref="Webhook" path="/summary/text()"/>を部分更新します。
+    /// <see href="https://developer.smarthr.jp/api/index.html#!/Webhook/patchV1WebhooksId"/>
+    /// </summary>
+    /// <param name="id"><inheritdoc cref="Webhook" path="/param[@name='Id']"/></param>
+    /// <param name="payload"><inheritdoc cref="Webhook" path="/summary/text()"/></param>
+    /// <param name="cancellationToken">キャンセル通知を受け取るために他のオブジェクトまたはスレッドで使用できるキャンセル トークン。</param>
+    /// <returns>更新処理後の<see cref="Webhook"/>オブジェクト。</returns>
+    public ValueTask<Webhook> UpdateWebhookAsync(string id, WebhookPayload payload, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// <paramref name="id"/>と一致する<inheritdoc cref="Webhook" path="/summary/text()"/>を更新します。
+    /// <see href="https://developer.smarthr.jp/api/index.html#!/Webhook/putV1WebhooksId"/>
+    /// </summary>
+    /// <remarks>
+    /// 未指定の属性は情報が削除されます。
+    /// 未指定の属性を消したくない場合は<see cref="UpdateWebhookAsync"/>をご利用ください。
+    /// </remarks>
+    /// <param name="id"><inheritdoc cref="Webhook" path="/param[@name='Id']"/></param>
+    /// <param name="payload"><inheritdoc cref="Webhook" path="/summary/text()"/></param>
+    /// <param name="cancellationToken">キャンセル通知を受け取るために他のオブジェクトまたはスレッドで使用できるキャンセル トークン。</param>
+    /// <returns>更新処理後の<see cref="Webhook"/>オブジェクト。</returns>
+    public ValueTask<Webhook> ReplaceWebhookAsync(string id, WebhookPayload payload, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// <inheritdoc cref="Webhook" path="/summary/text()"/>をリストで取得します。
+    /// <see href="https://developer.smarthr.jp/api/index.html#!/Webhook/getV1Webhooks"/>
+    /// </summary>
+    /// <param name="page">1から始まるページ番号</param>
+    /// <param name="perPage">1ページあたりに含まれる要素数</param>
+    /// <param name="cancellationToken">キャンセル通知を受け取るために他のオブジェクトまたはスレッドで使用できるキャンセル トークン。</param>
+    /// <returns><inheritdoc cref="Webhook" path="/summary/text()"/>の一覧</returns>
+    public ValueTask<IReadOnlyList<Webhook>> FetchWebhookListAsync(int page = 1, int perPage = 10, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// <inheritdoc cref="Webhook" path="/summary/text()"/>を新規登録します。
+    /// </summary>
+    /// <remarks>
+    /// <seealso href="https://developer.smarthr.jp/api/index.html#!/%E5%BD%B9%E8%81%B7/postV1Webhooks"/>
+    /// </remarks>
+    /// <param name="payload"><inheritdoc cref="Webhook" path="/summary/text()"/></param>
+    /// <param name="cancellationToken">キャンセル通知を受け取るために他のオブジェクトまたはスレッドで使用できるキャンセル トークン。</param>
+    /// <returns>登録処理後の<see cref="Webhook"/>オブジェクト。</returns>
+    public ValueTask<Webhook> AddWebhookAsync(WebhookPayload payload, CancellationToken cancellationToken = default);
+    #endregion
+
     #region DependentRelations
     /// <summary>
     /// 続柄をリストで取得します。

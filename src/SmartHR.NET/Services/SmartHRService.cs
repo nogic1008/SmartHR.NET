@@ -208,6 +208,54 @@ public class SmartHRService : ISmartHRService
     }
     #endregion
 
+    #region Webhook
+    /// <inheritdoc/>
+    /// <inheritdoc cref="ValidateResponseAsync" path="/exception"/>
+    public async ValueTask DeleteWebhookAsync(string id, CancellationToken cancellationToken = default)
+    {
+        var response = await _httpClient.DeleteAsync($"/v1/webhooks/{id}", cancellationToken).ConfigureAwait(false);
+        await ValidateResponseAsync(response, cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <inheritdoc/>
+    /// <inheritdoc cref="ValidateResponseAsync" path="/exception"/>
+    public ValueTask<Webhook> FetchWebhookAsync(string id, CancellationToken cancellationToken = default)
+        => CallApiAsync<Webhook>(new(HttpMethod.Get, $"/v1/webhooks/{id}"), cancellationToken);
+
+    /// <inheritdoc/>
+    /// <inheritdoc cref="ValidateResponseAsync" path="/exception"/>
+    public ValueTask<Webhook> UpdateWebhookAsync(string id, WebhookPayload payload, CancellationToken cancellationToken = default)
+        => CallApiAsync<Webhook>(
+            new(new("PATCH"), $"/v1/webhooks/{id}")
+            {
+                Content = JsonContent.Create(payload, options: _serializerOptions)
+            }, cancellationToken);
+
+    /// <inheritdoc/>
+    /// <inheritdoc cref="ValidateResponseAsync" path="/exception"/>
+    public ValueTask<Webhook> ReplaceWebhookAsync(string id, WebhookPayload payload, CancellationToken cancellationToken = default)
+        => CallApiAsync<Webhook>(
+            new(HttpMethod.Put, $"/v1/webhooks/{id}")
+            {
+                Content = JsonContent.Create(payload, options: _serializerOptions)
+            }, cancellationToken);
+
+    /// <inheritdoc/>
+    /// <inheritdoc cref="FetchListAsync" path="/exception"/>
+    /// <inheritdoc cref="ValidateResponseAsync" path="/exception"/>
+    public ValueTask<IReadOnlyList<Webhook>> FetchWebhookListAsync(int page = 1, int perPage = 10, CancellationToken cancellationToken = default)
+        => FetchListAsync<Webhook>("/v1/webhooks?", page, perPage, cancellationToken);
+
+    /// <inheritdoc/>
+    /// <inheritdoc cref="ValidateResponseAsync" path="/exception"/>
+    public ValueTask<Webhook> AddWebhookAsync(WebhookPayload payload, CancellationToken cancellationToken = default)
+        => CallApiAsync<Webhook>(
+            new(HttpMethod.Post, "/v1/webhooks")
+            {
+                Content = JsonContent.Create(payload, options: _serializerOptions)
+            }, cancellationToken);
+    #endregion
+
     #region DependentRelations
     /// <summary>
     /// 続柄をリストで取得します。
