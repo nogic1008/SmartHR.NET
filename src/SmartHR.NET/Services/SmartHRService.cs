@@ -192,6 +192,22 @@ public class SmartHRService : ISmartHRService
         => FetchListAsync<User>($"/v1/users?{(includeCrewInfo ? "embed=crew&" : "")}", page, perPage, cancellationToken);
     #endregion
 
+    #region 事業所
+    /// <inheritdoc />
+    /// <inheritdoc cref="FetchListAsync" path="/exception"/>
+    /// <inheritdoc cref="ValidateResponseAsync" path="/exception"/>
+    public ValueTask<IReadOnlyList<BizEstablishment>> FetchBizEstablishmentListAsync(BizEstablishmentEmbed embed = 0, int page = 1, int perPage = 10, CancellationToken cancellationToken = default)
+    {
+        string query = embed switch
+        {
+            BizEstablishmentEmbed.SocInsOwner => "embed=soc_ins_owner&",
+            BizEstablishmentEmbed.LabInsOwner => "embed=lab_ins_owner&",
+            _ => "",
+        };
+        return FetchListAsync<BizEstablishment>($"/v1/biz_establishments?{query}", page, perPage, cancellationToken);
+    }
+    #endregion
+
     #region DependentRelations
     /// <summary>
     /// 続柄をリストで取得します。

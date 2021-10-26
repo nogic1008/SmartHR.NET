@@ -207,6 +207,21 @@ public interface ISmartHRService
     public ValueTask<IReadOnlyList<User>> FetchUserListAsync(bool includeCrewInfo = false, int page = 1, int perPage = 10, CancellationToken cancellationToken = default);
     #endregion
 
+    #region 事業所
+    /// <summary>
+    /// <inheritdoc cref="BizEstablishment" path="/summary/text()"/>をリストで取得します。
+    /// </summary>
+    /// <remarks>
+    /// <seealso href="https://developer.smarthr.jp/api/index.html#!/%E4%BA%8B%E6%A5%AD%E6%89%80/getV1BizEstablishments"/>
+    /// </remarks>
+    /// <param name="embed"><see cref="BizEstablishment.SocInsOwner"/>および<see cref="BizEstablishment.LabInsOwner"/>を取得するか</param>
+    /// <param name="page">1から始まるページ番号</param>
+    /// <param name="perPage">1ページあたりに含まれる要素数</param>
+    /// <param name="cancellationToken">キャンセル通知を受け取るために他のオブジェクトまたはスレッドで使用できるキャンセル トークン。</param>
+    /// <returns><inheritdoc cref="BizEstablishment" path="/summary/text()"/>の一覧</returns>
+    public ValueTask<IReadOnlyList<BizEstablishment>> FetchBizEstablishmentListAsync(BizEstablishmentEmbed embed = 0, int page = 1, int perPage = 10, CancellationToken cancellationToken = default);
+    #endregion
+
     #region DependentRelations
     /// <summary>
     /// 続柄をリストで取得します。
