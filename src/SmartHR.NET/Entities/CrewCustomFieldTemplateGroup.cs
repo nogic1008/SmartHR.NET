@@ -19,8 +19,7 @@ public record CrewCustomFieldTemplateGroup(
     [property: JsonPropertyName("name")] string Name,
     [property: JsonPropertyName("position")] int? Position,
     [property: JsonPropertyName("access_type")] CrewCustomFieldTemplateGroup.Accessibility AccessType,
-    // TODO: CrewCustomFieldTemplateオブジェクトの定義
-    [property: JsonPropertyName("templates")] IReadOnlyList<JsonElement>? Templates,
+    [property: JsonPropertyName("templates")] IReadOnlyList<CrewCustomFieldTemplate>? Templates,
     [property: JsonPropertyName("created_at")] DateTimeOffset? CreatedAt = default,
     [property: JsonPropertyName("updated_at")] DateTimeOffset? UpdatedAt = default
 )
