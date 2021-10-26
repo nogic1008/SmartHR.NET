@@ -70,7 +70,7 @@ public class SmartHRService : ISmartHRService
 
     /// <inheritdoc />
     /// <inheritdoc cref="ValidateResponseAsync" path="/exception"/>
-    public ValueTask<CrewCustomFieldTemplateGroup> UpdateCrewCustomFieldTemplateGroupAsync(string id, string? name = null, int? position = default, CrewCustomFieldTemplateGroup.Accessibility accessType = 0, CancellationToken cancellationToken = default)
+    public ValueTask<CrewCustomFieldTemplateGroup> UpdateCrewCustomFieldTemplateGroupAsync(string id, string? name = null, int? position = default, CrewCustomFieldTemplateGroup.Accessibility? accessType = default, CancellationToken cancellationToken = default)
         => CallApiAsync<CrewCustomFieldTemplateGroup>(
             new(new("PATCH"), $"/v1/crew_custom_field_template_groups/{id}")
             {
@@ -79,7 +79,7 @@ public class SmartHRService : ISmartHRService
 
     /// <inheritdoc />
     /// <inheritdoc cref="ValidateResponseAsync" path="/exception"/>
-    public ValueTask<CrewCustomFieldTemplateGroup> ReplaceCrewCustomFieldTemplateGroupAsync(string id, string name, int? position = default, CrewCustomFieldTemplateGroup.Accessibility accessType = 0, CancellationToken cancellationToken = default)
+    public ValueTask<CrewCustomFieldTemplateGroup> ReplaceCrewCustomFieldTemplateGroupAsync(string id, string name, int? position = default, CrewCustomFieldTemplateGroup.Accessibility? accessType = default, CancellationToken cancellationToken = default)
         => CallApiAsync<CrewCustomFieldTemplateGroup>(
             new(HttpMethod.Put, $"/v1/crew_custom_field_template_groups/{id}")
             {
@@ -96,7 +96,7 @@ public class SmartHRService : ISmartHRService
 
     /// <inheritdoc />
     /// <inheritdoc cref="ValidateResponseAsync" path="/exception"/>
-    public ValueTask<CrewCustomFieldTemplateGroup> AddCrewCustomFieldTemplateGroupAsync(string name, int? position = default, CrewCustomFieldTemplateGroup.Accessibility accessType = 0, CancellationToken cancellationToken = default)
+    public ValueTask<CrewCustomFieldTemplateGroup> AddCrewCustomFieldTemplateGroupAsync(string name, int? position = default, CrewCustomFieldTemplateGroup.Accessibility? accessType = default, CancellationToken cancellationToken = default)
         => CallApiAsync<CrewCustomFieldTemplateGroup>(
             new(HttpMethod.Post, "/v1/crew_custom_field_template_groups")
             {
@@ -107,7 +107,7 @@ public class SmartHRService : ISmartHRService
     private record CrewCustomFieldTemplateGroupContent(
         [property: JsonPropertyName("name")] string? Name = null,
         [property: JsonPropertyName("position")] int? Position = null,
-        [property: JsonPropertyName("access_type")] CrewCustomFieldTemplateGroup.Accessibility AccessType = default
+        [property: JsonPropertyName("access_type")] CrewCustomFieldTemplateGroup.Accessibility? AccessType = default
     );
     #endregion
 

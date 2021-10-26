@@ -39,7 +39,7 @@ public interface ISmartHRService
     /// <param name="accessType"><inheritdoc cref="CrewCustomFieldTemplateGroup" path="/param[@name='AccessType']/text()"/></param>
     /// <param name="cancellationToken">キャンセル通知を受け取るために他のオブジェクトまたはスレッドで使用できるキャンセル トークン。</param>
     /// <returns>更新処理後の<see cref="CrewCustomFieldTemplateGroup"/>オブジェクト。</returns>
-    public ValueTask<CrewCustomFieldTemplateGroup> UpdateCrewCustomFieldTemplateGroupAsync(string id, string? name = null, int? position = default, CrewCustomFieldTemplateGroup.Accessibility accessType = 0, CancellationToken cancellationToken = default);
+    public ValueTask<CrewCustomFieldTemplateGroup> UpdateCrewCustomFieldTemplateGroupAsync(string id, string? name = null, int? position = default, CrewCustomFieldTemplateGroup.Accessibility? accessType = default, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// <paramref name="id"/>と一致する<inheritdoc cref="CrewCustomFieldTemplateGroup" path="/summary/text()"/>を更新します。
@@ -55,7 +55,7 @@ public interface ISmartHRService
     /// <param name="accessType"><inheritdoc cref="CrewCustomFieldTemplateGroup" path="/param[@name='AccessType']/text()"/></param>
     /// <param name="cancellationToken">キャンセル通知を受け取るために他のオブジェクトまたはスレッドで使用できるキャンセル トークン。</param>
     /// <returns>更新処理後の<see cref="CrewCustomFieldTemplateGroup"/>オブジェクト。</returns>
-    public ValueTask<CrewCustomFieldTemplateGroup> ReplaceCrewCustomFieldTemplateGroupAsync(string id, string name, int? position = default, CrewCustomFieldTemplateGroup.Accessibility accessType = 0, CancellationToken cancellationToken = default);
+    public ValueTask<CrewCustomFieldTemplateGroup> ReplaceCrewCustomFieldTemplateGroupAsync(string id, string name, int? position = default, CrewCustomFieldTemplateGroup.Accessibility? accessType = default, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// <inheritdoc cref="CrewCustomFieldTemplateGroup" path="/summary/text()"/>をリストで取得します。
@@ -77,7 +77,7 @@ public interface ISmartHRService
     /// <param name="accessType"><inheritdoc cref="CrewCustomFieldTemplateGroup" path="/param[@name='AccessType']/text()"/></param>
     /// <param name="cancellationToken">キャンセル通知を受け取るために他のオブジェクトまたはスレッドで使用できるキャンセル トークン。</param>
     /// <returns>登録処理後の<see cref="CrewCustomFieldTemplateGroup"/>オブジェクト。</returns>
-    public ValueTask<CrewCustomFieldTemplateGroup> AddCrewCustomFieldTemplateGroupAsync(string name, int? position = default, CrewCustomFieldTemplateGroup.Accessibility accessType = 0, CancellationToken cancellationToken = default);
+    public ValueTask<CrewCustomFieldTemplateGroup> AddCrewCustomFieldTemplateGroupAsync(string name, int? position = default, CrewCustomFieldTemplateGroup.Accessibility? accessType = default, CancellationToken cancellationToken = default);
     #endregion
 
     #region 部署
