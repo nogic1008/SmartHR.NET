@@ -29,12 +29,12 @@ public record CrewCustomFieldTemplate(
     [property: JsonPropertyName("name")] string Name,
     [property: JsonPropertyName("type")] CrewCustomFieldTemplate.Input Type,
     [property: JsonPropertyName("elements")] IReadOnlyList<CrewCustomFieldTemplate.Element>? Elements,
-    [property: JsonPropertyName("group_id")] string?GroupId,
-    [property: JsonPropertyName("group")] CrewCustomFieldTemplateGroup?Group,
-    [property: JsonPropertyName("hint")] string?Hint,
-    [property: JsonPropertyName("scale")] int?Scale,
-    [property: JsonPropertyName("separated_by_commas")] bool?SeparatedByCommas,
-    [property: JsonPropertyName("position")] int?Position,
+    [property: JsonPropertyName("group_id")] string? GroupId,
+    [property: JsonPropertyName("group")] CrewCustomFieldTemplateGroup? Group,
+    [property: JsonPropertyName("hint")] string? Hint,
+    [property: JsonPropertyName("scale")] int? Scale,
+    [property: JsonPropertyName("separated_by_commas")] bool? SeparatedByCommas,
+    [property: JsonPropertyName("position")] int Position,
     [property: JsonPropertyName("created_at")] DateTimeOffset? CreatedAt = default,
     [property: JsonPropertyName("updated_at")] DateTimeOffset? UpdatedAt = default
 )
