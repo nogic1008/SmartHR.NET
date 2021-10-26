@@ -752,6 +752,227 @@ public class SmartHRServiceTest
     }
     #endregion
 
+    #region Webhook
+    /// <summary><inheritdoc cref="Webhook" path="/summary/text()"/>APIのテストデータ</summary>
+    public static object[][] WebhookTestData => new[]
+    {
+        new object[]{ new WebhookPayload("example.com"), "{\"url\":\"example.com\"}" },
+        new object[]{ new WebhookPayload(
+            Url: "example.com",
+            Description: "テスト用",
+            SecretToken: "token",
+            CrewCreated: true,
+            CrewUpdated: true,
+            CrewDeleted: true,
+            CrewImported: true,
+            DependentCreated: false,
+            DependentUpdated: false,
+            DependentDeleted: false,
+            DependentImported: false,
+            DisabledAt: new(2021, 10, 26, 13, 0, 0, 0, TimeSpan.Zero)),
+            "{"
+            + "\"url\":\"example.com\","
+            + "\"description\":\"テスト用\","
+            + "\"secret_token\":\"token\","
+            + "\"crew_created\":true,"
+            + "\"crew_updated\":true,"
+            + "\"crew_deleted\":true,"
+            + "\"crew_imported\":true,"
+            + "\"dependent_created\":false,"
+            + "\"dependent_updated\":false,"
+            + "\"dependent_deleted\":false,"
+            + "\"dependent_imported\":false,"
+            + "\"disabled_at\":\"2021-10-26T13:00:00+00:00\""
+            + "}" },
+    };
+
+    /// <summary>
+    /// <see cref="SmartHRService.DeleteWebhookAsync"/>は、"/v1/webhooks/{id}"にDELETEリクエストを行う。
+    /// </summary>
+    [Fact(DisplayName = $"{nameof(SmartHRService)} > {nameof(SmartHRService.DeleteWebhookAsync)} > DELETE /v1/webhooks/:id をコールする。")]
+    public async Task DeleteWebhookAsync_Calls_DeleteApi()
+    {
+        // Arrange
+        string id = GenerateRandomString();
+
+        var handler = new Mock<HttpMessageHandler>();
+        handler.SetupRequest(req => req.RequestUri?.GetLeftPart(UriPartial.Authority) == BaseUri)
+            .ReturnsResponse(HttpStatusCode.NoContent);
+
+        // Act
+        var sut = CreateSut(handler);
+        await sut.DeleteWebhookAsync(id).ConfigureAwait(false);
+
+        // Assert
+        handler.VerifyRequest(req =>
+        {
+            req.RequestUri.Should().NotBeNull();
+            req.RequestUri!.GetLeftPart(UriPartial.Authority).Should().Be(BaseUri);
+            req.RequestUri.PathAndQuery.Should().Be($"/v1/webhooks/{id}");
+            req.Method.Should().Be(HttpMethod.Delete);
+            return true;
+        }, Times.Once());
+    }
+
+    /// <summary>
+    /// <see cref="SmartHRService.FetchWebhookAsync"/>は、"/v1/webhooks/{id}"にGETリクエストを行う。
+    /// </summary>
+    [Fact(DisplayName = $"{nameof(SmartHRService)} > {nameof(SmartHRService.FetchWebhookAsync)} > GET /v1/webhooks/:id をコールする。")]
+    public async Task FetchWebhookAsync_Calls_GetApi()
+    {
+        // Arrange
+        string id = GenerateRandomString();
+
+        var handler = new Mock<HttpMessageHandler>();
+        handler.SetupRequest(req => req.RequestUri?.GetLeftPart(UriPartial.Authority) == BaseUri)
+            .ReturnsResponse(WebhookTest.Json, "application/json");
+
+        // Act
+        var sut = CreateSut(handler);
+        var entity = await sut.FetchWebhookAsync(id).ConfigureAwait(false);
+
+        // Assert
+        entity.Should().NotBeNull();
+        handler.VerifyRequest(req =>
+        {
+            req.RequestUri.Should().NotBeNull();
+            req.RequestUri!.GetLeftPart(UriPartial.Authority).Should().Be(BaseUri);
+            req.RequestUri.PathAndQuery.Should().Be($"/v1/webhooks/{id}");
+            req.Method.Should().Be(HttpMethod.Get);
+            return true;
+        }, Times.Once());
+    }
+    /// <summary>
+    /// <see cref="SmartHRService.UpdateWebhookAsync"/>は、"/v1/webhooks/{id}"にPATCHリクエストを行う。
+    /// </summary>
+    /// <inheritdoc cref="SmartHRService.UpdateWebhookAsync" path="/param"/>
+    /// <param name="expectedJson">サーバー側が受け取るリクエストボディ</param>
+    [MemberData(nameof(WebhookTestData))]
+    [Theory(DisplayName = $"{nameof(SmartHRService)} > {nameof(SmartHRService.UpdateWebhookAsync)} > PATCH /v1/webhooks/:id をコールする。")]
+    public async Task UpdateWebhookAsync_Calls_PatchApi(WebhookPayload payload, string expectedJson)
+    {
+        // Arrange
+        string id = GenerateRandomString();
+
+        var handler = new Mock<HttpMessageHandler>();
+        handler.SetupRequest(req => req.RequestUri?.GetLeftPart(UriPartial.Authority) == BaseUri)
+            .ReturnsResponse(WebhookTest.Json, "application/json");
+
+        // Act
+        var sut = CreateSut(handler);
+        var entity = await sut.UpdateWebhookAsync(id, payload).ConfigureAwait(false);
+
+        // Assert
+        entity.Should().NotBeNull();
+        handler.VerifyRequest(async (req) =>
+        {
+            req.RequestUri.Should().NotBeNull();
+            req.RequestUri!.GetLeftPart(UriPartial.Authority).Should().Be(BaseUri);
+            req.RequestUri.PathAndQuery.Should().Be($"/v1/webhooks/{id}");
+            req.Method.Should().Be(HttpMethod.Patch);
+
+            string receivedJson = await req.Content!.ReadAsStringAsync().ConfigureAwait(false);
+            receivedJson.Should().Be(expectedJson);
+            return true;
+        }, Times.Once());
+    }
+
+    /// <summary>
+    /// <see cref="SmartHRService.ReplaceWebhookAsync"/>は、"/v1/webhooks/{id}"にPUTリクエストを行う。
+    /// </summary>
+    /// <inheritdoc cref="SmartHRService.ReplaceWebhookAsync" path="/param"/>
+    /// <param name="expectedJson">サーバー側が受け取るリクエストボディ</param>
+    [MemberData(nameof(WebhookTestData))]
+    [Theory(DisplayName = $"{nameof(SmartHRService)} > {nameof(SmartHRService.ReplaceWebhookAsync)} > PUT /v1/webhooks/:id をコールする。")]
+    public async Task ReplaceWebhookAsync_Calls_PutApi(WebhookPayload payload, string expectedJson)
+    {
+        // Arrange
+        string id = GenerateRandomString();
+
+        var handler = new Mock<HttpMessageHandler>();
+        handler.SetupRequest(req => req.RequestUri?.GetLeftPart(UriPartial.Authority) == BaseUri)
+            .ReturnsResponse(WebhookTest.Json, "application/json");
+
+        // Act
+        var sut = CreateSut(handler);
+        var entity = await sut.ReplaceWebhookAsync(id, payload).ConfigureAwait(false);
+
+        // Assert
+        entity.Should().NotBeNull();
+        handler.VerifyRequest(async (req) =>
+        {
+            req.RequestUri.Should().NotBeNull();
+            req.RequestUri!.GetLeftPart(UriPartial.Authority).Should().Be(BaseUri);
+            req.RequestUri.PathAndQuery.Should().Be($"/v1/webhooks/{id}");
+            req.Method.Should().Be(HttpMethod.Put);
+
+            string receivedJson = await req.Content!.ReadAsStringAsync().ConfigureAwait(false);
+            receivedJson.Should().Be(expectedJson);
+            return true;
+        }, Times.Once());
+    }
+
+    /// <summary>
+    /// <see cref="SmartHRService.FetchWebhookListAsync"/>は、"/v1/webhooks"にGETリクエストを行う。
+    /// </summary>
+    [Fact(DisplayName = $"{nameof(SmartHRService)} > {nameof(SmartHRService.FetchWebhookListAsync)} > GET /v1/webhooks をコールする。")]
+    public async Task FetchWebhookListAsync_Calls_GetApi()
+    {
+        // Arrange
+        var handler = new Mock<HttpMessageHandler>();
+        handler.SetupRequest(req => req.RequestUri?.GetLeftPart(UriPartial.Authority) == BaseUri)
+            .ReturnsResponse($"[{WebhookTest.Json}]", "application/json");
+
+        // Act
+        var sut = CreateSut(handler);
+        var entities = await sut.FetchWebhookListAsync(1, 10).ConfigureAwait(false);
+
+        // Assert
+        entities.Should().NotBeNullOrEmpty();
+        handler.VerifyRequest((req) =>
+        {
+            req.RequestUri.Should().NotBeNull();
+            req.RequestUri!.GetLeftPart(UriPartial.Authority).Should().Be(BaseUri);
+            req.RequestUri.PathAndQuery.Should().Be($"/v1/webhooks?page=1&per_page=10");
+            req.Method.Should().Be(HttpMethod.Get);
+            return true;
+        }, Times.Once());
+    }
+
+    /// <summary>
+    /// <see cref="SmartHRService.AddWebhookAsync"/>は、"/v1/webhooks"にPOSTリクエストを行う。
+    /// </summary>
+    /// <inheritdoc cref="SmartHRService.AddWebhookAsync" path="/param"/>
+    /// <param name="expectedJson">サーバー側が受け取るリクエストボディ</param>
+    [MemberData(nameof(WebhookTestData))]
+    [Theory(DisplayName = $"{nameof(SmartHRService)} > {nameof(SmartHRService.AddWebhookAsync)} > POST /v1/webhooks をコールする。")]
+    public async Task AddWebhookAsync_Calls_PostApi(WebhookPayload payload, string expectedJson)
+    {
+        // Arrange
+        var handler = new Mock<HttpMessageHandler>();
+        handler.SetupRequest(req => req.RequestUri?.GetLeftPart(UriPartial.Authority) == BaseUri)
+            .ReturnsResponse(WebhookTest.Json, "application/json");
+
+        // Act
+        var sut = CreateSut(handler);
+        var entity = await sut.AddWebhookAsync(payload).ConfigureAwait(false);
+
+        // Assert
+        entity.Should().NotBeNull();
+        handler.VerifyRequest(async (req) =>
+        {
+            req.RequestUri.Should().NotBeNull();
+            req.RequestUri!.GetLeftPart(UriPartial.Authority).Should().Be(BaseUri);
+            req.RequestUri.PathAndQuery.Should().Be("/v1/webhooks");
+            req.Method.Should().Be(HttpMethod.Post);
+
+            string receivedJson = await req.Content!.ReadAsStringAsync().ConfigureAwait(false);
+            receivedJson.Should().Be(expectedJson);
+            return true;
+        }, Times.Once());
+    }
+    #endregion
+
     #region DependentRelations
     /// <summary>
     /// <see cref="SmartHRService.FetchDependentRelationListAsync"/>は、"/v1/dependent_relations"にGETリクエストを行う。
