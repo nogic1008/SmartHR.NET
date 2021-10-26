@@ -277,10 +277,8 @@ public interface ISmartHRService
 
     /// <summary>
     /// <inheritdoc cref="Webhook" path="/summary/text()"/>を新規登録します。
+    /// <see href="https://developer.smarthr.jp/api/index.html#!/Webhook/postV1Webhooks"/>
     /// </summary>
-    /// <remarks>
-    /// <seealso href="https://developer.smarthr.jp/api/index.html#!/%E5%BD%B9%E8%81%B7/postV1Webhooks"/>
-    /// </remarks>
     /// <param name="payload"><inheritdoc cref="Webhook" path="/summary/text()"/></param>
     /// <param name="cancellationToken">キャンセル通知を受け取るために他のオブジェクトまたはスレッドで使用できるキャンセル トークン。</param>
     /// <returns>登録処理後の<see cref="Webhook"/>オブジェクト。</returns>
