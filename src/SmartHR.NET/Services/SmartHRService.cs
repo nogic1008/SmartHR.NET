@@ -56,6 +56,61 @@ public class SmartHRService : ISmartHRService
             _httpClient.DefaultRequestHeaders.Authorization = new("Bearer", accessToken);
     }
 
+    #region 従業員カスタム項目グループ
+    /// <inheritdoc />
+    /// <inheritdoc cref="ValidateResponseAsync" path="/exception"/>
+    public ValueTask DeleteCrewCustomFieldTemplateGroupAsync(string id, CancellationToken cancellationToken = default)
+        => CallDeleteApiAsync($"/v1/crew_custom_field_template_groups/{id}", cancellationToken);
+
+    /// <inheritdoc />
+    /// <inheritdoc cref="ValidateResponseAsync" path="/exception"/>
+    public ValueTask<CrewCustomFieldTemplateGroup> FetchCrewCustomFieldTemplateGroupAsync(string id, bool includeTemplates = false, CancellationToken cancellationToken = default)
+        => CallApiAsync<CrewCustomFieldTemplateGroup>(
+            new(HttpMethod.Get, $"/v1/crew_custom_field_template_groups/{id}{(includeTemplates ? "?embed=templates" : "")}"), cancellationToken);
+
+    /// <inheritdoc />
+    /// <inheritdoc cref="ValidateResponseAsync" path="/exception"/>
+    public ValueTask<CrewCustomFieldTemplateGroup> UpdateCrewCustomFieldTemplateGroupAsync(string id, string? name = null, int? position = default, CrewCustomFieldTemplateGroup.Accessibility? accessType = default, CancellationToken cancellationToken = default)
+        => CallApiAsync<CrewCustomFieldTemplateGroup>(
+            new(new("PATCH"), $"/v1/crew_custom_field_template_groups/{id}")
+            {
+                Content = JsonContent.Create(new CrewCustomFieldTemplateGroupContent(name, position, accessType), options: _serializerOptions)
+            }, cancellationToken);
+
+    /// <inheritdoc />
+    /// <inheritdoc cref="ValidateResponseAsync" path="/exception"/>
+    public ValueTask<CrewCustomFieldTemplateGroup> ReplaceCrewCustomFieldTemplateGroupAsync(string id, string name, int? position = default, CrewCustomFieldTemplateGroup.Accessibility? accessType = default, CancellationToken cancellationToken = default)
+        => CallApiAsync<CrewCustomFieldTemplateGroup>(
+            new(HttpMethod.Put, $"/v1/crew_custom_field_template_groups/{id}")
+            {
+                Content = JsonContent.Create(new CrewCustomFieldTemplateGroupContent(name, position, accessType), options: _serializerOptions)
+            }, cancellationToken);
+
+    /// <inheritdoc />
+    /// <inheritdoc cref="FetchListAsync" path="/exception"/>
+    /// <inheritdoc cref="ValidateResponseAsync" path="/exception"/>
+    public ValueTask<IReadOnlyList<CrewCustomFieldTemplateGroup>> FetchCrewCustomFieldTemplateGroupListAsync(bool includeTemplates = false, int page = 1, int perPage = 10, CancellationToken cancellationToken = default)
+        => FetchListAsync<CrewCustomFieldTemplateGroup>(
+            $"/v1/crew_custom_field_template_groups{(includeTemplates ? "?embed=templates&" : "?")}",
+            page, perPage, cancellationToken);
+
+    /// <inheritdoc />
+    /// <inheritdoc cref="ValidateResponseAsync" path="/exception"/>
+    public ValueTask<CrewCustomFieldTemplateGroup> AddCrewCustomFieldTemplateGroupAsync(string name, int? position = default, CrewCustomFieldTemplateGroup.Accessibility? accessType = default, CancellationToken cancellationToken = default)
+        => CallApiAsync<CrewCustomFieldTemplateGroup>(
+            new(HttpMethod.Post, "/v1/crew_custom_field_template_groups")
+            {
+                Content = JsonContent.Create(new CrewCustomFieldTemplateGroupContent(name, position, accessType), options: _serializerOptions)
+            }, cancellationToken);
+
+    /// <summary><inheritdoc cref="CrewCustomFieldTemplateGroup" path="/summary/text()"/>APIのリクエストボディ</summary>
+    private record CrewCustomFieldTemplateGroupContent(
+        [property: JsonPropertyName("name")] string? Name = null,
+        [property: JsonPropertyName("position")] int? Position = null,
+        [property: JsonPropertyName("access_type")] CrewCustomFieldTemplateGroup.Accessibility? AccessType = default
+    );
+    #endregion
+
     #region 部署
     /// <inheritdoc />
     /// <inheritdoc cref="ValidateResponseAsync" path="/exception"/>

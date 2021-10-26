@@ -11,6 +11,75 @@ namespace SmartHR.NET.Services;
 /// </summary>
 public interface ISmartHRService
 {
+    #region 従業員カスタム項目グループ
+    /// <summary>
+    /// <paramref name="id"/>と一致する<inheritdoc cref="CrewCustomFieldTemplateGroup" path="/summary/text()"/>を削除します。
+    /// <see href="https://developer.smarthr.jp/api/index.html#!/%E5%BE%93%E6%A5%AD%E5%93%A1%E3%82%AB%E3%82%B9%E3%82%BF%E3%83%A0%E9%A0%85%E7%9B%AE%E3%82%B0%E3%83%AB%E3%83%BC%E3%83%97/deleteV1CrewCustomFieldTemplateGroupsId"/>
+    /// </summary>
+    /// <param name="id"><inheritdoc cref="CrewCustomFieldTemplateGroup" path="/param[@name='Id']"/></param>
+    /// <param name="cancellationToken">キャンセル通知を受け取るために他のオブジェクトまたはスレッドで使用できるキャンセル トークン。</param>
+    public ValueTask DeleteCrewCustomFieldTemplateGroupAsync(string id, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// <paramref name="id"/>と一致する<inheritdoc cref="CrewCustomFieldTemplateGroup" path="/summary/text()"/>を取得します。
+    /// <see href="https://developer.smarthr.jp/api/index.html#!/%E5%BE%93%E6%A5%AD%E5%93%A1%E3%82%AB%E3%82%B9%E3%82%BF%E3%83%A0%E9%A0%85%E7%9B%AE%E3%82%B0%E3%83%AB%E3%83%BC%E3%83%97/getV1CrewCustomFieldTemplateGroupsId"/>
+    /// </summary>
+    /// <param name="id"><inheritdoc cref="CrewCustomFieldTemplateGroup" path="/param[@name='Id']"/></param>
+    /// <param name="includeTemplates"><see cref="CrewCustomFieldTemplateGroup.Templates"/>を含めるか</param>
+    /// <param name="cancellationToken">キャンセル通知を受け取るために他のオブジェクトまたはスレッドで使用できるキャンセル トークン。</param>
+    public ValueTask<CrewCustomFieldTemplateGroup> FetchCrewCustomFieldTemplateGroupAsync(string id, bool includeTemplates = false, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// <paramref name="id"/>と一致する<inheritdoc cref="CrewCustomFieldTemplateGroup" path="/summary/text()"/>を部分更新します。
+    /// <see href="https://developer.smarthr.jp/api/index.html#!/%E5%BE%93%E6%A5%AD%E5%93%A1%E3%82%AB%E3%82%B9%E3%82%BF%E3%83%A0%E9%A0%85%E7%9B%AE%E3%82%B0%E3%83%AB%E3%83%BC%E3%83%97/patchV1CrewCustomFieldTemplateGroupsId"/>
+    /// </summary>
+    /// <param name="id"><inheritdoc cref="CrewCustomFieldTemplateGroup" path="/param[@name='Id']"/></param>
+    /// <param name="name"><inheritdoc cref="CrewCustomFieldTemplateGroup" path="/param[@name='Name']/text()"/></param>
+    /// <param name="position"><inheritdoc cref="CrewCustomFieldTemplateGroup" path="/param[@name='Position']/text()"/></param>
+    /// <param name="accessType"><inheritdoc cref="CrewCustomFieldTemplateGroup" path="/param[@name='AccessType']/text()"/></param>
+    /// <param name="cancellationToken">キャンセル通知を受け取るために他のオブジェクトまたはスレッドで使用できるキャンセル トークン。</param>
+    /// <returns>更新処理後の<see cref="CrewCustomFieldTemplateGroup"/>オブジェクト。</returns>
+    public ValueTask<CrewCustomFieldTemplateGroup> UpdateCrewCustomFieldTemplateGroupAsync(string id, string? name = null, int? position = default, CrewCustomFieldTemplateGroup.Accessibility? accessType = default, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// <paramref name="id"/>と一致する<inheritdoc cref="CrewCustomFieldTemplateGroup" path="/summary/text()"/>を更新します。
+    /// <see href="https://developer.smarthr.jp/api/index.html#!/%E5%BE%93%E6%A5%AD%E5%93%A1%E3%82%AB%E3%82%B9%E3%82%BF%E3%83%A0%E9%A0%85%E7%9B%AE%E3%82%B0%E3%83%AB%E3%83%BC%E3%83%97/putV1CrewCustomFieldTemplateGroupsId"/>
+    /// </summary>
+    /// <remarks>
+    /// 未指定の属性は情報が削除されます。
+    /// 未指定の属性を消したくない場合は<see cref="UpdateCrewCustomFieldTemplateGroupAsync"/>をご利用ください。
+    /// </remarks>
+    /// <param name="id"><inheritdoc cref="CrewCustomFieldTemplateGroup" path="/param[@name='Id']"/></param>
+    /// <param name="name"><inheritdoc cref="CrewCustomFieldTemplateGroup" path="/param[@name='Name']/text()"/></param>
+    /// <param name="position"><inheritdoc cref="CrewCustomFieldTemplateGroup" path="/param[@name='Position']/text()"/></param>
+    /// <param name="accessType"><inheritdoc cref="CrewCustomFieldTemplateGroup" path="/param[@name='AccessType']/text()"/></param>
+    /// <param name="cancellationToken">キャンセル通知を受け取るために他のオブジェクトまたはスレッドで使用できるキャンセル トークン。</param>
+    /// <returns>更新処理後の<see cref="CrewCustomFieldTemplateGroup"/>オブジェクト。</returns>
+    public ValueTask<CrewCustomFieldTemplateGroup> ReplaceCrewCustomFieldTemplateGroupAsync(string id, string name, int? position = default, CrewCustomFieldTemplateGroup.Accessibility? accessType = default, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// <inheritdoc cref="CrewCustomFieldTemplateGroup" path="/summary/text()"/>をリストで取得します。
+    /// <see href="https://developer.smarthr.jp/api/index.html#!/%E5%BE%93%E6%A5%AD%E5%93%A1%E3%82%AB%E3%82%B9%E3%82%BF%E3%83%A0%E9%A0%85%E7%9B%AE%E3%82%B0%E3%83%AB%E3%83%BC%E3%83%97/getV1CrewCustomFieldTemplateGroups"/>
+    /// </summary>
+    /// <param name="includeTemplates"><see cref="CrewCustomFieldTemplateGroup.Templates"/>を含めるか</param>
+    /// <param name="page">1から始まるページ番号</param>
+    /// <param name="perPage">1ページあたりに含まれる要素数</param>
+    /// <param name="cancellationToken">キャンセル通知を受け取るために他のオブジェクトまたはスレッドで使用できるキャンセル トークン。</param>
+    /// <returns><inheritdoc cref="CrewCustomFieldTemplateGroup" path="/summary/text()"/>の一覧</returns>
+    public ValueTask<IReadOnlyList<CrewCustomFieldTemplateGroup>> FetchCrewCustomFieldTemplateGroupListAsync(bool includeTemplates = false, int page = 1, int perPage = 10, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// <inheritdoc cref="CrewCustomFieldTemplateGroup" path="/summary/text()"/>を新規登録します。
+    /// <see href="https://developer.smarthr.jp/api/index.html#!/%E5%BE%93%E6%A5%AD%E5%93%A1%E3%82%AB%E3%82%B9%E3%82%BF%E3%83%A0%E9%A0%85%E7%9B%AE%E3%82%B0%E3%83%AB%E3%83%BC%E3%83%97/postV1CrewCustomFieldTemplateGroups"/>
+    /// </summary>
+    /// <param name="name"><inheritdoc cref="CrewCustomFieldTemplateGroup" path="/param[@name='Name']/text()"/></param>
+    /// <param name="position"><inheritdoc cref="CrewCustomFieldTemplateGroup" path="/param[@name='Position']/text()"/></param>
+    /// <param name="accessType"><inheritdoc cref="CrewCustomFieldTemplateGroup" path="/param[@name='AccessType']/text()"/></param>
+    /// <param name="cancellationToken">キャンセル通知を受け取るために他のオブジェクトまたはスレッドで使用できるキャンセル トークン。</param>
+    /// <returns>登録処理後の<see cref="CrewCustomFieldTemplateGroup"/>オブジェクト。</returns>
+    public ValueTask<CrewCustomFieldTemplateGroup> AddCrewCustomFieldTemplateGroupAsync(string name, int? position = default, CrewCustomFieldTemplateGroup.Accessibility? accessType = default, CancellationToken cancellationToken = default);
+    #endregion
+
     #region 部署
     /// <summary>
     /// <paramref name="id"/>と一致する<inheritdoc cref="Department" path="/summary/text()"/>を削除します。
