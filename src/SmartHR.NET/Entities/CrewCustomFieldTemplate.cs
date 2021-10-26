@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
-using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace SmartHR.NET.Entities;
@@ -29,7 +28,7 @@ public record CrewCustomFieldTemplate(
     [property: JsonPropertyName("id")] string Id,
     [property: JsonPropertyName("name")] string Name,
     [property: JsonPropertyName("type")] CrewCustomFieldTemplate.Input Type,
-    [property: JsonPropertyName("elements")] IReadOnlyList<JsonElement>? Elements,
+    [property: JsonPropertyName("elements")] IReadOnlyList<CrewCustomFieldTemplate.Element>? Elements,
     [property: JsonPropertyName("group_id")] string?GroupId,
     [property: JsonPropertyName("group")] CrewCustomFieldTemplateGroup?Group,
     [property: JsonPropertyName("hint")] string?Hint,
@@ -53,5 +52,17 @@ public record CrewCustomFieldTemplate(
         [EnumMember(Value = "string")] String,
         [EnumMember(Value = "text")] Text,
     }
+
+    /// <summary>ドロップダウンリスト項目</summary>
+    /// <param name="Id">ドロップダウンリスト項目ID</param>
+    /// <param name="Name">名称</param>
+    /// <param name="PhysicalName">物理名称</param>
+    /// <param name="Position">ポジション</param>
+    public record Element(
+        [property: JsonPropertyName("id")] string Id,
+        [property: JsonPropertyName("name")] string Name,
+        [property: JsonPropertyName("physical_name")] string? PhysicalName,
+        [property: JsonPropertyName("position")] int Position
+    );
 }
 
