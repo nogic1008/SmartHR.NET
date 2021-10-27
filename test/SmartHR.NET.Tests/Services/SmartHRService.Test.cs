@@ -415,6 +415,249 @@ public class SmartHRServiceTest
     }
     #endregion
 
+    #region 従業員カスタム項目テンプレート
+    /// <summary><inheritdoc cref="CrewCustomFieldTemplate" path="/summary/text()"/>APIのテストデータ</summary>
+    public static object[][] CrewCustomFieldTemplateTestData => new[]
+    {
+        new object[]{ new CrewCustomFieldTemplatePayload(), "{}" },
+        new object[]
+        {
+            new CrewCustomFieldTemplatePayload(
+                Name: "身長",
+                Type: CrewCustomFieldTemplate.Input.Decimal,
+                GroupId: "group_1",
+                Hint: "cm",
+                Scale: 4,
+                SeparatedByCommas: false
+            ),
+            "{\"name\":\"身長\","
+            + "\"type\":\"decimal\","
+            + "\"group_id\":\"group_1\","
+            + "\"hint\":\"cm\","
+            + "\"scale\":4,"
+            + "\"separated_by_commas\":false"
+            + "}"
+        },
+        new object[]
+        {
+            new CrewCustomFieldTemplatePayload(
+                Name: "性別",
+                Type: CrewCustomFieldTemplate.Input.Enum,
+                Elements: new CrewCustomFieldTemplatePayload.Element[]
+                {
+                    new("element_1", "男性", Position: 1),
+                    new(Name: "女性", Position: 2),
+                },
+                GroupId: "group_1",
+                Position: 2
+            ),
+            "{\"name\":\"性別\","
+            + "\"type\":\"enum\","
+            + "\"elements\":["
+            + "{\"id\":\"element_1\",\"name\":\"男性\",\"position\":1},"
+            + "{\"name\":\"女性\",\"position\":2}"
+            + "],"
+            + "\"group_id\":\"group_1\","
+            + "\"position\":2"
+            + "}" },
+        };
+
+    /// <summary>
+    /// <see cref="SmartHRService.DeleteCrewCustomFieldTemplateAsync"/>は、"/v1/crew_custom_field_templates/{id}"にDELETEリクエストを行う。
+    /// </summary>
+    [Fact(DisplayName = $"{nameof(SmartHRService)} > {nameof(SmartHRService.DeleteCrewCustomFieldTemplateAsync)} > DELETE /v1/crew_custom_field_templates/:id をコールする。")]
+    public async Task DeleteCrewCustomFieldTemplateAsync_Calls_DeleteApi()
+    {
+        // Arrange
+        string id = GenerateRandomString();
+
+        var handler = new Mock<HttpMessageHandler>();
+        handler.SetupRequest(req => req.RequestUri?.GetLeftPart(UriPartial.Authority) == BaseUri)
+            .ReturnsResponse(HttpStatusCode.NoContent);
+
+        // Act
+        var sut = CreateSut(handler);
+        await sut.DeleteCrewCustomFieldTemplateAsync(id).ConfigureAwait(false);
+
+        // Assert
+        handler.VerifyRequest(req =>
+        {
+            req.RequestUri.Should().NotBeNull();
+            req.RequestUri!.GetLeftPart(UriPartial.Authority).Should().Be(BaseUri);
+            req.RequestUri.PathAndQuery.Should().Be($"/v1/crew_custom_field_templates/{id}");
+            req.Method.Should().Be(HttpMethod.Delete);
+            return true;
+        }, Times.Once());
+    }
+
+    /// <summary>
+    /// <see cref="SmartHRService.FetchCrewCustomFieldTemplateAsync"/>は、"/v1/crew_custom_field_templates/{id}"にGETリクエストを行う。
+    /// </summary>
+    /// <inheritdoc cref="SmartHRService.FetchCrewCustomFieldTemplateAsync" path="/param[@name='includeGroup']"/>
+    /// <param name="expectedQuery">サーバー側が受け取るパラメータクエリ</param>
+    [InlineData(false, "")]
+    [InlineData(true, "?embed=group")]
+    [Theory(DisplayName = $"{nameof(SmartHRService)} > {nameof(SmartHRService.FetchCrewCustomFieldTemplateAsync)} > GET /v1/crew_custom_field_templates/:id をコールする。")]
+    public async Task FetchCrewCustomFieldTemplateAsync_Calls_GetApi(bool includeGroup, string expectedQuery)
+    {
+        // Arrange
+        string id = GenerateRandomString();
+
+        var handler = new Mock<HttpMessageHandler>();
+        handler.SetupRequest(req => req.RequestUri?.GetLeftPart(UriPartial.Authority) == BaseUri)
+            .ReturnsResponse(CrewCustomFieldTemplateTest.Json, "application/json");
+
+        // Act
+        var sut = CreateSut(handler);
+        var entity = await sut.FetchCrewCustomFieldTemplateAsync(id, includeGroup).ConfigureAwait(false);
+
+        // Assert
+        entity.Should().NotBeNull();
+        handler.VerifyRequest(req =>
+        {
+            req.RequestUri.Should().NotBeNull();
+            req.RequestUri!.GetLeftPart(UriPartial.Authority).Should().Be(BaseUri);
+            req.RequestUri.PathAndQuery.Should().Be($"/v1/crew_custom_field_templates/{id}{expectedQuery}");
+            req.Method.Should().Be(HttpMethod.Get);
+            return true;
+        }, Times.Once());
+    }
+
+    /// <summary>
+    /// <see cref="SmartHRService.UpdateCrewCustomFieldTemplateAsync"/>は、"/v1/crew_custom_field_templates/{id}"にPATCHリクエストを行う。
+    /// </summary>
+    /// <inheritdoc cref="SmartHRService.UpdateCrewCustomFieldTemplateAsync" path="/param[@name='payload']"/>
+    /// <param name="expectedJson">サーバー側が受け取るリクエストボディ</param>
+    [MemberData(nameof(CrewCustomFieldTemplateTestData))]
+    [Theory(DisplayName = $"{nameof(SmartHRService)} > {nameof(SmartHRService.UpdateCrewCustomFieldTemplateAsync)} > PATCH /v1/crew_custom_field_templates/:id をコールする。")]
+    public async Task UpdateCrewCustomFieldTemplateAsync_Calls_PatchApi(CrewCustomFieldTemplatePayload payload, string expectedJson)
+    {
+        // Arrange
+        string id = GenerateRandomString();
+
+        var handler = new Mock<HttpMessageHandler>();
+        handler.SetupRequest(req => req.RequestUri?.GetLeftPart(UriPartial.Authority) == BaseUri)
+            .ReturnsResponse(CrewCustomFieldTemplateTest.Json, "application/json");
+
+        // Act
+        var sut = CreateSut(handler);
+        var entity = await sut.UpdateCrewCustomFieldTemplateAsync(id, payload).ConfigureAwait(false);
+
+        // Assert
+        entity.Should().NotBeNull();
+        handler.VerifyRequest(async (req) =>
+        {
+            req.RequestUri.Should().NotBeNull();
+            req.RequestUri!.GetLeftPart(UriPartial.Authority).Should().Be(BaseUri);
+            req.RequestUri.PathAndQuery.Should().Be($"/v1/crew_custom_field_templates/{id}");
+            req.Method.Should().Be(HttpMethod.Patch);
+
+            string receivedJson = await req.Content!.ReadAsStringAsync().ConfigureAwait(false);
+            receivedJson.Should().Be(expectedJson);
+            return true;
+        }, Times.Once());
+    }
+
+    /// <summary>
+    /// <see cref="SmartHRService.ReplaceCrewCustomFieldTemplateAsync"/>は、"/v1/crew_custom_field_templates/{id}"にPUTリクエストを行う。
+    /// </summary>
+    /// <inheritdoc cref="SmartHRService.ReplaceCrewCustomFieldTemplateAsync" path="/param[@name='payload']"/>
+    /// <param name="expectedJson">サーバー側が受け取るリクエストボディ</param>
+    [MemberData(nameof(CrewCustomFieldTemplateTestData))]
+    [Theory(DisplayName = $"{nameof(SmartHRService)} > {nameof(SmartHRService.ReplaceCrewCustomFieldTemplateAsync)} > PUT /v1/crew_custom_field_templates/:id をコールする。")]
+    public async Task ReplaceCrewCustomFieldTemplateAsync_Calls_PutApi(CrewCustomFieldTemplatePayload payload, string expectedJson)
+    {
+        // Arrange
+        string id = GenerateRandomString();
+
+        var handler = new Mock<HttpMessageHandler>();
+        handler.SetupRequest(req => req.RequestUri?.GetLeftPart(UriPartial.Authority) == BaseUri)
+            .ReturnsResponse(CrewCustomFieldTemplateTest.Json, "application/json");
+
+        // Act
+        var sut = CreateSut(handler);
+        var entity = await sut.ReplaceCrewCustomFieldTemplateAsync(id, payload).ConfigureAwait(false);
+
+        // Assert
+        entity.Should().NotBeNull();
+        handler.VerifyRequest(async (req) =>
+        {
+            req.RequestUri.Should().NotBeNull();
+            req.RequestUri!.GetLeftPart(UriPartial.Authority).Should().Be(BaseUri);
+            req.RequestUri.PathAndQuery.Should().Be($"/v1/crew_custom_field_templates/{id}");
+            req.Method.Should().Be(HttpMethod.Put);
+
+            string receivedJson = await req.Content!.ReadAsStringAsync().ConfigureAwait(false);
+            receivedJson.Should().Be(expectedJson);
+            return true;
+        }, Times.Once());
+    }
+
+    /// <summary>
+    /// <see cref="SmartHRService.FetchCrewCustomFieldTemplateListAsync"/>は、"/v1/crew_custom_field_templates"にGETリクエストを行う。
+    /// </summary>
+    /// <inheritdoc cref="SmartHRService.FetchCrewCustomFieldTemplateListAsync" path="/param"/>
+    /// <param name="expectedQuery">サーバー側が受け取るパラメータクエリ</param>
+    [InlineData(false, "page=1&per_page=10")]
+    [InlineData(true, "embed=group&page=1&per_page=10")]
+    [Theory(DisplayName = $"{nameof(SmartHRService)} > {nameof(SmartHRService.FetchCrewCustomFieldTemplateListAsync)} > GET /v1/crew_custom_field_templates をコールする。")]
+    public async Task FetchCrewCustomFieldTemplateListAsync_Calls_GetApi(bool includeGroup, string expectedQuery)
+    {
+        // Arrange
+        var handler = new Mock<HttpMessageHandler>();
+        handler.SetupRequest(req => req.RequestUri?.GetLeftPart(UriPartial.Authority) == BaseUri)
+            .ReturnsResponse($"[{CrewCustomFieldTemplateTest.Json}]", "application/json");
+
+        // Act
+        var sut = CreateSut(handler);
+        var entities = await sut.FetchCrewCustomFieldTemplateListAsync(includeGroup, 1, 10).ConfigureAwait(false);
+
+        // Assert
+        entities.Should().NotBeNullOrEmpty();
+        handler.VerifyRequest((req) =>
+        {
+            req.RequestUri.Should().NotBeNull();
+            req.RequestUri!.GetLeftPart(UriPartial.Authority).Should().Be(BaseUri);
+            req.RequestUri.PathAndQuery.Should().Be($"/v1/crew_custom_field_templates?{expectedQuery}");
+            req.Method.Should().Be(HttpMethod.Get);
+            return true;
+        }, Times.Once());
+    }
+
+    /// <summary>
+    /// <see cref="SmartHRService.AddCrewCustomFieldTemplateAsync"/>は、"/v1/crew_custom_field_templates"にPOSTリクエストを行う。
+    /// </summary>
+    /// <inheritdoc cref="SmartHRService.AddCrewCustomFieldTemplateAsync" path="/param[@name='payload']"/>
+    /// <param name="expectedJson">サーバー側が受け取るリクエストボディ</param>
+    [MemberData(nameof(CrewCustomFieldTemplateTestData))]
+    [Theory(DisplayName = $"{nameof(SmartHRService)} > {nameof(SmartHRService.AddCrewCustomFieldTemplateAsync)} > POST /v1/crew_custom_field_templates をコールする。")]
+    public async Task AddCrewCustomFieldTemplateAsync_Calls_PostApi(CrewCustomFieldTemplatePayload payload, string expectedJson)
+    {
+        // Arrange
+        var handler = new Mock<HttpMessageHandler>();
+        handler.SetupRequest(req => req.RequestUri?.GetLeftPart(UriPartial.Authority) == BaseUri)
+            .ReturnsResponse(CrewCustomFieldTemplateTest.Json, "application/json");
+
+        // Act
+        var sut = CreateSut(handler);
+        var entity = await sut.AddCrewCustomFieldTemplateAsync(payload).ConfigureAwait(false);
+
+        // Assert
+        entity.Should().NotBeNull();
+        handler.VerifyRequest(async (req) =>
+        {
+            req.RequestUri.Should().NotBeNull();
+            req.RequestUri!.GetLeftPart(UriPartial.Authority).Should().Be(BaseUri);
+            req.RequestUri.PathAndQuery.Should().Be("/v1/crew_custom_field_templates");
+            req.Method.Should().Be(HttpMethod.Post);
+
+            string receivedJson = await req.Content!.ReadAsStringAsync().ConfigureAwait(false);
+            receivedJson.Should().Be(expectedJson);
+            return true;
+        }, Times.Once());
+    }
+    #endregion
+
     #region 部署
     /// <summary>
     /// <see cref="SmartHRService.DeleteDepartmentAsync"/>は、"/v1/departments/{id}"にDELETEリクエストを行う。
@@ -1046,6 +1289,7 @@ public class SmartHRServiceTest
             return true;
         }, Times.Once());
     }
+
     /// <summary>
     /// <see cref="SmartHRService.UpdateWebhookAsync"/>は、"/v1/webhooks/{id}"にPATCHリクエストを行う。
     /// </summary>
