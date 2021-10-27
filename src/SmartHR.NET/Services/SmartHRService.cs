@@ -265,6 +265,39 @@ public class SmartHRService : ISmartHRService
     );
     #endregion
 
+    #region 従業員情報収集フォーム
+    /// <inheritdoc />
+    /// <inheritdoc cref="ValidateResponseAsync" path="/exception"/>
+    public ValueTask<CrewInputForm> FetchCrewInputFormAsync(string id, CrewInputFormEmbed embed = 0, CancellationToken cancellationToken = default)
+        => CallApiAsync<CrewInputForm>(new(HttpMethod.Get, $"/v1/crew_input_forms/{id}{CreateQuery(embed)}"), cancellationToken);
+
+    /// <inheritdoc />
+    /// <inheritdoc cref="FetchListAsync" path="/exception"/>
+    /// <inheritdoc cref="ValidateResponseAsync" path="/exception"/>
+    public ValueTask<IReadOnlyList<CrewInputForm>> FetchCrewInputFormListAsync(CrewInputFormEmbed embed = 0, int page = 1, int perPage = 10, CancellationToken cancellationToken = default)
+    {
+        string query = CreateQuery(embed);
+        return FetchListAsync<CrewInputForm>(
+            $"/v1/crew_input_forms{(string.IsNullOrEmpty(query) ? "?" : $"{query}&")}",
+            page, perPage, cancellationToken);
+    }
+
+    /// <summary>
+    /// <see cref="CrewInputFormEmbed"/>よりクエリパラメータを作成します。
+    /// </summary>
+    private static string CreateQuery(CrewInputFormEmbed embed)
+    {
+        var param = new List<string>(3);
+        if ((embed & CrewInputFormEmbed.CustomFieldTemplateGroup) != 0)
+            param.Add("custom_field_template_group");
+        if ((embed & CrewInputFormEmbed.CustomFieldTemplate) != 0)
+            param.Add("custom_field_template");
+        if ((embed & CrewInputFormEmbed.MailFormat) != 0)
+            param.Add("mail_format");
+        return param.Count == 0 ? "" : $"?embed={string.Join(",", param)}";
+    }
+    #endregion
+
     #region メールフォーマット
     /// <inheritdoc />
     /// <inheritdoc cref="ValidateResponseAsync" path="/exception"/>
