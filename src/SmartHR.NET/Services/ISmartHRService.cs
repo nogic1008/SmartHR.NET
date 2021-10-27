@@ -294,6 +294,28 @@ public interface ISmartHRService
     public ValueTask<EmploymentType> AddEmploymentTypeAsync(string name, EmploymentType.Preset? presetType = default, CancellationToken cancellationToken = default);
     #endregion
 
+    #region 従業員情報収集フォーム
+    /// <summary>
+    /// <paramref name="id"/>と一致する<inheritdoc cref="CrewInputForm" path="/summary/text()"/>を取得します。
+    /// <see href="https://developer.smarthr.jp/api/index.html#!/%E5%BE%93%E6%A5%AD%E5%93%A1%E6%83%85%E5%A0%B1%E5%8F%8E%E9%9B%86%E3%83%95%E3%82%A9%E3%83%BC%E3%83%A0/getV1CrewInputFormsId"/>
+    /// </summary>
+    /// <param name="id"><inheritdoc cref="CrewInputForm" path="/param[@name='Id']"/></param>
+    /// <param name="embed">埋め込むオブジェクト</param>
+    /// <param name="cancellationToken">キャンセル通知を受け取るために他のオブジェクトまたはスレッドで使用できるキャンセル トークン。</param>
+    public ValueTask<CrewInputForm> FetchCrewInputFormAsync(string id, CrewInputFormEmbed embed = 0, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// <inheritdoc cref="CrewInputForm" path="/summary/text()"/>をリストで取得します。
+    /// <see href="https://developer.smarthr.jp/api/index.html#!/%E5%BE%93%E6%A5%AD%E5%93%A1%E6%83%85%E5%A0%B1%E5%8F%8E%E9%9B%86%E3%83%95%E3%82%A9%E3%83%BC%E3%83%A0/getV1CrewInputForms"/>
+    /// </summary>
+    /// <param name="embed">埋め込むオブジェクト</param>
+    /// <param name="page">1から始まるページ番号</param>
+    /// <param name="perPage">1ページあたりに含まれる要素数</param>
+    /// <param name="cancellationToken">キャンセル通知を受け取るために他のオブジェクトまたはスレッドで使用できるキャンセル トークン。</param>
+    /// <returns><inheritdoc cref="CrewInputForm" path="/summary/text()"/>の一覧</returns>
+    public ValueTask<IReadOnlyList<CrewInputForm>> FetchCrewInputFormListAsync(CrewInputFormEmbed embed = 0, int page = 1, int perPage = 10, CancellationToken cancellationToken = default);
+    #endregion
+
     #region メールフォーマット
     /// <summary>
     /// <paramref name="id"/>と一致する<inheritdoc cref="MailFormat" path="/summary/text()"/>を取得します。
