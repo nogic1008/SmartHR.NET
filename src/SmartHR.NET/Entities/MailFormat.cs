@@ -17,8 +17,7 @@ public record MailFormat(
     [property: JsonPropertyName("id")] string Id,
     [property: JsonPropertyName("mail_type")] MailFormat.Kind MailType,
     [property: JsonPropertyName("name")] string Name,
-    // TODO: CrewInputFormオブジェクトの定義
-    [property: JsonPropertyName("crew_input_forms")] IReadOnlyList<JsonElement>? CrewInputForms = null,
+    [property: JsonPropertyName("crew_input_forms")] IReadOnlyList<CrewInputForm>? CrewInputForms = null,
     [property: JsonPropertyName("created_at")] DateTimeOffset? CreatedAt = default,
     [property: JsonPropertyName("updated_at")] DateTimeOffset? UpdatedAt = default
 )
