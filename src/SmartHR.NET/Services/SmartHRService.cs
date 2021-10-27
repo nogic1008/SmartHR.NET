@@ -111,6 +111,54 @@ public class SmartHRService : ISmartHRService
     );
     #endregion
 
+    #region 従業員カスタム項目テンプレート
+    /// <inheritdoc />
+    /// <inheritdoc cref="ValidateResponseAsync" path="/exception"/>
+    public ValueTask DeleteCrewCustomFieldTemplateAsync(string id, CancellationToken cancellationToken = default)
+        => CallDeleteApiAsync($"/v1/crew_custom_field_templates/{id}", cancellationToken);
+
+    /// <inheritdoc />
+    /// <inheritdoc cref="ValidateResponseAsync" path="/exception"/>
+    public ValueTask<CrewCustomFieldTemplate> FetchCrewCustomFieldTemplateAsync(string id, bool includeGroup = false, CancellationToken cancellationToken = default)
+        => CallApiAsync<CrewCustomFieldTemplate>(
+            new(HttpMethod.Get, $"/v1/crew_custom_field_templates/{id}{(includeGroup ? "?embed=group" : "")}"), cancellationToken);
+
+    /// <inheritdoc />
+    /// <inheritdoc cref="ValidateResponseAsync" path="/exception"/>
+    public ValueTask<CrewCustomFieldTemplate> UpdateCrewCustomFieldTemplateAsync(string id, CrewCustomFieldTemplatePayload payload, CancellationToken cancellationToken = default)
+        => CallApiAsync<CrewCustomFieldTemplate>(
+            new(new("PATCH"), $"/v1/crew_custom_field_templates/{id}")
+            {
+                Content = JsonContent.Create(payload, options: _serializerOptions)
+            }, cancellationToken);
+
+    /// <inheritdoc />
+    /// <inheritdoc cref="ValidateResponseAsync" path="/exception"/>
+    public ValueTask<CrewCustomFieldTemplate> ReplaceCrewCustomFieldTemplateAsync(string id, CrewCustomFieldTemplatePayload payload, CancellationToken cancellationToken = default)
+        => CallApiAsync<CrewCustomFieldTemplate>(
+            new(HttpMethod.Put, $"/v1/crew_custom_field_templates/{id}")
+            {
+                Content = JsonContent.Create(payload, options: _serializerOptions)
+            }, cancellationToken);
+
+    /// <inheritdoc />
+    /// <inheritdoc cref="FetchListAsync" path="/exception"/>
+    /// <inheritdoc cref="ValidateResponseAsync" path="/exception"/>
+    public ValueTask<IReadOnlyList<CrewCustomFieldTemplate>> FetchCrewCustomFieldTemplateListAsync(bool includeGroup = false, int page = 1, int perPage = 10, CancellationToken cancellationToken = default)
+        => FetchListAsync<CrewCustomFieldTemplate>(
+            $"/v1/crew_custom_field_templates{(includeGroup ? "?embed=group&" : "?")}",
+            page, perPage, cancellationToken);
+
+    /// <inheritdoc />
+    /// <inheritdoc cref="ValidateResponseAsync" path="/exception"/>
+    public ValueTask<CrewCustomFieldTemplate> AddCrewCustomFieldTemplateAsync(CrewCustomFieldTemplatePayload payload, CancellationToken cancellationToken = default)
+        => CallApiAsync<CrewCustomFieldTemplate>(
+            new(HttpMethod.Post, "/v1/crew_custom_field_templates")
+            {
+                Content = JsonContent.Create(payload, options: _serializerOptions)
+            }, cancellationToken);
+    #endregion
+
     #region 部署
     /// <inheritdoc />
     /// <inheritdoc cref="ValidateResponseAsync" path="/exception"/>
