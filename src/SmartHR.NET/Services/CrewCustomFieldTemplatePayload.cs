@@ -11,7 +11,6 @@ public record CrewCustomFieldTemplatePayload(
     [property: JsonPropertyName("type")] CrewCustomFieldTemplate.Input? Type = default,
     [property: JsonPropertyName("elements")] IReadOnlyList<CrewCustomFieldTemplatePayload.Element>? Elements = null,
     [property: JsonPropertyName("group_id")] string? GroupId = null,
-    [property: JsonPropertyName("group")] CrewCustomFieldTemplateGroup? Group = null,
     [property: JsonPropertyName("hint")] string? Hint = null,
     [property: JsonPropertyName("scale")] int? Scale = default,
     [property: JsonPropertyName("separated_by_commas")] bool? SeparatedByCommas = default,
