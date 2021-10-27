@@ -1037,6 +1037,74 @@ public class SmartHRServiceTest
     }
     #endregion
 
+    #region 従業員情報収集フォーム
+    /// <summary>
+    /// <see cref="SmartHRService.FetchCrewInputFormAsync"/>は、"/v1/crew_input_forms/{id}"にGETリクエストを行う。
+    /// </summary>
+    /// <inheritdoc cref="SmartHRService.FetchCrewInputFormAsync" path="/param[@name='embed']"/>
+    /// <param name="expectedQuery">パラメータクエリ</param>
+    [InlineData(CrewInputFormEmbed.None, "")]
+    [InlineData(CrewInputFormEmbed.MailFormat, "?embed=mail_format")]
+    [InlineData((CrewInputFormEmbed)7, "?embed=custom_field_template_group,custom_field_template,mail_format")]
+    [Theory(DisplayName = $"{nameof(SmartHRService)} > {nameof(SmartHRService.FetchCrewInputFormAsync)} > GET /v1/crew_input_forms/:id をコールする。")]
+    public async Task FetchCrewInputFormAsync_Calls_GetApi(CrewInputFormEmbed embed, string expectedQuery)
+    {
+        // Arrange
+        string id = GenerateRandomString();
+
+        var handler = new Mock<HttpMessageHandler>();
+        handler.SetupRequest(req => req.RequestUri?.GetLeftPart(UriPartial.Authority) == BaseUri)
+            .ReturnsResponse(CrewInputFormTest.Json, "application/json");
+
+        // Act
+        var sut = CreateSut(handler);
+        var entity = await sut.FetchCrewInputFormAsync(id, embed).ConfigureAwait(false);
+
+        // Assert
+        entity.Should().NotBeNull();
+        handler.VerifyRequest(req =>
+        {
+            req.RequestUri.Should().NotBeNull();
+            req.RequestUri!.GetLeftPart(UriPartial.Authority).Should().Be(BaseUri);
+            req.RequestUri.PathAndQuery.Should().Be($"/v1/crew_input_forms/{id}{expectedQuery}");
+            req.Method.Should().Be(HttpMethod.Get);
+            return true;
+        }, Times.Once());
+    }
+
+    /// <summary>
+    /// <see cref="SmartHRService.FetchCrewInputFormListAsync"/>は、"/v1/crew_input_forms"にGETリクエストを行う。
+    /// </summary>
+    /// <inheritdoc cref="SmartHRService.FetchCrewInputFormListAsync" path="/param[@name='embed']"/>
+    /// <param name="expectedQuery">パラメータクエリ</param>
+    [InlineData(CrewInputFormEmbed.None, "page=1&per_page=10")]
+    [InlineData(CrewInputFormEmbed.MailFormat, "embed=mail_format&page=1&per_page=10")]
+    [InlineData((CrewInputFormEmbed)7, "embed=custom_field_template_group,custom_field_template,mail_format&page=1&per_page=10")]
+    [Theory(DisplayName = $"{nameof(SmartHRService)} > {nameof(SmartHRService.FetchCrewInputFormListAsync)} > GET /v1/crew_input_forms をコールする。")]
+    public async Task FetchCrewInputFormListAsync_Calls_GetApi(CrewInputFormEmbed embed, string expectedQuery)
+    {
+        // Arrange
+        var handler = new Mock<HttpMessageHandler>();
+        handler.SetupRequest(req => req.RequestUri?.GetLeftPart(UriPartial.Authority) == BaseUri)
+            .ReturnsResponse($"[{CrewInputFormTest.Json}]", "application/json");
+
+        // Act
+        var sut = CreateSut(handler);
+        var entities = await sut.FetchCrewInputFormListAsync(embed, 1, 10).ConfigureAwait(false);
+
+        // Assert
+        entities.Should().NotBeNullOrEmpty();
+        handler.VerifyRequest((req) =>
+        {
+            req.RequestUri.Should().NotBeNull();
+            req.RequestUri!.GetLeftPart(UriPartial.Authority).Should().Be(BaseUri);
+            req.RequestUri!.PathAndQuery.Should().Be($"/v1/crew_input_forms?{expectedQuery}");
+            req.Method.Should().Be(HttpMethod.Get);
+            return true;
+        }, Times.Once());
+    }
+    #endregion
+
     #region メールフォーマット
     /// <summary>
     /// <see cref="SmartHRService.FetchMailFormatAsync"/>は、"/v1/mail_formats/{id}"にGETリクエストを行う。
