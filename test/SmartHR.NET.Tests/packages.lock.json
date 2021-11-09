@@ -801,12 +801,12 @@
       },
       "System.Net.Http.Json": {
         "type": "Transitive",
-        "resolved": "6.0.0-rc.1.21451.13",
-        "contentHash": "D0rVXaICbX9lkPZLT+RLW8ob9qnZ2jjv2noL1vUDCm0uUJfxZmuRY1p3pHTssc+NtIP/dlX6cWUZjvkRgaf9bA==",
+        "resolved": "6.0.0",
+        "contentHash": "GbIV4y344kGOKjshAKCIDCMUTTW/hyUC42wV0Y5SXEdIbaKBIHBUxZ2MOe4/ZiV2svUAGfQ0c8LGtUExpOI8tg==",
         "dependencies": {
           "System.Buffers": "4.5.1",
           "System.Memory": "4.5.4",
-          "System.Text.Json": "6.0.0-rc.1.21451.13",
+          "System.Text.Json": "6.0.0",
           "System.Threading.Tasks.Extensions": "4.5.4"
         }
       },
@@ -949,8 +949,8 @@
       },
       "System.Runtime.CompilerServices.Unsafe": {
         "type": "Transitive",
-        "resolved": "6.0.0-rc.1.21451.13",
-        "contentHash": "B4MhG+nG2BX3Z0WR6MRG0YHCZKTskVEcP1M2Al3vWmMRgPuZgvAQ/bGP4gZqoVBWxJqzjgK5rs5o6i5XSfg2Jg=="
+        "resolved": "6.0.0",
+        "contentHash": "/iUeP3tq1S0XdNNoMz5C9twLSrM/TH+qElHkXWaPvuNOt+99G75NrV0OS2EqHx5wMN7popYjpc8oTjC1y16DLg=="
       },
       "System.Runtime.Extensions": {
         "type": "Transitive",
@@ -1191,19 +1191,19 @@
       },
       "System.Text.Encodings.Web": {
         "type": "Transitive",
-        "resolved": "6.0.0-rc.1.21451.13",
-        "contentHash": "Zt9cyeZwehAtwpqUEOGHqyi3mfOJd81dFQMjxkhXWpuVYNzkQblFZodIcUhm8E5cLwgQNxkFtwHuaWfQJ1r5EQ==",
+        "resolved": "6.0.0",
+        "contentHash": "Vg8eB5Tawm1IFqj4TVK1czJX89rhFxJo9ELqc/Eiq0eXy13RK00eubyU6TJE6y+GQXjyV5gSfiewDUZjQgSE0w==",
         "dependencies": {
-          "System.Runtime.CompilerServices.Unsafe": "6.0.0-rc.1.21451.13"
+          "System.Runtime.CompilerServices.Unsafe": "6.0.0"
         }
       },
       "System.Text.Json": {
         "type": "Transitive",
-        "resolved": "6.0.0-rc.1.21451.13",
-        "contentHash": "mIdbwmvqkiPRTr5EfzaWs6240nha0OK6rwZPweFWV8C+U3ibuIeq9EYHzyq+cob67eYlb7kNXyeKbiqfgaq1mQ==",
+        "resolved": "6.0.0",
+        "contentHash": "zaJsHfESQvJ11vbXnNlkrR46IaMULk/gHxYsJphzSF+07kTjPHv+Oc14w6QEOfo3Q4hqLJgStUaYB9DBl0TmWg==",
         "dependencies": {
-          "System.Runtime.CompilerServices.Unsafe": "6.0.0-rc.1.21451.13",
-          "System.Text.Encodings.Web": "6.0.0-rc.1.21451.13"
+          "System.Runtime.CompilerServices.Unsafe": "6.0.0",
+          "System.Text.Encodings.Web": "6.0.0"
         }
       },
       "System.Text.RegularExpressions": {
@@ -1354,7 +1354,8 @@
       "smarthr.net": {
         "type": "Project",
         "dependencies": {
-          "System.Net.Http.Json": "6.0.0-rc.1.21451.13"
+          "System.Net.Http.Json": "6.0.0",
+          "System.Text.Json": "6.0.0"
         }
       }
     },
