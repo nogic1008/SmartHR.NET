@@ -644,9 +644,9 @@ public record Crew(
                             break;
                         case "emp_type":
                             reader.Read();
-                            #pragma warning disable CS0618
+#pragma warning disable CS0618
                             crew = crew with { EmpType = JsonSerializer.Deserialize<EmploymentType.Preset?>(ref reader, options) };
-                            #pragma warning restore
+#pragma warning restore
                             break;
                         case "employment_type":
                             reader.Read();
@@ -1010,9 +1010,9 @@ public record Crew(
                             break;
                         case "department":
                             reader.Read();
-                            #pragma warning disable CS0618
+#pragma warning disable CS0618
                             crew = crew with { Department = reader.GetString() };
-                            #pragma warning restore
+#pragma warning restore
                             break;
                         case "departments":
                             reader.Read();
