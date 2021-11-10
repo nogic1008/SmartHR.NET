@@ -13,9 +13,9 @@ namespace SmartHR.NET.Entities;
 public record EmploymentType(
     [property: JsonPropertyName("id")] string Id,
     [property: JsonPropertyName("name")] string Name,
-    [property: JsonPropertyName("preset_type")] EmploymentType.Preset? PresetType,
-    [property: JsonPropertyName("created_at")] DateTimeOffset CreatedAt,
-    [property: JsonPropertyName("updated_at")] DateTimeOffset UpdatedAt
+    [property: JsonPropertyName("preset_type")] EmploymentType.Preset? PresetType = default,
+    [property: JsonPropertyName("created_at")] DateTimeOffset? CreatedAt = default,
+    [property: JsonPropertyName("updated_at")] DateTimeOffset? UpdatedAt = default
 )
 {
     /// <summary>

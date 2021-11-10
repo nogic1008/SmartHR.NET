@@ -1,12 +1,20 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.Serialization;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace SmartHR.NET.Entities;
 
 /// <summary>従業員情報</summary>
 /// <param name="Id">従業員ID</param>
+/// <param name="EmpStatus">在籍状況</param>
+/// <param name="LastName">姓</param>
+/// <param name="FirstName">名</param>
+/// <param name="LastNameYomi">姓 (カタカナ)</param>
+/// <param name="FirstNameYomi">名 (カタカナ)</param>
+/// <param name="Gender">戸籍上の性別</param>
 /// <param name="UserId"><inheritdoc cref="User" path="/param[@name='Id']/text()"/></param>
 /// <param name="BizEstablishmentId">
 /// <inheritdoc cref="Entities.BizEstablishment" path="/param[@name='Id']/text()"/>
@@ -19,17 +27,11 @@ namespace SmartHR.NET.Entities;
 /// <param name="EmpCode">社員番号</param>
 /// <param name="EmpType">プリセット雇用形態(非推奨)</param>
 /// <param name="EmploymentType">雇用形態</param>
-/// <param name="EmpStatus">在籍状況</param>
-/// <param name="LastName">姓</param>
-/// <param name="FirstName">名</param>
-/// <param name="LastNameYomi">姓 (カタカナ)</param>
-/// <param name="FirstNameYomi">名 (カタカナ)</param>
 /// <param name="BusinessLastName">ビジネスネーム：姓</param>
 /// <param name="BusinessFirstName">ビジネスネーム：名</param>
 /// <param name="BusinessLastNameYomi">ビジネスネーム：姓 (カタカナ)</param>
 /// <param name="BusinessFirstNameYomi">ビジネスネーム：名 (カタカナ)</param>
 /// <param name="BirthAt">生年月日</param>
-/// <param name="Gender">戸籍上の性別</param>
 /// <param name="IdentityCardImage1">本人確認書類1</param>
 /// <param name="IdentityCardImage2">本人確認書類2</param>
 /// <param name="TelNumber">電話番号</param>
@@ -133,128 +135,145 @@ namespace SmartHR.NET.Entities;
 /// <param name="CustomFields">カスタム項目</param>
 /// <param name="CreatedAt">作成日</param>
 /// <param name="UpdatedAt">最終更新日</param>
+[JsonConverter(typeof(Crew.CrewJsonConverter))]
 public record Crew(
-    [property: JsonPropertyName("id")] string Id,
-    [property: JsonPropertyName("user_id")] string? UserId,
-    [property: JsonPropertyName("biz_establishment_id")] string? BizEstablishmentId,
-    [property: JsonPropertyName("biz_establishment")] BizEstablishment? BizEstablishment,
-    [property: JsonPropertyName("emp_code")] string? EmpCode,
-    [property: JsonPropertyName("emp_type")][property: Obsolete("雇用形態データの構造変更に伴い、このプロパティは非推奨となりました。今後はEmploymentTypeをご利用ください。")] EmploymentType.Preset? EmpType,
-    [property: JsonPropertyName("employment_type")] EmploymentType? EmploymentType,
-    [property: JsonPropertyName("emp_status")] Crew.EmploymentStatus EmpStatus,
-    [property: JsonPropertyName("last_name")] string LastName,
-    [property: JsonPropertyName("first_name")] string FirstName,
-    [property: JsonPropertyName("last_name_yomi")] string LastNameYomi,
-    [property: JsonPropertyName("first_name_yomi")] string FirstNameYomi,
-    [property: JsonPropertyName("business_last_name")] string? BusinessLastName,
-    [property: JsonPropertyName("business_first_name")] string? BusinessFirstName,
-    [property: JsonPropertyName("business_last_name_yomi")] string? BusinessLastNameYomi,
-    [property: JsonPropertyName("business_first_name_yomi")] string? BusinessFirstNameYomi,
-    [property: JsonPropertyName("birth_at")] string? BirthAt,
-    [property: JsonPropertyName("gender")] Crew.CrewGender Gender,
-    [property: JsonPropertyName("identity_card_image1")] Attachment? IdentityCardImage1,
-    [property: JsonPropertyName("identity_card_image2")] Attachment? IdentityCardImage2,
-    [property: JsonPropertyName("tel_number")] string? TelNumber,
-    [property: JsonPropertyName("address")] Address? Address,
-    [property: JsonPropertyName("address_image")] Attachment? AddressImage,
-    [property: JsonPropertyName("address_head_of_family")] string? AddressHeadOfFamily,
-    [property: JsonPropertyName("address_relation_name")] string? AddressRelationName,
-    [property: JsonPropertyName("email")] string? Email,
-    [property: JsonPropertyName("profile_images")] IReadOnlyList<Crew.Image>? ProfileImages,
-    [property: JsonPropertyName("emergency_relation_name")] string? EmergencyRelationName,
-    [property: JsonPropertyName("emergency_last_name")] string? EmergencyLastName,
-    [property: JsonPropertyName("emergency_first_name")] string? EmergencyFirstName,
-    [property: JsonPropertyName("emergency_last_name_yomi")] string? EmergencyLastNameYomi,
-    [property: JsonPropertyName("emergency_first_name_yomi")] string? EmergencyFirstNameYomi,
-    [property: JsonPropertyName("emergency_tel_number")] string? EmergencyTelNumber,
-    [property: JsonPropertyName("emergency_address")] Address? EmergencyAddress,
-    [property: JsonPropertyName("resident_card_address")] Address? ResidentCardAddress,
-    [property: JsonPropertyName("resident_card_address_head_of_family")] string? ResidentCardAddressHeadOfFamily,
-    [property: JsonPropertyName("resident_card_address_relation_name")] string? ResidentCardAddressRelationName,
-    [property: JsonPropertyName("position")] string? Position,
-    [property: JsonPropertyName("occupation")] string? Occupation,
-    [property: JsonPropertyName("entered_at")] string? EnteredAt,
-    [property: JsonPropertyName("resigned_at")] string? ResignedAt,
-    [property: JsonPropertyName("resigned_reason")] string? ResignedReason,
-    [property: JsonPropertyName("resume1")] Attachment? Resume1,
-    [property: JsonPropertyName("resume2")] Attachment? Resume2,
-    [property: JsonPropertyName("emp_ins_insured_person_number")] string? EmpInsInsuredPersonNumber,
-    [property: JsonPropertyName("emp_ins_insured_person_number_image")] Attachment? EmpInsInsuredPersonNumberImage,
-    [property: JsonPropertyName("emp_ins_insured_person_number_unknown_reason_type")] Crew.InsuredPersonNumberUnknownReason? EmpInsInsuredPersonNumberUnknownReasonType,
-    [property: JsonPropertyName("emp_ins_qualified_at")] string? EmpInsQualifiedAt,
-    [property: JsonPropertyName("emp_ins_disqualified_at")] string? EmpInsDisqualifiedAt,
-    [property: JsonPropertyName("previous_workplace")] string? PreviousWorkplace,
-    [property: JsonPropertyName("previous_employment_start_on")] string? PreviousEmploymentStartOn,
-    [property: JsonPropertyName("previous_employment_end_on")] string? PreviousEmploymentEndOn,
-    [property: JsonPropertyName("soc_ins_insured_person_number")] int? SocInsInsuredPersonNumber,
-    [property: JsonPropertyName("hel_ins_insured_person_number")] int? HelInsInsuredPersonNumber,
-    [property: JsonPropertyName("basic_pension_number")] string? BasicPensionNumber,
-    [property: JsonPropertyName("basic_pension_number_image")] Attachment? BasicPensionNumberImage,
-    [property: JsonPropertyName("first_enrolling_in_emp_pns_ins_flag")] bool? FirstEnrollingInEmpPnsInsFlag,
-    [property: JsonPropertyName("basic_pension_number_unknown_reason_type")] Crew.BasicPensionNumberUnknownReason? BasicPensionNumberUnknownReasonType,
-    [property: JsonPropertyName("first_workplace")] string? FirstWorkplace,
-    [property: JsonPropertyName("first_workplace_address_text")] string? FirstWorkplaceAddressText,
-    [property: JsonPropertyName("first_employment_start_on")] string? FirstEmploymentStartOn,
-    [property: JsonPropertyName("first_employment_end_on")] string? FirstEmploymentEndOn,
-    [property: JsonPropertyName("last_workplace")] string? LastWorkplace,
-    [property: JsonPropertyName("last_workplace_address_text")] string? LastWorkplaceAddressText,
-    [property: JsonPropertyName("last_employment_start_on")] string? LastEmploymentStartOn,
-    [property: JsonPropertyName("last_employment_end_on")] string? LastEmploymentEndOn,
-    [property: JsonPropertyName("soc_ins_qualified_at")] string? SocInsQualifiedAt,
-    [property: JsonPropertyName("soc_ins_disqualified_at")] string? SocInsDisqualifiedAt,
-    [property: JsonPropertyName("having_spouse")] bool? HavingSpouse,
-    [property: JsonPropertyName("spouse_yearly_income")] int? SpouseYearlyIncome,
-    [property: JsonPropertyName("monthly_income_currency")] int? MonthlyIncomeCurrency,
-    [property: JsonPropertyName("monthly_income_goods")] int? MonthlyIncomeGoods,
-    [property: JsonPropertyName("payment_period")] PaymentPeriod? PaymentPeriod,
-    [property: JsonPropertyName("monthly_standard_income_updated_at")] string? MonthlyStandardIncomeUpdatedAt,
-    [property: JsonPropertyName("monthly_standard_income_hel")] int? MonthlyStandardIncomeHel,
-    [property: JsonPropertyName("monthly_standard_income_pns")] int? MonthlyStandardIncomePns,
-    [property: JsonPropertyName("nearest_station_and_line")] string? NearestStationAndLine,
-    [property: JsonPropertyName("commutation_1_expenses")] int? Commutation_1Expenses,
-    [property: JsonPropertyName("commutation_1_period")] Crew.CommutationPeriod? Commutation_1Period,
-    [property: JsonPropertyName("commutation_1_single_fare")] int? Commutation_1SingleFare,
-    [property: JsonPropertyName("commutation_2_expenses")] int? Commutation_2Expenses,
-    [property: JsonPropertyName("commutation_2_period")] Crew.CommutationPeriod? Commutation_2Period,
-    [property: JsonPropertyName("commutation_2_single_fare")] int? Commutation_2SingleFare,
-    [property: JsonPropertyName("foreign_resident_last_name")] string? ForeignResidentLastName,
-    [property: JsonPropertyName("foreign_resident_first_name")] string? ForeignResidentFirstName,
-    [property: JsonPropertyName("foreign_resident_middle_name")] string? ForeignResidentMiddleName,
-    [property: JsonPropertyName("foreign_resident_card_number")] string? ForeignResidentCardNumber,
-    [property: JsonPropertyName("foreign_resident_card_image1")] Attachment? ForeignResidentCardImage1,
-    [property: JsonPropertyName("foreign_resident_card_image2")] Attachment? ForeignResidentCardImage2,
-    [property: JsonPropertyName("nationality_code")] string? NationalityCode,
-    [property: JsonPropertyName("resident_status_type")] string? ResidentStatusType,
-    [property: JsonPropertyName("resident_status_other_reason")] string? ResidentStatusOtherReason,
-    [property: JsonPropertyName("resident_end_at")] string? ResidentEndAt,
-    [property: JsonPropertyName("having_ex_activity_permission")] Crew.ExActivityPermission? HavingExActivityPermission,
-    [property: JsonPropertyName("other_be_workable_type")] Crew.WorkableType? OtherBeWorkableType,
-    [property: JsonPropertyName("bank_accounts")] IReadOnlyList<Crew.BankAccount>? BankAccounts,
-    [property: JsonPropertyName("department")][property: Obsolete("部署データの構造変更に伴い、このプロパティは非推奨となりました。今後はDepartmentsをご利用ください。")] string? Department,
-    [property: JsonPropertyName("departments")] IReadOnlyList<Department>? Departments,
-    [property: JsonPropertyName("contract_type")] Crew.Contract ContractType,
-    [property: JsonPropertyName("contract_start_on")] string? ContractStartOn,
-    [property: JsonPropertyName("contract_end_on")] string? ContractEndOn,
-    [property: JsonPropertyName("contract_renewal_type")] Crew.ContractRenewal? ContractRenewalType,
-    [property: JsonPropertyName("handicapped_type")] Crew.Handicapped? HandicappedType,
-    [property: JsonPropertyName("handicapped_note_type")] string? HandicappedNoteType,
-    [property: JsonPropertyName("handicapped_note_delivery_at")] string? HandicappedNoteDeliveryAt,
-    [property: JsonPropertyName("handicapped_image")] Attachment? HandicappedImage,
-    [property: JsonPropertyName("working_student_flag")] bool? WorkingStudentFlag,
-    [property: JsonPropertyName("school_name")] string? SchoolName,
-    [property: JsonPropertyName("student_card_image")] Attachment? StudentCardImage,
-    [property: JsonPropertyName("enrolled_at")] string? EnrolledAt,
-    [property: JsonPropertyName("working_student_income")] int? WorkingStudentIncome,
-    [property: JsonPropertyName("employment_income_flag")] bool? EmploymentIncomeFlag,
-    [property: JsonPropertyName("business_income_flag")] bool? BusinessIncomeFlag,
-    [property: JsonPropertyName("devidend_income_flag")] bool? DevidendIncomeFlag,
-    [property: JsonPropertyName("estate_income_flag")] bool? EstateIncomeFlag,
-    [property: JsonPropertyName("widow_type")] Crew.Widow? WidowType,
-    [property: JsonPropertyName("widow_reason_type")] Crew.WidowReason WidowReasonType,
-    [property: JsonPropertyName("widow_memo")] string? WidowMemo,
-    [property: JsonPropertyName("custom_fields")] IReadOnlyList<Crew.CustomField>? CustomFields,
-    [property: JsonPropertyName("created_at")] DateTimeOffset CreatedAt,
-    [property: JsonPropertyName("updated_at")] DateTimeOffset UpdatedAt
+    string Id,
+    Crew.EmploymentStatus EmpStatus,
+    string LastName,
+    string FirstName,
+    string LastNameYomi,
+    string FirstNameYomi,
+    Crew.CrewGender Gender,
+    string? UserId = null,
+    string? BizEstablishmentId = null,
+    BizEstablishment? BizEstablishment = null,
+    string? EmpCode = null,
+    [property: Obsolete("雇用形態データの構造変更に伴い、このプロパティは非推奨となりました。今後はEmploymentTypeをご利用ください。")] EmploymentType.Preset? EmpType = default,
+    EmploymentType? EmploymentType = null,
+    string? BusinessLastName = null,
+    string? BusinessFirstName = null,
+    string? BusinessLastNameYomi = null,
+    string? BusinessFirstNameYomi = null,
+    // TODO: DateOnly型に変更
+    string? BirthAt = null,
+    Attachment? IdentityCardImage1 = null,
+    Attachment? IdentityCardImage2 = null,
+    string? TelNumber = null,
+    Address? Address = null,
+    Attachment? AddressImage = null,
+    string? AddressHeadOfFamily = null,
+    string? AddressRelationName = null,
+    string? Email = null,
+    IReadOnlyList<Crew.Image>? ProfileImages = null,
+    string? EmergencyRelationName = null,
+    string? EmergencyLastName = null,
+    string? EmergencyFirstName = null,
+    string? EmergencyLastNameYomi = null,
+    string? EmergencyFirstNameYomi = null,
+    string? EmergencyTelNumber = null,
+    Address? EmergencyAddress = null,
+    Address? ResidentCardAddress = null,
+    string? ResidentCardAddressHeadOfFamily = null,
+    string? ResidentCardAddressRelationName = null,
+    string? Position = null,
+    string? Occupation = null,
+    // TODO: DateOnly型に変更
+    string? EnteredAt = null,
+    string? ResignedAt = null,
+    string? ResignedReason = null,
+    Attachment? Resume1 = null,
+    Attachment? Resume2 = null,
+    string? EmpInsInsuredPersonNumber = null,
+    Attachment? EmpInsInsuredPersonNumberImage = null,
+    Crew.InsuredPersonNumberUnknownReason? EmpInsInsuredPersonNumberUnknownReasonType = default,
+    // TODO: DateOnly型に変更
+    string? EmpInsQualifiedAt = null,
+    // TODO: DateOnly型に変更
+    string? EmpInsDisqualifiedAt = null,
+    string? PreviousWorkplace = null,
+    string? PreviousEmploymentStartOn = null,
+    string? PreviousEmploymentEndOn = null,
+    int? SocInsInsuredPersonNumber = default,
+    int? HelInsInsuredPersonNumber = default,
+    string? BasicPensionNumber = null,
+    Attachment? BasicPensionNumberImage = null,
+    bool? FirstEnrollingInEmpPnsInsFlag = default,
+    Crew.BasicPensionNumberUnknownReason? BasicPensionNumberUnknownReasonType = default,
+    string? FirstWorkplace = null,
+    string? FirstWorkplaceAddressText = null,
+    // TODO: DateOnly型に変更
+    string? FirstEmploymentStartOn = null,
+    // TODO: DateOnly型に変更
+    string? FirstEmploymentEndOn = null,
+    string? LastWorkplace = null,
+    string? LastWorkplaceAddressText = null,
+    // TODO: DateOnly型に変更
+    string? LastEmploymentStartOn = null,
+    // TODO: DateOnly型に変更
+    string? LastEmploymentEndOn = null,
+    // TODO: DateOnly型に変更
+    string? SocInsQualifiedAt = null,
+    // TODO: DateOnly型に変更
+    string? SocInsDisqualifiedAt = null,
+    bool? HavingSpouse = default,
+    int? SpouseYearlyIncome = default,
+    int? MonthlyIncomeCurrency = default,
+    int? MonthlyIncomeGoods = default,
+    PaymentPeriod? PaymentPeriod = null,
+    // TODO: DateOnly型に変更
+    string? MonthlyStandardIncomeUpdatedAt = null,
+    int? MonthlyStandardIncomeHel = default,
+    int? MonthlyStandardIncomePns = default,
+    string? NearestStationAndLine = null,
+    int? Commutation_1Expenses = default,
+    Crew.CommutationPeriod? Commutation_1Period = default,
+    int? Commutation_1SingleFare = default,
+    int? Commutation_2Expenses = default,
+    Crew.CommutationPeriod? Commutation_2Period = default,
+    int? Commutation_2SingleFare = default,
+    string? ForeignResidentLastName = null,
+    string? ForeignResidentFirstName = null,
+    string? ForeignResidentMiddleName = null,
+    string? ForeignResidentCardNumber = null,
+    Attachment? ForeignResidentCardImage1 = null,
+    Attachment? ForeignResidentCardImage2 = null,
+    string? NationalityCode = null,
+    string? ResidentStatusType = null,
+    string? ResidentStatusOtherReason = null,
+    // TODO: DateOnly型に変更
+    string? ResidentEndAt = null,
+    Crew.ExActivityPermission? HavingExActivityPermission = default,
+    Crew.WorkableType? OtherBeWorkableType = default,
+    IReadOnlyList<Crew.BankAccount>? BankAccounts = null,
+    [property: Obsolete("部署データの構造変更に伴い、このプロパティは非推奨となりました。今後はDepartmentsをご利用ください。")] string? Department = null,
+    IReadOnlyList<Department>? Departments = null,
+    Crew.Contract? ContractType = default,
+    // TODO: DateOnly型に変更
+    string? ContractStartOn = null,
+    // TODO: DateOnly型に変更
+    string? ContractEndOn = null,
+    Crew.ContractRenewal? ContractRenewalType = default,
+    Crew.Handicapped? HandicappedType = default,
+    string? HandicappedNoteType = null,
+    // TODO: DateOnly型に変更
+    string? HandicappedNoteDeliveryAt = null,
+    Attachment? HandicappedImage = null,
+    bool? WorkingStudentFlag = default,
+    string? SchoolName = null,
+    Attachment? StudentCardImage = null,
+    // TODO: DateOnly型に変更
+    string? EnrolledAt = null,
+    int? WorkingStudentIncome = default,
+    bool? EmploymentIncomeFlag = default,
+    bool? BusinessIncomeFlag = default,
+    bool? DevidendIncomeFlag = default,
+    bool? EstateIncomeFlag = default,
+    Crew.Widow? WidowType = default,
+    Crew.WidowReason? WidowReasonType = default,
+    string? WidowMemo = null,
+    IReadOnlyList<Crew.CustomField>? CustomFields = null,
+    DateTimeOffset? CreatedAt = default,
+    DateTimeOffset? UpdatedAt = default
 )
 {
     /// <summary><inheritdoc cref="Crew" path="/param[@name='EmpStatus']/text()"/></summary>
@@ -548,8 +567,578 @@ public record Crew(
     }
 
     /// <summary><inheritdoc cref="Crew" path="/param[@name='BankAccounts']/text()"/></summary>
-    public record BankAccount();
+    /// <param name="Code">銀行コード</param>
+    /// <param name="BranchCode">支店コード</param>
+    /// <param name="AccountType">預金種別</param>
+    /// <param name="AccountNumber">口座番号</param>
+    /// <param name="AccountHolderName">名義 (カタカナ)</param>
+    /// <param name="BookImage">口座情報を確認できる画像</param>
+    /// <param name="BankAccountSettingId"><inheritdoc cref="BankAccountSetting" path="/param[@name='Id']/text()"/></param>
+    public record BankAccount(
+        [property: JsonPropertyName("bank_code")] string Code,
+        [property: JsonPropertyName("bank_branch_code")] string BranchCode,
+        [property: JsonPropertyName("account_type")] BankAccount.Type? AccountType,
+        [property: JsonPropertyName("account_number")] string AccountNumber,
+        [property: JsonPropertyName("account_holder_nam")] string AccountHolderName,
+        [property: JsonPropertyName("bankbook_image")] AttachmentParams? BookImage = default,
+        [property: JsonPropertyName("bank_account_setting_id")] string? BankAccountSettingId = null
+    )
+    {
+        /// <summary><inheritdoc cref="BankAccount" path="/param[@name='AccountType']/text()"/></summary>
+        [JsonConverter(typeof(JsonStringEnumConverterEx<BankAccount.Type>))]
+        public enum Type
+        {
+            [EnumMember(Value = "saving")] Saving,
+            [EnumMember(Value = "checking")] Checking,
+            [EnumMember(Value = "deposit")] Deposit,
+        }
+    }
 
     /// <summary><inheritdoc cref="Crew" path="/param[@name='CustomFields']/text()"/></summary>
-    public record CustomField();
+    /// <param name="Value">設定値。テンプレート種別に応じた形式になります。</param>
+    /// <param name="Template">カスタム項目テンプレート</param>
+    public record CustomField(
+        [property: JsonPropertyName("value")] JsonElement? Value,
+        [property: JsonPropertyName("template")] CrewCustomFieldTemplate Template
+    );
+
+    [ExcludeFromCodeCoverage]
+    private class CrewJsonConverter : JsonConverter<Crew>
+    {
+        public override Crew? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        {
+            if (reader.TokenType == JsonTokenType.Null)
+                return null;
+            if (reader.TokenType != JsonTokenType.StartObject)
+                throw new JsonException();
+            var crew = new Crew(null!, (EmploymentStatus)(-1), null!, null!, null!, null!, (CrewGender)(-1));
+
+            while (reader.Read())
+            {
+                if (reader.TokenType == JsonTokenType.EndObject)
+                    break;
+
+                if (reader.TokenType == JsonTokenType.PropertyName)
+                {
+                    switch (reader.GetString())
+                    {
+                        case "id":
+                            reader.Read();
+                            crew = crew with { Id = reader.GetString()! };
+                            break;
+                        case "user_id":
+                            reader.Read();
+                            crew = crew with { UserId = reader.GetString() };
+                            break;
+                        case "biz_establishment_id":
+                            reader.Read();
+                            crew = crew with { BizEstablishmentId = reader.GetString() };
+                            break;
+                        case "biz_establishment":
+                            reader.Read();
+                            crew = crew with { BizEstablishment = JsonSerializer.Deserialize<BizEstablishment?>(ref reader, options) };
+                            break;
+                        case "emp_code":
+                            reader.Read();
+                            crew = crew with { EmpCode = reader.GetString() };
+                            break;
+                        case "emp_type":
+                            reader.Read();
+                            #pragma warning disable CS0618
+                            crew = crew with { EmpType = JsonSerializer.Deserialize<EmploymentType.Preset?>(ref reader, options) };
+                            #pragma warning restore
+                            break;
+                        case "employment_type":
+                            reader.Read();
+                            crew = crew with { EmploymentType = JsonSerializer.Deserialize<EmploymentType?>(ref reader, options) };
+                            break;
+                        case "emp_status":
+                            reader.Read();
+                            crew = crew with { EmpStatus = JsonSerializer.Deserialize<EmploymentStatus>(ref reader, options) };
+                            break;
+                        case "last_name":
+                            reader.Read();
+                            crew = crew with { LastName = reader.GetString()! };
+                            break;
+                        case "first_name":
+                            reader.Read();
+                            crew = crew with { FirstName = reader.GetString()! };
+                            break;
+                        case "last_name_yomi":
+                            reader.Read();
+                            crew = crew with { LastNameYomi = reader.GetString()! };
+                            break;
+                        case "first_name_yomi":
+                            reader.Read();
+                            crew = crew with { FirstNameYomi = reader.GetString()! };
+                            break;
+                        case "business_last_name":
+                            reader.Read();
+                            crew = crew with { BusinessLastName = reader.GetString() };
+                            break;
+                        case "business_first_name":
+                            reader.Read();
+                            crew = crew with { BusinessFirstName = reader.GetString() };
+                            break;
+                        case "business_last_name_yomi":
+                            reader.Read();
+                            crew = crew with { BusinessLastNameYomi = reader.GetString() };
+                            break;
+                        case "business_first_name_yomi":
+                            reader.Read();
+                            crew = crew with { BusinessFirstNameYomi = reader.GetString() };
+                            break;
+                        case "birth_at":
+                            reader.Read();
+                            crew = crew with { BirthAt = reader.GetString() };
+                            break;
+                        case "gender":
+                            reader.Read();
+                            crew = crew with { Gender = JsonSerializer.Deserialize<CrewGender>(ref reader, options) };
+                            break;
+                        case "identity_card_image1":
+                            reader.Read();
+                            crew = crew with { IdentityCardImage1 = JsonSerializer.Deserialize<Attachment?>(ref reader, options) };
+                            break;
+                        case "identity_card_image2":
+                            reader.Read();
+                            crew = crew with { IdentityCardImage2 = JsonSerializer.Deserialize<Attachment?>(ref reader, options) };
+                            break;
+                        case "tel_number":
+                            reader.Read();
+                            crew = crew with { TelNumber = reader.GetString() };
+                            break;
+                        case "address":
+                            reader.Read();
+                            crew = crew with { Address = JsonSerializer.Deserialize<Address?>(ref reader, options) };
+                            break;
+                        case "address_image":
+                            reader.Read();
+                            crew = crew with { AddressImage = JsonSerializer.Deserialize<Attachment?>(ref reader, options) };
+                            break;
+                        case "address_head_of_family":
+                            reader.Read();
+                            crew = crew with { AddressHeadOfFamily = reader.GetString() };
+                            break;
+                        case "address_relation_name":
+                            reader.Read();
+                            crew = crew with { AddressRelationName = reader.GetString() };
+                            break;
+                        case "email":
+                            reader.Read();
+                            crew = crew with { Email = reader.GetString() };
+                            break;
+                        case "profile_images":
+                            reader.Read();
+                            crew = crew with { ProfileImages = JsonSerializer.Deserialize<IReadOnlyList<Crew.Image>?>(ref reader, options) };
+                            break;
+                        case "emergency_relation_name":
+                            reader.Read();
+                            crew = crew with { EmergencyRelationName = reader.GetString() };
+                            break;
+                        case "emergency_last_name":
+                            reader.Read();
+                            crew = crew with { EmergencyLastName = reader.GetString() };
+                            break;
+                        case "emergency_first_name":
+                            reader.Read();
+                            crew = crew with { EmergencyFirstName = reader.GetString() };
+                            break;
+                        case "emergency_last_name_yomi":
+                            reader.Read();
+                            crew = crew with { EmergencyLastNameYomi = reader.GetString() };
+                            break;
+                        case "emergency_first_name_yomi":
+                            reader.Read();
+                            crew = crew with { EmergencyFirstNameYomi = reader.GetString() };
+                            break;
+                        case "emergency_tel_number":
+                            reader.Read();
+                            crew = crew with { EmergencyTelNumber = reader.GetString() };
+                            break;
+                        case "emergency_address":
+                            reader.Read();
+                            crew = crew with { EmergencyAddress = JsonSerializer.Deserialize<Address?>(ref reader, options) };
+                            break;
+                        case "resident_card_address":
+                            reader.Read();
+                            crew = crew with { ResidentCardAddress = JsonSerializer.Deserialize<Address?>(ref reader, options) };
+                            break;
+                        case "resident_card_address_head_of_family":
+                            reader.Read();
+                            crew = crew with { ResidentCardAddressHeadOfFamily = reader.GetString() };
+                            break;
+                        case "resident_card_address_relation_name":
+                            reader.Read();
+                            crew = crew with { ResidentCardAddressRelationName = reader.GetString() };
+                            break;
+                        case "position":
+                            reader.Read();
+                            crew = crew with { Position = reader.GetString() };
+                            break;
+                        case "occupation":
+                            reader.Read();
+                            crew = crew with { Occupation = reader.GetString() };
+                            break;
+                        case "entered_at":
+                            reader.Read();
+                            crew = crew with { EnteredAt = reader.GetString() };
+                            break;
+                        case "resigned_at":
+                            reader.Read();
+                            crew = crew with { ResignedAt = reader.GetString() };
+                            break;
+                        case "resigned_reason":
+                            reader.Read();
+                            crew = crew with { ResignedReason = reader.GetString() };
+                            break;
+                        case "resume1":
+                            reader.Read();
+                            crew = crew with { Resume1 = JsonSerializer.Deserialize<Attachment?>(ref reader, options) };
+                            break;
+                        case "resume2":
+                            reader.Read();
+                            crew = crew with { Resume2 = JsonSerializer.Deserialize<Attachment?>(ref reader, options) };
+                            break;
+                        case "emp_ins_insured_person_number":
+                            reader.Read();
+                            crew = crew with { EmpInsInsuredPersonNumber = reader.GetString() };
+                            break;
+                        case "emp_ins_insured_person_number_image":
+                            reader.Read();
+                            crew = crew with { EmpInsInsuredPersonNumberImage = JsonSerializer.Deserialize<Attachment?>(ref reader, options) };
+                            break;
+                        case "emp_ins_insured_person_number_unknown_reason_type":
+                            reader.Read();
+                            crew = crew with { EmpInsInsuredPersonNumberUnknownReasonType = JsonSerializer.Deserialize<InsuredPersonNumberUnknownReason?>(ref reader, options) };
+                            break;
+                        case "emp_ins_qualified_at":
+                            reader.Read();
+                            crew = crew with { EmpInsQualifiedAt = reader.GetString() };
+                            break;
+                        case "emp_ins_disqualified_at":
+                            reader.Read();
+                            crew = crew with { EmpInsDisqualifiedAt = reader.GetString() };
+                            break;
+                        case "previous_workplace":
+                            reader.Read();
+                            crew = crew with { PreviousWorkplace = reader.GetString() };
+                            break;
+                        case "previous_employment_start_on":
+                            reader.Read();
+                            crew = crew with { PreviousEmploymentStartOn = reader.GetString() };
+                            break;
+                        case "previous_employment_end_on":
+                            reader.Read();
+                            crew = crew with { PreviousEmploymentEndOn = reader.GetString() };
+                            break;
+                        case "soc_ins_insured_person_number":
+                            reader.Read();
+                            crew = crew with { SocInsInsuredPersonNumber = JsonSerializer.Deserialize<int?>(ref reader, options) };
+                            break;
+                        case "hel_ins_insured_person_number":
+                            reader.Read();
+                            crew = crew with { HelInsInsuredPersonNumber = JsonSerializer.Deserialize<int?>(ref reader, options) };
+                            break;
+                        case "basic_pension_number":
+                            reader.Read();
+                            crew = crew with { BasicPensionNumber = reader.GetString() };
+                            break;
+                        case "basic_pension_number_image":
+                            reader.Read();
+                            crew = crew with { BasicPensionNumberImage = JsonSerializer.Deserialize<Attachment?>(ref reader, options) };
+                            break;
+                        case "first_enrolling_in_emp_pns_ins_flag":
+                            reader.Read();
+                            crew = crew with { FirstEnrollingInEmpPnsInsFlag = JsonSerializer.Deserialize<bool?>(ref reader, options) };
+                            break;
+                        case "basic_pension_number_unknown_reason_type":
+                            reader.Read();
+                            crew = crew with { BasicPensionNumberUnknownReasonType = JsonSerializer.Deserialize<Crew.BasicPensionNumberUnknownReason?>(ref reader, options) };
+                            break;
+                        case "first_workplace":
+                            reader.Read();
+                            crew = crew with { FirstWorkplace = reader.GetString() };
+                            break;
+                        case "first_workplace_address_text":
+                            reader.Read();
+                            crew = crew with { FirstWorkplaceAddressText = reader.GetString() };
+                            break;
+                        case "first_employment_start_on":
+                            reader.Read();
+                            crew = crew with { FirstEmploymentStartOn = reader.GetString() };
+                            break;
+                        case "first_employment_end_on":
+                            reader.Read();
+                            crew = crew with { FirstEmploymentEndOn = reader.GetString() };
+                            break;
+                        case "last_workplace":
+                            reader.Read();
+                            crew = crew with { LastWorkplace = reader.GetString() };
+                            break;
+                        case "last_workplace_address_text":
+                            reader.Read();
+                            crew = crew with { LastWorkplaceAddressText = reader.GetString() };
+                            break;
+                        case "last_employment_start_on":
+                            reader.Read();
+                            crew = crew with { LastEmploymentStartOn = reader.GetString() };
+                            break;
+                        case "last_employment_end_on":
+                            reader.Read();
+                            crew = crew with { LastEmploymentEndOn = reader.GetString() };
+                            break;
+                        case "soc_ins_qualified_at":
+                            reader.Read();
+                            crew = crew with { SocInsQualifiedAt = reader.GetString() };
+                            break;
+                        case "soc_ins_disqualified_at":
+                            reader.Read();
+                            crew = crew with { SocInsDisqualifiedAt = reader.GetString() };
+                            break;
+                        case "having_spouse":
+                            reader.Read();
+                            crew = crew with { HavingSpouse = JsonSerializer.Deserialize<bool?>(ref reader, options) };
+                            break;
+                        case "spouse_yearly_income":
+                            reader.Read();
+                            crew = crew with { SpouseYearlyIncome = JsonSerializer.Deserialize<int?>(ref reader, options) };
+                            break;
+                        case "monthly_income_currency":
+                            reader.Read();
+                            crew = crew with { MonthlyIncomeCurrency = JsonSerializer.Deserialize<int?>(ref reader, options) };
+                            break;
+                        case "monthly_income_goods":
+                            reader.Read();
+                            crew = crew with { MonthlyIncomeGoods = JsonSerializer.Deserialize<int?>(ref reader, options) };
+                            break;
+                        case "payment_period":
+                            reader.Read();
+                            crew = crew with { PaymentPeriod = JsonSerializer.Deserialize<PaymentPeriod?>(ref reader, options) };
+                            break;
+                        case "monthly_standard_income_updated_at":
+                            reader.Read();
+                            crew = crew with { MonthlyStandardIncomeUpdatedAt = reader.GetString() };
+                            break;
+                        case "monthly_standard_income_hel":
+                            reader.Read();
+                            crew = crew with { MonthlyStandardIncomeHel = JsonSerializer.Deserialize<int?>(ref reader, options) };
+                            break;
+                        case "monthly_standard_income_pns":
+                            reader.Read();
+                            crew = crew with { MonthlyStandardIncomePns = JsonSerializer.Deserialize<int?>(ref reader, options) };
+                            break;
+                        case "nearest_station_and_line":
+                            reader.Read();
+                            crew = crew with { NearestStationAndLine = reader.GetString() };
+                            break;
+                        case "commutation_1_expenses":
+                            reader.Read();
+                            crew = crew with { Commutation_1Expenses = JsonSerializer.Deserialize<int?>(ref reader, options) };
+                            break;
+                        case "commutation_1_period":
+                            reader.Read();
+                            crew = crew with { Commutation_1Period = JsonSerializer.Deserialize<Crew.CommutationPeriod?>(ref reader, options) };
+                            break;
+                        case "commutation_1_single_fare":
+                            reader.Read();
+                            crew = crew with { Commutation_1SingleFare = JsonSerializer.Deserialize<int?>(ref reader, options) };
+                            break;
+                        case "commutation_2_expenses":
+                            reader.Read();
+                            crew = crew with { Commutation_2Expenses = JsonSerializer.Deserialize<int?>(ref reader, options) };
+                            break;
+                        case "commutation_2_period":
+                            reader.Read();
+                            crew = crew with { Commutation_2Period = JsonSerializer.Deserialize<Crew.CommutationPeriod?>(ref reader, options) };
+                            break;
+                        case "commutation_2_single_fare":
+                            reader.Read();
+                            crew = crew with { Commutation_2SingleFare = JsonSerializer.Deserialize<int?>(ref reader, options) };
+                            break;
+                        case "foreign_resident_last_name":
+                            reader.Read();
+                            crew = crew with { ForeignResidentLastName = reader.GetString() };
+                            break;
+                        case "foreign_resident_first_name":
+                            reader.Read();
+                            crew = crew with { ForeignResidentFirstName = reader.GetString() };
+                            break;
+                        case "foreign_resident_middle_name":
+                            reader.Read();
+                            crew = crew with { ForeignResidentMiddleName = reader.GetString() };
+                            break;
+                        case "foreign_resident_card_number":
+                            reader.Read();
+                            crew = crew with { ForeignResidentCardNumber = reader.GetString() };
+                            break;
+                        case "foreign_resident_card_image1":
+                            reader.Read();
+                            crew = crew with { ForeignResidentCardImage1 = JsonSerializer.Deserialize<Attachment?>(ref reader, options) };
+                            break;
+                        case "foreign_resident_card_image2":
+                            reader.Read();
+                            crew = crew with { ForeignResidentCardImage2 = JsonSerializer.Deserialize<Attachment?>(ref reader, options) };
+                            break;
+                        case "nationality_code":
+                            reader.Read();
+                            crew = crew with { NationalityCode = reader.GetString() };
+                            break;
+                        case "resident_status_type":
+                            reader.Read();
+                            crew = crew with { ResidentStatusType = reader.GetString() };
+                            break;
+                        case "resident_status_other_reason":
+                            reader.Read();
+                            crew = crew with { ResidentStatusOtherReason = reader.GetString() };
+                            break;
+                        case "resident_end_at":
+                            reader.Read();
+                            crew = crew with { ResidentEndAt = reader.GetString() };
+                            break;
+                        case "having_ex_activity_permission":
+                            reader.Read();
+                            crew = crew with { HavingExActivityPermission = JsonSerializer.Deserialize<Crew.ExActivityPermission?>(ref reader, options) };
+                            break;
+                        case "other_be_workable_type":
+                            reader.Read();
+                            crew = crew with { OtherBeWorkableType = JsonSerializer.Deserialize<Crew.WorkableType?>(ref reader, options) };
+                            break;
+                        case "bank_accounts":
+                            reader.Read();
+                            crew = crew with { BankAccounts = JsonSerializer.Deserialize<IReadOnlyList<Crew.BankAccount>?>(ref reader, options) };
+                            break;
+                        case "department":
+                            reader.Read();
+                            #pragma warning disable CS0618
+                            crew = crew with { Department = reader.GetString() };
+                            #pragma warning restore
+                            break;
+                        case "departments":
+                            reader.Read();
+                            crew = crew with { Departments = JsonSerializer.Deserialize<IReadOnlyList<Department>?>(ref reader, options) };
+                            break;
+                        case "contract_type":
+                            reader.Read();
+                            crew = crew with { ContractType = JsonSerializer.Deserialize<Crew.Contract?>(ref reader, options) };
+                            break;
+                        case "contract_start_on":
+                            reader.Read();
+                            crew = crew with { ContractStartOn = reader.GetString() };
+                            break;
+                        case "contract_end_on":
+                            reader.Read();
+                            crew = crew with { ContractEndOn = reader.GetString() };
+                            break;
+                        case "contract_renewal_type":
+                            reader.Read();
+                            crew = crew with { ContractRenewalType = JsonSerializer.Deserialize<Crew.ContractRenewal?>(ref reader, options) };
+                            break;
+                        case "handicapped_type":
+                            reader.Read();
+                            crew = crew with { HandicappedType = JsonSerializer.Deserialize<Crew.Handicapped?>(ref reader, options) };
+                            break;
+                        case "handicapped_note_type":
+                            reader.Read();
+                            crew = crew with { HandicappedNoteType = reader.GetString() };
+                            break;
+                        case "handicapped_note_delivery_at":
+                            reader.Read();
+                            crew = crew with { HandicappedNoteDeliveryAt = reader.GetString() };
+                            break;
+                        case "handicapped_image":
+                            reader.Read();
+                            crew = crew with { HandicappedImage = JsonSerializer.Deserialize<Attachment?>(ref reader, options) };
+                            break;
+                        case "working_student_flag":
+                            reader.Read();
+                            crew = crew with { WorkingStudentFlag = JsonSerializer.Deserialize<bool?>(ref reader, options) };
+                            break;
+                        case "school_name":
+                            reader.Read();
+                            crew = crew with { SchoolName = reader.GetString() };
+                            break;
+                        case "student_card_image":
+                            reader.Read();
+                            crew = crew with { StudentCardImage = JsonSerializer.Deserialize<Attachment?>(ref reader, options) };
+                            break;
+                        case "enrolled_at":
+                            reader.Read();
+                            crew = crew with { EnrolledAt = reader.GetString() };
+                            break;
+                        case "working_student_income":
+                            reader.Read();
+                            crew = crew with { WorkingStudentIncome = JsonSerializer.Deserialize<int?>(ref reader, options) };
+                            break;
+                        case "employment_income_flag":
+                            reader.Read();
+                            crew = crew with { EmploymentIncomeFlag = JsonSerializer.Deserialize<bool?>(ref reader, options) };
+                            break;
+                        case "business_income_flag":
+                            reader.Read();
+                            crew = crew with { BusinessIncomeFlag = JsonSerializer.Deserialize<bool?>(ref reader, options) };
+                            break;
+                        case "devidend_income_flag":
+                            reader.Read();
+                            crew = crew with { DevidendIncomeFlag = JsonSerializer.Deserialize<bool?>(ref reader, options) };
+                            break;
+                        case "estate_income_flag":
+                            reader.Read();
+                            crew = crew with { EstateIncomeFlag = JsonSerializer.Deserialize<bool?>(ref reader, options) };
+                            break;
+                        case "widow_type":
+                            reader.Read();
+                            crew = crew with { WidowType = JsonSerializer.Deserialize<Crew.Widow?>(ref reader, options) };
+                            break;
+                        case "widow_reason_type":
+                            reader.Read();
+                            crew = crew with { WidowReasonType = JsonSerializer.Deserialize<WidowReason?>(ref reader, options) };
+                            break;
+                        case "widow_memo":
+                            reader.Read();
+                            crew = crew with { WidowMemo = reader.GetString() };
+                            break;
+                        case "custom_fields":
+                            reader.Read();
+                            crew = crew with { CustomFields = JsonSerializer.Deserialize<IReadOnlyList<CustomField>?>(ref reader, options) };
+                            break;
+                        case "created_at":
+                            reader.Read();
+                            crew = crew with { CreatedAt = JsonSerializer.Deserialize<DateTimeOffset?>(ref reader, options) };
+                            break;
+                        case "updated_at":
+                            reader.Read();
+                            crew = crew with { UpdatedAt = JsonSerializer.Deserialize<DateTimeOffset?>(ref reader, options) };
+                            break;
+                        default:
+                            throw new JsonException();
+                    }
+                    continue;
+                }
+
+                throw new JsonException();
+            }
+
+            if (crew.Id is null)
+                throw new JsonException("\"id\"プロパティは必須です");
+            if ((int)crew.EmpStatus == -1)
+                throw new JsonException("\"emp_status\"プロパティは必須です");
+            if (crew.LastName is null)
+                throw new JsonException("\"last_name\"プロパティは必須です");
+            if (crew.FirstName is null)
+                throw new JsonException("\"first_name\"プロパティは必須です");
+            if (crew.LastNameYomi is null)
+                throw new JsonException("\"last_name_yomi\"プロパティは必須です");
+            if (crew.FirstNameYomi is null)
+                throw new JsonException("\"first_name_yomi\"プロパティは必須です");
+            if ((int)crew.Gender == -1)
+                throw new JsonException("\"gender\"プロパティは必須です");
+
+            return crew;
+        }
+        public override void Write(Utf8JsonWriter writer, Crew value, JsonSerializerOptions options)
+        {
+
+        }
+    }
 }
