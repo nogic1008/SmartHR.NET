@@ -1,6 +1,5 @@
 using System;
 using System.Runtime.Serialization;
-using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace SmartHR.NET.Entities;
@@ -31,14 +30,12 @@ public record BizEstablishment(
     [property: JsonPropertyName("name")] string Name,
     [property: JsonPropertyName("soc_ins_name")] string SocInsName,
     [property: JsonPropertyName("soc_ins_owner_id")] string? SocInsOwnerId,
-    // TODO: Crewオブジェクトの定義
-    [property: JsonPropertyName("soc_ins_owner")] JsonElement? SocInsOwner,
+    [property: JsonPropertyName("soc_ins_owner")] Crew? SocInsOwner,
     [property: JsonPropertyName("soc_ins_address")] Address? SocInsAddress,
     [property: JsonPropertyName("soc_ins_tel_number")] string? SocInsTelNumber,
     [property: JsonPropertyName("lab_ins_name")] string LabInsName,
     [property: JsonPropertyName("lab_ins_owner_id")] string? LabInsOwnerId = null,
-    // TODO: Crewオブジェクトの定義
-    [property: JsonPropertyName("lab_ins_owner")] JsonElement? LabInsOwner = default,
+    [property: JsonPropertyName("lab_ins_owner")] Crew? LabInsOwner = null,
     [property: JsonPropertyName("lab_ins_address")] Address? LabInsAddress = null,
     [property: JsonPropertyName("lab_ins_tel_number")] string? LabInsTelNumber = null,
     [property: JsonPropertyName("jurisdiction_tax")] string? JurisdictionTax = null,

@@ -35,8 +35,7 @@ public record User(
     [property: JsonPropertyName("role")] User.UserRole? Role = default,
     [property: JsonPropertyName("agreement_for_electronic_delivery")] bool? AgreementForElectronicDelivery = default,
     [property: JsonPropertyName("crew_id")] string? CrewId = null,
-    // TODO: Crewオブジェクトの定義
-    [property: JsonPropertyName("crew")] JsonElement? Crew = default,
+    [property: JsonPropertyName("crew")] Crew? Crew = null,
     [property: JsonPropertyName("tenants")] IReadOnlyList<User.Tenant>? Tenants = null,
     [property: JsonPropertyName("invitation_created_at")] DateTimeOffset? InvitationCreatedAt = default,
     [property: JsonPropertyName("invitation_opened_at")] DateTimeOffset? InvitationOpenedAt = default,
